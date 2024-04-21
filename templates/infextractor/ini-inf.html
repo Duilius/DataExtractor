@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>DNIExtractor</title>
+
+	<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+	<!--Scripts JavaScript-->
+	<!--<script src="./ini_dataextractor.js"></script>-->
+	<!--<script src="{{url_for( 'static', path='ini_dataextractor.js')}}"></script>-->
+</head>
+<body>
+
+	<div id="contenedor_infextractor">
+		
+		
+	</div>
+
+
+<script>
+    // Función para enviar el ancho de la pantalla al servidor
+    function enviarAnchoPantalla() {
+        // Obtener el ancho de la pantalla
+        var anchoPantalla = window.innerWidth;
+
+        // Crear una solicitud XMLHttpRequest (o usa fetch si prefieres)
+        var xhr = new XMLHttpRequest();
+        
+        // Configurar la solicitud con la URL y el método POST
+        xhr.open("POST", "/contenido_inf", true);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+        // Manejar la respuesta del servidor (opcional)
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                //Actualizar el contenido del contenedor con la respuesta del servidor
+                    console.log(xhr.responseText);
+                    document.getElementById("contenedor_infextractor").innerHTML = xhr.responseText;
+            } else {
+                    console.error("Error en la solicitud al servidor");
+            }
+        };
+
+        // Convertir el objeto JavaScript a JSON y enviarlo
+        var data = JSON.stringify({ ancho: anchoPantalla });
+        xhr.send(data);
+    }
+
+    // Llamar a la función al cargar la página
+    window.onload = enviarAnchoPantalla;
+
+    // Llamar a la función cuando se redimensiona la pantalla
+    window.addEventListener('resize', enviarAnchoPantalla);
+</script>
+
+</body>
+</html>	

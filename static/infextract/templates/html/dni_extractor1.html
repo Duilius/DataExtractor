@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+	<!--<link rel="stylesheet" href="../css/asmr_style.css">-->
+	
+	<link rel="icon" type="image/png" sizes="16x16" href="../img/icons8-queen-bee-16.png">
+	<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+	<link   href="{{url_for( 'static', path='css/estilo1.css')}}" rel="stylesheet">
+	<title>DNIExtractor - Demo</title>
+
+</head>
+<body>
+<!--	
+head,presentacion,video,block_finanzas,benef_finanzas,block_academico,benef_academico,boton_planes,tecnologia,comentarios,faqs,funciones_extra,sticky,footer
+-->
+
+<div id="pre-head">Por qué y para qué Extraer Datos 👉 <a href="#">Leer +</a></div>
+<div id="head">
+	<div id="logo-img">
+		<!--
+		<img src="../img/minimal-bumble-bee-for-ocal-copper-black-circle.svg" width="90%" alt="Logo DataExtractor-Abeja-1">-->
+
+		<img width="45" height="45" src="{{url_for('static', path='./img/icons8-queen-bee-50.png')}}">
+	</div>
+	<div id="logo_txt"><span id="data">Data</span><br><span id="extractor">Extractor</span></div>	
+	<div id="icon-menu"><i class='bx bx-menu bx-md'></i></div>
+</div>
+
+<section id="titulo1">
+	
+		<h2>Extrae y Registra [<span>en segundos</span>] varios DNI/Cédulas</h2>
+	
+</section>
+
+<section id="new-user" ></section>
+
+<form method="post" action="/newUser">
+    <div class="form-container">
+        <div class="form-fields">
+			<span>Crea tu Cuenta <span style="color:cyan; font-style: italic; font-size: 85%;">GRATIS</span></span>
+		</div>
+	<div class="form-div">
+		<select name="countryCode" id="countryCode" class="form-field">
+			<option value="0">País</option>
+			<option value="51" selected>Perú</option>
+			<option value="54">Argentina</option>
+			<option value="591">Bolivia</option>
+			<option value="55">Brasil</option>
+			<option value="56">Chile</option>
+			<option value="57">Colombia</option>
+			<option value="593">Ecuador</option>
+			<option value="34">España</option>
+			<option value="52">México</option>
+			<option value="595">Paraguay</option>
+			<option value="598">Uruguay</option>
+		</select>
+		<input type="text" name="numWa" id="numWa" placeholder="WhatsApp" size="16" class="form-field">
+	</div>
+	<div class="form-div">
+		<input type="text" name="nombre" id="nombre" placeholder="Nombre(s)" size="30" class="form-field">
+	</div>
+	<div class="form-div">
+		<input type="password" name="clave" id="clave" placeholder="Clave" size="30" class="form-field">
+	</div>
+	<div class="form-div" id="div-button">
+		<button type="submit" class="form-field">CREAR CUENTA - PRUEBA</button>
+	</div>	
+</div>
+</form>
+
+<div id="titulo2">
+	<span id="span0">Actualiza y automatiza tu Base de Datos</span>
+	<span id="span1">[TU MAYOR ACTIVO] <span id="span2"><a href="#">Lee por qué ...</a></span></span>
+</div>
+
+<div id="post-titulo-2">
+	<p id="p1">Podrás llevarte los datos o accesarlos desde aquí</p>
+
+	<p id="p2">Captura y registra datos de estudiantes, pacientes, proveedores o potenciales clientes, en segundos !</p>
+</div>
+
+
+<section id="animacion-ejemplo-uso">
+	<video src="" id="video-animacion"></video>
+</section>
+
+
+<section id="tabla-resultados" class="sections">
+	<table style="width: 90%; margin: 0px auto;">
+		<thead>
+			<tr>
+				<td>DNI</td>
+				<td>Paterno</td>
+				<td>Materno</td>
+				<td>Nombres</td>
+				<td>CumpleAños</td>
+			</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td>45235080</td>>
+			<td>Maruy</td>>
+			<td>Ríos</td>>
+			<td>Luis Carlos</td>>
+			<td>15-06</td>>
+		</tr>
+		<tr>
+			<td>34104584</td>
+			<td>Flores</td>
+			<td>Vidal</td>
+			<td>Rita Flor</td>
+			<td>13-10</td>
+		</tr>
+		<tr>
+			<td>54397041</td>
+			<td>Polar</td>
+			<td>Vera</td>
+			<td>Sandro Pablo</td>
+			<td>14-11</td>
+		</tr>
+		<tr class="row-message">
+			<td colspan="5">Sube todos los DNI/Cédulas que quieras</td>
+		</tr>
+		<tr>
+			<td>05411317</td>
+			<td>Lara</td>
+			<td>Ruiz</td>
+			<td>Augusta</td>
+			<td>05-08</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="row-message">
+			<td colspan="4" style="color: brown;">Luego podrás llevarte la data</td>
+		</tr>
+		<tr class="row-message"></tr>
+	</tbody>
+	</table>
+</section>
+
+<section id="usos">
+
+	<h2>¿Quiénes lo están usando?</h2>
+
+	<p>Lo usan para CAPTURAR rápidamente datos básicos: </p>
+	<ul>
+		<li>Colegios</li>
+		<li>Consultorios</li>
+		<li>Clínicas</li>
+		<li>Notarías</li>
+	</ul>
+</section>
+
+<!--BENEFICIOS-->
+
+<section id="beneficios">
+	<div id="rapidez" class="beneficios">
+		<h3 class="h3-diseno1"><i class='bx bxs-zap bx-fade-up'></i>Rápidez</h3>
+		
+		<p class="describe-beneficio">Captura datos del DNI en segundos.</p>
+		<p class="describe-beneficio">Comparado con el registro en papel o en formularios en linea es super veloz.</p>
+		<hr>
+
+		<p class="describe-beneficio2">Ahorre minutos valiosos por cada cliente, prospecto o personal que registre.</p>
+		<p class="describe-beneficio2">Los datos del DNI son lo primero que debe cuidar de su Base de Datos; <u>luego continue con los datos de contacto</u>.</p>
+
+	</div>
+
+	<div id="sin-errores" class="beneficios">
+		<h3 class="h3-diseno1"><i class='bx bx-badge-check bx-flashing'></i></i>Sin errores</h3>
+
+		<p class="describe-beneficio">Extraemos datos con Inteligencia Artificial, NUNCA habrá error !</p>
+		<p class="describe-beneficio">La precisión y certeza de guardar datos correctos no tienre precio.</p>
+		<hr>
+
+		<p class="describe-beneficio2">Un potencial cliente o uno antiguo, mal registrado, es como si no existiera.</p>
+		<p class="describe-beneficio2">Equivocarse es fácil cuando se tipea; <u>ahorre tiempo y dinero con cero errores en registro de datos básicos</u>.</p>
+
+
+	</div>
+
+	<div id="barato" class="beneficios">
+		<h3 class="h3-diseno1"><i class='bx bx-money-withdraw bx-flashing'></i>Barato</h3>
+
+		<p class="describe-beneficio">Reduces muchísimo tiempo y las tarifas son bajísimas.</p>
+		<p class="describe-beneficio">Además de lo económico de nuestros Planes, solo pagas por lo que usas y no necesitas servidores ni cablear redes.</p>
+		<hr>
+
+		<p class="describe-beneficio2">Concéntrese en vender, atender mejor, ser eficiente, no en registrar datos.</p>
+		<p class="describe-beneficio2">Con DataExtractor disminuirá costos; <u>asigne otras tareas al personal que registra datos</u>.</p>
+	</div>
+
+
+	<div id="abeja" class="beneficios">
+		<p><i class="fi fi-tr-bee"></i>Barato</p>
+	</div>
+	
+</section>
+
+
+<footer>
+	<div id="que-es">
+		<ul>
+			<li class="li-left"><a href="#">¿Qué es DataExtract?</a></li>
+			<li class="li-left"><a href="#">Por qué una abeja</a></li>
+		</ul>
+	</div>
+
+	<div id="planes">
+		<ul>
+			<li class="li-center"><a href="#">Planes</a></li>
+			<li class="li-center"><a href="#">Faqs</a></li>
+		</ul>
+	</div>
+
+	<div id="contacto">
+		<ul>
+			<li class="li-left"><a href="#">Contacto</a></li>
+			<li class="li-left">
+				<ul class="redes">
+					<li class="li-redes"><a href="#">Face</a></li>
+					<li class="li-redes"><a href="#">YouT</a></li>
+					<li class="li-redes"><a href="#">Inst</a></li>
+					<li class="li-redes"><a href="#">Link</a></li>
+					<li class="li-redes"><a href="#">TikT</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>	
+</footer>
+
+</body>
+</html>
