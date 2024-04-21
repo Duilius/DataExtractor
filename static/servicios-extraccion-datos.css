@@ -1,0 +1,71 @@
+body{background: #262626;}
+h1{color: white;}
+
+#los-servicios{
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: 
+    "dni fac com"
+    "rec inv car"
+    ;
+    gap: 4px;
+}
+    #dni{grid-area: dni;}#dni{grid-area: fac;}#dni{grid-area: com;}
+    #dni{grid-area: rec;}#dni{grid-area: inv;}#dni{grid-area: car;}
+.los-servicios{
+    border:1px solid rgba(255,255,255,0.311);
+    padding:10px; border-radius: 4px;
+}
+.los-servicios h2{
+    color:palegreen;
+    letter-spacing: 1px;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+#form-servicio{
+    width: 100%;
+    height: 600px;
+    margin-top: 5px;
+    border:1px solid rgba(255,255,255,0.5);
+    display: grid;
+    place-content: center;
+    justify-items: center;
+}
+
+#dni-h3{color:red;}
+#rec-h3{color:white;}
+#inv-h3{color:yellow;}
+#fac-h3{color:greenyellow;}
+#com-h3{color:green;}
+#car-h3{color:orange;}
+
+#inv-img-subida{
+    font-size: 10rem;
+    color:white;
+    border: 6px solid whitesmoke; border-radius: 10px;
+    width: 94%; height: 400px;
+    max-width: 94%; /* Establece el ancho máximo del contenedor */
+    max-height:400px; /* Establece la altura máxima del contenedor */
+    overflow: scroll; /* Oculta cualquier parte de la imagen que exceda los límites del contenedor */
+    text-align: center;
+}
+
+#botonera{background: cyan;}
+#descripcion p{color:white;}
+#enviado p{color:white}
+
+
+
+
+/**********************
+LINKS DE CADA SERVICIO:
+***********************/
+
+.link-servicios{
+    background: cyan; color:black; border:1px solid #555; border-radius: 4px; padding: 4px 8px; font-size: 75%; font-weight: 700; text-align: center;
+}
+.link-activo{
+    background: yellow; color:#555; border:2px solid white;
+}

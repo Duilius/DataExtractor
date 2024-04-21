@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+    <link rel="stylesheet" href="{{url_for( 'static', path='servicios-extraccion-datos.css')}}">
+    <link rel="stylesheet" href="{{url_for( 'static', path='/../templates/demo/inv_demo.css')}}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+
+    <title>Servicios de Extracción de Datos con IA</title>
+   
+</head>
+<body>
+    <h1>Toca y prueba los Servicios</h1>
+
+    <div id="los-servicios">
+
+        <!--DNI-->
+        <div id="s-dni" class="los-servicios">
+            <a href="/extractorde?tiposervicio=dni" hx-get="/extractorde?tiposervicio=dni" hx-triger="click" hx-target="#form-servicio" hx-swap="innerHTML" class="link-servicios"
+            _="
+            on click remove .link-activo from .link-servicios
+            then
+                add .link-activo
+            "
+            >
+                DNI
+            </a>
+        </div>
+
+        <!--INVENTARIO-->
+        <div id="s-inv" class="los-servicios">
+            <a href="/extractorde?tiposervicio=inv" hx-get="/extractorde?tiposervicio=inv" hx-triger="click" hx-target="#form-servicio" hx-swap="innerHTML" class="link-servicios"
+            _="
+            on click remove .link-activo from .link-servicios
+            then
+                add .link-activo
+            "
+            >
+                INVENTARIO
+            </a>
+        </div>
+
+        <!--RECETAS-->
+        <div id="s-rec" class="los-servicios">
+            <a href="/extractorde?tiposervicio=rec" hx-get="/extractorde?tiposervicio=rec" hx-triger="click" hx-target="#form-servicio" hx-swap="innerHTML" class="link-servicios"
+            _="
+            on click remove .link-activo from .link-servicios
+            then
+                add .link-activo
+            "
+            >
+                RECETAS
+            </a>
+        </div>
+
+        <!--FACTURAS-->
+        <div id="s-fac" class="los-servicios">
+            <a href="/extractorde?tiposervicio=fac" hx-get="/extractorde?tiposervicio=fac" hx-triger="click" hx-target="#form-servicio" hx-swap="innerHTML" class="link-servicios"
+            _="
+            on click remove .link-activo from .link-servicios
+            then
+                add .link-activo
+            "
+            >
+                FACTURAS
+            </a>
+        </div>
+
+        <!--COMPRAS - LISTA-->
+        <div id="s-com" class="los-servicios">
+            <a href="/extractorde?tiposervicio=com" hx-get="/extractorde?tiposervicio=com" hx-triger="click" hx-target="#form-servicio" hx-swap="innerHTML" class="link-servicios"
+            _="
+            on click remove .link-activo from .link-servicios
+            then
+                add .link-activo
+            "
+            >
+                LISTAS COMPRA
+            </a>
+        </div>
+
+        <!--RECONOC FACIAL: CARAS-->
+        <div id="s-car" class="los-servicios">
+            <a href="/extractorde?tiposervicio=car" hx-get="/extractorde?tiposervicio=car" hx-triger="click" hx-target="#form-servicio" hx-swap="innerHTML" class="link-servicios"
+            _="
+            on click remove .link-activo from .link-servicios
+            then
+                add .link-activo
+            "
+            >
+                RECONOC. FACIAL
+            </a>
+        </div>
+
+    </div>
+
+    <div id="form-servicio">
+
+    </div>
+
+
+</body>
+</html>

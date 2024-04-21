@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<!--<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>-->
+		<script src="https://unpkg.com/htmx.org@1.8.4"></script>
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+		<!--<link rel="stylesheet" href="../css/asmr_style.css">-->
+		
+		<link rel="icon" type="image/png" sizes="16x16" href="../static/dniextract/img/icons8-queen-bee-16.png">
+		<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+		<!-- Style DESKTOP del index/home/start/iniio de DataExtractor-->
+		<link rel="stylesheet" href="{{url_for( 'static', path='index-mobile.css')}}">
+		<!--<link rel="stylesheet" href="index-mobile.css">-->
+		<!--<script type="text/javascript" src="{{url_for( 'static', path='js/htmx.min.js')}}"></script>-->
+		<title>DNIExtractor - Demo</title>
+
+	</head>
+<body>
+
+	<section id="mobile-pre-head">Demostración GRATIS ... <span> clic aquí ! </span></section>
+
+	<section id="head">
+		<div id="logo-img">
+			<a href='/'><img width="45" height="45" src="{{url_for('static', path='dniextract/img/icons8-queen-bee-50.png')}}"></a>
+		</div>
+		<div id="logo_txt"><a href='/'><span id="data">Data</span><br><span id="extractor">Extractor</span></a></div>	
+		<div id="icon-menu"><i class='bx bx-menu bx-md'></i></div>
+	</section>
+
+	<section id="titulo-img">
+		<!--<p>Data - EXTRACTOR !</p>-->
+		<img src="{{url_for( 'static', path='img/iman-amarillo-1.jpeg')}}" width="40%">
+	</section>
+
+	<section id="servicios">
+		<div id="dni" class="servicios" ><h3 hx-trigger='click' hx-get='/dni'><a href="/dni">DNIs</a></h3>
+			<p>También extrae datos de Brevetes, Pasaportes, Carnés... en segundos.</p>
+			<span>CAPTURA Y REGISTRA</span>
+		
+		</div>
+		<div id="fac" class="servicios" ><h3 hx-trigger='click' hx-get='/facturas'><a href="/facturas">FACTURAS</h3></a>
+			<p>Extrae datos de Boletas, Facturas, Tickests y actualiza tu Base de Datos o Libros Contables...</p>
+			<span>CAPTURA Y PROCESA</span>
+		</div>
+		<div id="inf" class="servicios" ><h3 hx-trigger='click' hx-get='/info-extractor'><a href="/info-extractor">INFO</a></h3>
+			<p>Convierte documentos e informes de cualquier tipo en tu propia Base de Datos.</p>
+			<span>CAPTURA Y COMPARTE</span>
+		</div>
+
+		<div id="inventario">
+			<h2>INVENTARIO FÍSICO PATRIMONIAL</h2>
+			<p>Instituciones Públicas <span>Cualquier sector/tamaño</span></p>
+			<p>Mediana Empresa<span> Cualquier rubro</span></p>
+			<p>Gran Empresa<span> Dentro o fuera del país</span></p>
+			<p>Mega	Empresa<span> Dentro o fuera del país</span></p>
+
+			<div id="inventario-2">
+				<p>Realiza el Inventario Físico Patrimonial de tu Institución/Empresa con nuestro Software de Inteligencia Artificial con personal propio ... o con nuestro equipo experimentado ! </p>
+			</div>
+
+		</div>
+	</section>
+
+	<section id="beneficios">
+		<h3>GRANDES BENEFICIOS</h3>
+		<h4>SECTOR PÚBLICO</h4>
+		<ul id="publico">
+			<li>Gobierno Inteligente: reduce costos</li>
+			<li>Destaca la Institución: mayor presupuesto</li>
+			<li>Destacan los funcionarios: mayor respaldo</li>
+			<li>La Comunidad se beneficia !</li>
+		</ul>
+
+		<h4>SECTOR PRIVADO</h4>
+		<ul id="privado">
+			<li>Gobierno Inteligente: reduce costos</li>
+			<li>Destaca la Institución: mayor presupuesto</li>
+			<li>Destacan los funcionarios: mayor respaldo</li>
+			<li>La Comunidad se beneficia !</li>
+		</ul>
+		<p>Con Inteligencia Artificial y muy poca inversión: avanza en el mercado, te posicionas mejor, ganas eficiencia, reduces tiempos, minimizas costos, ofreces mejor servicio, no te equivocas, resuelves muy rápido los problemas de tus clientes, ....<br> Qué esperas ?</p>
+		<br>
+		<h6>No usar la Inteligencia Artificial te puede sacar del mercado, muy pronto.</h6>
+		<br>
+		<h2>Benficiate de ...</h2>
+		
+		<div id="lista-beneficios">
+			<div class="div-li">
+				<div class="beneficios">
+					<p>CERO ERRORES !</p>
+				</div>
+				<div class="div-p">
+					<p>Modelos y proesos de Inteligencia Artificial en constante actualización</p>
+					
+				</div>
+			</div>
+
+			<div class="div-li">
+				<div class="beneficios">
+					<p>100% EXACTO !</p>
+				</div>
+				<div class="div-p">
+					<p>Reduce a cero, y para siempre, los errores de captura y registro de datos</p>
+					
+				</div>
+			</div>
+
+			<div class="div-li">
+				<div class="beneficios">
+					<p>MUY VELOZ !</p>
+				</div>
+				<div class="div-p">
+					<p>En solo segundos se capturan, procesan, registran y comparten los datos !</p>
+
+				</div>
+			</div>
+
+			<div class="div-li">
+				<div class="beneficios">
+					<p>FÁCIL DE USAR !</p>
+				</div>
+				<div class="div-p">
+					<p>Ya No se necesita digitar !</p>
+
+				</div>
+			</div>
+
+			<div class="div-li">
+				<div class="beneficios">
+					<p>SUPER BARATO !</p>
+				</div>
+				<div class="div-p">
+					<p>Los costos se reducen al mínimo !</p>
+
+				</div>						
+			</div>
+
+			<div id="google">
+				<h5>Toda nuestra</h5>
+				<h4>Infraestructura es soportada por </h4>
+				<img src="{{url_for( 'static', path='img/logo-google.png')}}" width="40%">
+			</div>
+<!--
+			<li class="beneficios">100% exacto !</li>
+			<li class="beneficios">Muy veloz !</li>
+			<li class="beneficios">Facilísimo de usar</li>
+			<li class="beneficios">Super barato !</li>
+-->			
+		</div>
+
+	</section>
+
+	<section id="quienes-usan">
+		
+			<li class="usuarios"><span>Quiénes ya usan Data Extractor</span></li>
+			<li class="usuarios">Colegio San Andrés</li>
+			<li class="usuarios">UNITEX</li>
+			<li class="usuarios">SECURE</li>
+			<li class="usuarios">SCHMIDT HOUSE</li>
+			<li class="usuarios">RENZO Barber</li>
+			<li class="usuarios">ICSA</li>
+		
+	</section>
+
+	<section id="comentarios">
+		<div class="comentarios">
+			<div>	
+				<img class="foto-comentarios" src="{{url_for('static', path='../static/img/images-1.jpeg')}}">
+			</div>
+			<div>
+				<p>Quién comenta</p>
+				<p>El primer comentario</p>
+			</div>
+		</div>	
+		<div class="comentarios">
+			<div>
+				<img class="foto-comentarios" src="{{url_for('static', path='../static/img/images-2.jpeg')}}">
+			</div>
+			<div>	
+				<p>Quién comenta</p>
+				<p>El segundo comentario</p>
+			</div>	
+		</div>
+		<div class="comentarios">
+			<div>
+				<img class="foto-comentarios" src="{{url_for('static', path='../static/img/images-3.jpeg')}}">
+			</div>
+			<div>
+				<p>Quién comenta</p>
+				<p>El tercer comentario</p>
+			</div>	
+		</div>	
+	</section>
+
+	<section id="faqs">
+		<h3>Preguntas Frecuentes</h3>
+		<details name="faqs">
+			<summary class="faqs">Pregunta 1</summary>
+				<p class="rpta">Respuesta 1</p>
+		</details>				
+		<details name="faqs">
+			<summary class="faqs">Pregunta 2</summary>
+				<p class="rpta">Respuesta 2</p>
+		</details>
+		<details name="faqs">				
+			<summary class="faqs">Pregunta 3</summary>
+				<p class="rpta">Respuesta 3</p>
+		</details>
+		<details name="faqs">				
+			<summary class="faqs">Pregunta 4</summary>
+				<p class="rpta">Respuesta 4</p>
+		</details>
+		<details name="faqs">				
+			<summary class="faqs">Pregunta 5</summary>
+				<p class="rpta">Respuesta 5</p>
+		</details>
+		<details name="faqs">				
+			<summary class="faqs">Pregunta 6</summary>
+				<p class="rpta">Respuesta 6</p>
+		</details>
+		<details name="faqs">				
+			<summary class="faqs">Pregunta 7</summary>
+				<p class="rpta">Respuesta 7</p>
+		</details>
+
+	</section>
+
+	<section id="demos">
+		<div id="botones-demo">
+			<ul>
+				<li class="botones"><a href="/videos-demo?origen=dni" hx-get="/videos-demo?origen=dni" hx-target="#el-video" hx-swap="innerHTML">DNI</a></li>
+				<li class="botones"><a href="/videos-demo?origen=facturas" >Facturas</a></li>
+				<li class="botones"><a href="/videos-demo?origen=amano" >A mano</a></li>
+				<a href="" hx-get="/videos-demo?origen=dni" hx-trigger="click">DNI 2</a>
+			</ul>
+		</div>
+		<div id="videos">
+			<video class="el-video" poster="{{url_for('static', path='../static/img/poster-dni.jpeg')}}" autoplay="true" controls src="{{url_for('static', path='/img/demo-dni.mp4')}}"></video>
+		</div>
+	</section>
+
+	<div id="new-user" >
+		<h2>Descubre cómo trabajan los mejores !</h2>
+		<p>Lideres y colaboradores que brillan</p>
+
+		<form method="post" action="/newUser">
+    		<div class="form-container">
+        		<div class="form-div">
+					<span>Crea tu Cuenta <span style="color:cyan; font-style: italic; font-size: 85%;">GRATIS</span></span>
+				</div>
+				<div class="form-div">
+					<select name="countryCode" id="countryCode" class="form-field">
+						<option value="0">País</option>
+						<option value="51" selected>Perú</option>
+						<option value="54">Argentina</option>
+						<option value="591">Bolivia</option>
+						<option value="55">Brasil</option>
+						<option value="56">Chile</option>
+						<option value="57">Colombia</option>
+						<option value="593">Ecuador</option>
+						<option value="34">España</option>
+						<option value="52">México</option>
+						<option value="595">Paraguay</option>
+						<option value="598">Uruguay</option>
+					</select>
+				</div>
+		
+				<div class="form-div">
+					<input type="text" name="ruc" id="ruc" placeholder="N° RUC" size="11" class="form-field" required>
+				</div>
+				<div class="form-div">
+					<input type="text" name="numWa" id="numWa" placeholder="WhatsApp" size="16" class="form-field" required>
+				</div>
+				<div class="form-div">
+					<input type="text" name="nombre" id="nombre" placeholder="Nombre(s)" size="25" class="form-field" required>
+				</div>
+				<div class="form-div">
+					<input type="textarea" name="consulta" id="consulta" placeholder="Consulta o comentario aquí..." cols="25" required class="form-field">
+				</div>
+				<div class="form-div" id="div-button">
+					<button type="submit" class="form-field">CREAR CUENTA</button>
+				</div>	
+			</div>
+		</form>
+	</div>
+
+	<section id="ver-mas"></section>
+
+	<section id="blog"></section>
+
+	<section id="footer"></section>
+
+</body>
+</html>
