@@ -14,6 +14,23 @@ from fastapi import APIRouter, Response, Header, Form, Path, UploadFile
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
+##Importing the Modules Needed to Extract Text with Google Artificial Intelligence
+
+from google.cloud import documentai
+from google.api_core.client_options import ClientOptions
+import os, json
+import claves # Archivo con las claves de acceso a la API de DocumentAI
+
+## Variables de conexión a Base de Datos en Railway
+db_user=os.getenv("DB_USER")
+db_password=os.getenv("DB_PASSWORD")
+db_host=os.getenv("DB_HOST")
+db_port=os.getenv("DB_PORT")
+db_name=os.getenv("DB_NAME")
+db_type=os.getenv("DB_TYPE")
+
+
+
 from utils.dispositivo import determinar_tipo_dispositivo
 
 app=FastAPI()
@@ -150,7 +167,7 @@ async def servicios(request:Request):
 #Tipos de Servicio: DNI, Recetas, Listas Compra, Inventario, Facturas, Reconoc Facial
 @app.get('/extractorde')
 async def extractorDe(request:Request, tiposervicio:str=""):
-    print("Tipo de Servocio elegido: ", tiposervicio)
+    print("Tipo de Servicio elegido: ", tiposervicio)
 
     return templates.TemplateResponse("demo/"+tiposervicio+"_demo.html", {'request':request})
     
@@ -158,7 +175,7 @@ async def extractorDe(request:Request, tiposervicio:str=""):
     #En el caso de INVENTARIO: las imágenes cargadas/tomadas las procesa la ruta ==>> /upload_fotos
 
 
-### SERVICIO: INVENTAIO #### 👈👈👈
+### SERVICIO: INVENTARIO #### 👈👈👈
 @app.post("/upload_fotos")
 async def upload_fotos(request: Request, fotos: List[UploadFile]):
 
