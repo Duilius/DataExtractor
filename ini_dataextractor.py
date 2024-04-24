@@ -2,6 +2,7 @@ from openai import OpenAI
 import json
 import base64
 import os
+from os import getcwd
 from urllib.parse import urlparse
 import asyncio
 from typing import Optional, List
@@ -187,92 +188,81 @@ async def upload_fotos(request: Request, fotos: List[UploadFile]):
     script_directory = os.path.dirname(os.path.abspath(__file__))
     client = OpenAI(api_key="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")
 
-    for foto in fotos:
-        # Guardar la imagen localmente en el servidor
-        photo_path = os.path.join(script_directory, foto.filename)
-        with open(photo_path, "wb") as photo_file:
-            photo_file.write(await foto.read())
 
-        # Codificar la imagen como Base64 y construir la URL
-        image_url = f"data:image/jpeg;base64,{encode_image(photo_path)}"
+    ## Variables de entorno - Servicio de Google Cloud
+    endpoint = os.getenv('ENDPOINT')
+    project_id = os.getenv('PROJECT_ID')
+    processor_id = os.getenv('PROCESSOR_ID') # Create processor in Cloud Console
+    location = os.getenv('REGION') # Format is 'us' or 'eu'
 
-        # Enviar la imagen a OpenAI
-        response = client.chat.completions.create(
-            model='gpt-4-vision-preview',
-            messages=[
-                {   
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Extraer la información del documento proporcionado, incluyendo el color principal del objeto:\n"
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": image_url}
-                        }
-                    ],
-                }
-            ],
-            max_tokens=600,
-        )
+    #Create an instantiate to "DocumentProcessorServiceClient" class
+    client = documentai.DocumentProcessorServiceClient(
+            client_options=ClientOptions(api_endpoint=f"{location}-{endpoint}"))
 
-        response_text = response.choices[0].message.content
-        
-        #Pedimos que formatee el texto a lo que se necesita:
-        #CodPatrimonial ===> No tiene guión "-"
-        #Cod 2023: 
-        #Cod 2021:
-        #Cod 2019:
-        #Color:
-        response2 = client.chat.completions.create(
-            model='gpt-3.5-turbo',
-            messages=[
-                {"role":"system", "content":[
-                    {
-                        "type":"text",
-                        "text":"Ofréceme los datos numéricos de las Etiquetas CORPAC S.A., INV. 2023, INV, 2021, INV. 2019 e INV. 2021"
-                    }
-                ]
-                 },
-                { "role": "user",
-                  "content":[
-                        {
-                            "type": "text",
-                            "text": response_text
-                        }
-                  ]
-                }
-                ],
-            max_tokens=20
-        )
-        
-        print("Respuesta de OpenAI-2:", response2)
-        print("Respuesta de OpenAI-1:", response_text)
-        #Aquí le pedimos a CHATGPT que interprete y clasifique los datos
+    #Get processor path
+    name = client.processor_path(project_id, location, processor_id)
 
+    carpeta_pdf = getcwd() + "/templates/image"
 
-        # Procesar la respuesta de OpenAI
-        """
-        try:
-            json_string = response.choices[0].message.content
-            json_string = json_string.replace("```json\n", "").replace("\n```", "")
-            json_data = json.loads(json_string)
-        except (IndexError, json.JSONDecodeError) as e:
-            print(f"Error al procesar la respuesta de OpenAI: {e}")
-            continue
+    for file_uri in fotos:
 
-        # Guardar los datos JSON en un archivo
-        filename_without_extension = os.path.splitext(os.path.basename(photo_path))[0]
-        json_filename = f"{filename_without_extension}.json"
-        json_path = os.path.join(script_directory, "Data", json_filename)
+        #Get mime_type
+        if file_uri.filename.endswith('.pdf'):
+            mime_type = "application/pdf"
+        elif file_uri.filename.endswith('.jpg') or file_uri.filename.endswith('.jpeg'):
+            mime_type = "image/jpeg"
+        elif file_uri.filename.endswith('.png'):
+            mime_type = "image/png"
+        else:
+            # Establecer un valor predeterminado en caso de que no se encuentre ninguna extensión compatible
+            mime_type = "application/octet-stream"  # Tipo MIME genérico para datos binarios
+
+        lectura_archivo=""
 
         try:
-            with open(json_path, 'w') as file:
-                json.dump(json_data, file, indent=4)
-                print(f"Datos JSON guardados en {json_path}")
-        except Exception as e:
-            print(f"Error al guardar los datos JSON: {e}")
-        """
+            with open(file_uri.filename, 'rb') as file_bites:
+                file_content_bites = file_bites.read()
+                # Procesar el contenido del archivo, como guardar en una base de datos o realizar operaciones adicionales
+                lectura_archivo="OK"
 
-    #return {"message": "Proceso completado"}
+                #Create a "RawDocument" object (encapsulate the file content + mime_type)
+                raw_file_documentai = documentai.RawDocument(
+                    content=file_content_bites,
+                    mime_type=mime_type)
+
+                #Request to process the document (raw_file_documentai)
+                request_doc = documentai.ProcessRequest(
+                    name=name,
+                    raw_document=raw_file_documentai)   
+                
+                #Request the document to be processed and receive the response
+                response = client.process_document(request=request_doc)
+                document = response.document #Get the document object, already processed, from the response
+                
+                print("EL resultado es ===> ", document)
+
+                #Validate and Filter each document 👀
+                ###cabezera,json_data = filter_document(document)
+
+                #Insert the document into the database
+                ###mto_pagado, num_operacion = save_storage(cabezera,json_data)
+
+                #print("MONTO PAGADO ================>", mto_pagado)
+                #print("OERACION N°  ================>", num_operacion)
+
+                #Return the result of query
+                ###results, count_result = show_table_yape()
+
+                #Return the result of the insertion
+                ###print("Monto pagado: S/. ", mto_pagado)
+                ###print("Número de operación: ", num_operacion)	
+                ###return templates.TemplateResponse("partial_yape.html", {"request": request,"yapes": results, "toal_yapes_hoy": count_result, "lectura_archivo":lectura_archivo})
+
+        except FileNotFoundError:
+            # Manejar el caso cuando el archivo no se encuentra
+            lectura_archivo="No-hallado"
+            return templates.TemplateResponse("partial_yape.html", {"request": request, "lectura_archivo":lectura_archivo})
+        except IOError as e:
+            # Manejar otras excepciones de lectura/escritura
+            lectura_archivo=e
+            return templates.TemplateResponse("partial_yape.html", {"request": request, "lectura_archivo":lectura_archivo})
