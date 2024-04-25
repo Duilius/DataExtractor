@@ -1,5 +1,8 @@
 #secrets
 rtf_ocr_claves.json
+#pycache
+__pycacge__/
+
 openai-env/
 scripts/
 dinamic/
