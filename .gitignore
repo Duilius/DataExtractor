@@ -1,7 +1,7 @@
 #secrets
 rtf_ocr_claves.json
 #pycache
-__pycacge__/
+__pycache__/
 
 openai-env/
 scripts/
