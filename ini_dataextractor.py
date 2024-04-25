@@ -186,7 +186,6 @@ async def upload_fotos(request: Request, fotos: List[UploadFile]):
         return encoded_string
 
     script_directory = os.path.dirname(os.path.abspath(__file__))
-    client = OpenAI(api_key="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")
 
 
     ## Variables de entorno - Servicio de Google Cloud
