@@ -16,12 +16,14 @@
 		<!-- Style DESKTOP del index/home/start/iniio de DataExtractor-->
 		<link rel="stylesheet" href="{{url_for( 'static', path='index-mobile.css')}}">
 		<!--<link rel="stylesheet" href="index-mobile.css">-->
-		<!--<script type="text/javascript" src="{{url_for( 'static', path='js/htmx.min.js')}}"></script>-->
+
+		
 		<title>DNIExtractor - Demo</title>
 		<!---->
 
 	</head>
-<body>
+
+	<body>
 
 	<section id="mobile-pre-head">Demostración GRATIS ... <span> clic aquí ! </span></section>
 
@@ -144,7 +146,7 @@
 			<div id="google">
 				<h5>Toda nuestra</h5>
 				<h4>Infraestructura es soportada por </h4>
-				<img src="{{url_for( 'static', path='img/logo-google.png')}}" width="40%">
+				<img src="{{url_for( 'static', path='img/logo-google.png')}}" width="60%">
 			</div>
 <!--
 			<li class="beneficios">100% exacto !</li>
@@ -201,34 +203,59 @@
 	<section id="faqs">
 		<h3>Preguntas Frecuentes</h3>
 		<details name="faqs">
-			<summary class="faqs">Pregunta 1</summary>
-				<p class="rpta">Respuesta 1</p>
+			<summary class="faqs">¿Qué es DataExtractor?</summary>
+				<p class="rpta">Data Extractor es una solución de <b>software basada en inteligencia artificial</b> que permite extraer, procesar y registrar información de <u>DNIs</u>, <u>pasaportes</u>, <u>facturas</u>, <u>recibos</u>, y <u>etiquetas de inventario de bienes</u> en <i>instituciones públicas o empresas privadas</i>.</p>
+		</details>
+		<details name="faqs">
+			<summary class="faqs">¿DataExtractor solo extrae datos?</summary>
+				<p class="rpta">Data Extractor también los procesa y valida. Luego los registra en tu Base de Datos y, si es necesario los comparte.</p>
 		</details>				
 		<details name="faqs">
-			<summary class="faqs">Pregunta 2</summary>
-				<p class="rpta">Respuesta 2</p>
+			<summary class="faqs">¿Cómo ayuda Data Extractor a mi empresa?</summary>
+				<p class="rpta">Data Extractor reduce costos, minimiza errores y agiliza procesos de captura de datos, permitiéndote centrarte en tu negocio en lugar de en tareas manuales de administración.
+				</p>
+		</details>
+		<details name="faqs">
+			<summary class="faqs">¿Data Extractor me puede ayudar a vender más?</summary>
+				<p class="rpta">Sí, Data Extractor ayuda a empresas de todo tamaño y rubro a incrementar ventas sin destinar más recursos (trabajo ni tiempo). Regístrate y preguntános <a href='#'>aquí</a>.
+				</p>
+		</details>		
+		<details name="faqs">				
+			<summary class="faqs">¿Cuánto tiempo lleva extraer datos con Data Extractor?</summary>
+				<p class="rpta">Data Extractor puede extraer, procesar y registrar datos en segundos, proporcionando resultados rápidos y precisos.</p>
 		</details>
 		<details name="faqs">				
-			<summary class="faqs">Pregunta 3</summary>
-				<p class="rpta">Respuesta 3</p>
+			<summary class="faqs">¿Puedo extraer otros tipos de datos?</summary>
+				<p class="rpta">Sí, solo hemos mencionado los más comunes. Hay quienes extraern datos de Contratos, Minutas, Declaraciones, Informes, Reportes, Pólizas, etc. Regístrate y consulta <a href="#">aquí.</a></p>
+		</details>		
+		<details name="faqs">				
+			<summary class="faqs">¿Es seguro usar Data Extractor?</summary>
+				<p class="rpta">Sí, Data Extractor está diseñado con altos estándares de seguridad y privacidad para proteger los datos y garantizar la confidencialidad de la información.</p>
 		</details>
 		<details name="faqs">				
-			<summary class="faqs">Pregunta 4</summary>
-				<p class="rpta">Respuesta 4</p>
+			<summary class="faqs">¿Data Extractor se integra con mis sistemas existentes?</summary>
+				<p class="rpta">Data Extractor es altamente compatible y se puede integrar fácilmente con tus sistemas y bases de datos existentes, garantizando una transición fluida y eficiente.</p>
 		</details>
 		<details name="faqs">				
-			<summary class="faqs">Pregunta 5</summary>
-				<p class="rpta">Respuesta 5</p>
+			<summary class="faqs">¿Cuánto cuesta usar Data Extractor?</summary>
+				<p class="rpta">Data Extractor ofrece opciones de precios asequibles adaptadas a las necesidades de diferentes tamaños de empresas. Consulta nuestros planes para obtener más detalles.</p>
 		</details>
 		<details name="faqs">				
-			<summary class="faqs">Pregunta 6</summary>
-				<p class="rpta">Respuesta 6</p>
+			<summary class="faqs">¿Data Extractor se actualiza regularmente?</summary>
+				<p class="rpta">Sí, Data Extractor se actualiza continuamente con los últimos avances en inteligencia artificial para ofrecerte el mejor rendimiento y precisión.</p>
 		</details>
 		<details name="faqs">				
-			<summary class="faqs">Pregunta 7</summary>
-				<p class="rpta">Respuesta 7</p>
+			<summary class="faqs">¿Es difícil usar Data Extractor?</summary>
+				<p class="rpta">No, Data Extractor es fácil de usar y no requiere conocimientos técnicos previos. La interfaz intuitiva y las guías paso a paso facilitan su uso.</p>
 		</details>
-
+		<details name="faqs">				
+			<summary class="faqs">¿Puedo probar Data Extractor antes de comprar?</summary>
+				<p class="rpta">Sí, ofrecemos una prueba gratuita de Data Extractor para que puedas experimentar sus beneficios antes de tomar una decisión.</p>
+		</details>
+		<details name="faqs">				
+			<summary class="faqs">¿Qué soporte ofrecen?</summary>
+				<p class="rpta">Brindamos soporte técnico de calidad y asistencia para ayudarte a maximizar los beneficios de Data Extractor.</p>
+		</details>
 	</section>
 
 	<section id="demos">
@@ -247,14 +274,15 @@
 
 	<div id="new-user" >
 		<h2>Descubre cómo trabajan los mejores !</h2>
-		<p>Lideres y colaboradores que brillan</p>
+		<p>Lideres y colaboradores que brillan usan Inteligencia Artificial</p>
 
-		<form method="post" action="/newUser">
-    		<div class="form-container">
-        		<div class="form-div">
+		<form method="post" action="/newUser" id="formulRegistro">
+			<div class="form-container">
+				<div class="form-div">
 					<span>Crea tu Cuenta <span style="color:cyan; font-style: italic; font-size: 85%;">GRATIS</span></span>
 				</div>
 				<div class="form-div">
+										
 					<select name="countryCode" id="countryCode" class="form-field">
 						<option value="0">País</option>
 						<option value="51" selected>Perú</option>
@@ -269,6 +297,8 @@
 						<option value="595">Paraguay</option>
 						<option value="598">Uruguay</option>
 					</select>
+					<input type="text" name="fecha" id="laFecha" class="oculto">
+					<input type="text" name="hora"  id="laHora" class="oculto">	
 				</div>
 		
 				<div class="form-div">
@@ -278,14 +308,19 @@
 					<input type="text" name="numWa" id="numWa" placeholder="WhatsApp" size="16" class="form-field" required>
 				</div>
 				<div class="form-div">
-					<input type="text" name="nombre" id="nombre" placeholder="Nombre(s)" size="25" class="form-field" required>
+					<input type="text" name="nombre" id="nombre" placeholder="Nombre(s)" size="30" class="form-field" required>
 				</div>
 				<div class="form-div">
-					<input type="textarea" name="consulta" id="consulta" placeholder="Consulta o comentario aquí..." cols="25" required class="form-field">
+					<input type="text" name="email" id="email" placeholder="Correo Electr." size="30" class="form-field" autocomplete="off" required onchange="asignarFechaHora()">
+				</div>				
+				<div class="form-div">
+					<input type="textarea" name="consulta" id="consulta" placeholder="Consulta o comentario aquí..." cols="25" class="form-field">
 				</div>
 				<div class="form-div" id="div-button">
-					<button type="submit" class="form-field">CREAR CUENTA</button>
-				</div>	
+					<button type="submit" class="form-field"
+					>CREAR CUENTA</button>
+				</div>
+				
 			</div>
 		</form>
 	</div>
@@ -295,6 +330,10 @@
 	<section id="blog"></section>
 
 	<section id="footer"></section>
+
+
+	<!--<script src="/static/js/captura_fecha_hora_ip.js"></script>-->
+	<script src="{{url_for('static', path='js/captura_fecha_hora_ip.js')}}" defer></script>
 
 </body>
 </html>
