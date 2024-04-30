@@ -4,6 +4,5 @@ rtf_ocr_claves.json
 __pycache__/
 
 openai-env/
-scripts/
 dinamic/
 config/
