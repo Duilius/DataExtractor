@@ -10,6 +10,7 @@
 	<!--Scripts JavaScript-->
 	<!--<script src="./ini_dataextractor.js"></script>-->
 	<!--<script src="{{url_for( 'static', path='ini_dataextractor.js')}}"></script>-->
+    
 </head>
 <body>
 
@@ -34,12 +35,14 @@
 
         // Manejar la respuesta del servidor (opcional)
         xhr.onreadystatechange = function() {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                //Actualizar el contenido del contenedor con la respuesta del servidor
-                    console.log(xhr.responseText);
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    // Actualizar el contenido del contenedor con la respuesta del servidor
+                    //console.log(xhr.responseText);
                     document.getElementById("contenedor").innerHTML = xhr.responseText;
-            } else {
-                    console.error("Error en la solicitud al servidor");
+                } else {
+                    console.error(`Error en la solicitud al servidor: ${xhr.status} ${xhr.statusText}`);
+                }
             }
         };
 
@@ -54,6 +57,6 @@
     // Llamar a la función cuando se redimensiona la pantalla
     window.addEventListener('resize', enviarAnchoPantalla);
 </script>
-
+<script src="{{url_for('static', path='js/captura_fecha_hora_ip.js')}}" defer></script>
 </body>
 </html>	

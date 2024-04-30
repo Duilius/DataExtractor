@@ -137,13 +137,14 @@ Section: BENEFICIOS
 	width: 80%;
 	height: auto;
 	margin-top: 90px;
+	text-align: center;
 }
 
 #beneficios h3{
 	text-align: center;
 	font-size: 2.75rem;
 	padding-bottom: 2rem;
-	color:white;
+	color:red;
 }
 /*
 #beneficios p{
@@ -180,8 +181,8 @@ Section: BENEFICIOS
 	vertical-align: center;
 }
 
-#beneficios #lista-beneficios #google{ margin: 0px auto; display: grid; justify-items: center;}
-
+#google{text-align: center;}
+#google>h5{color: red;}
 /*
 *********************
 Section: QUIENES-USAN
