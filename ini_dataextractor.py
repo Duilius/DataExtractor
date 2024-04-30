@@ -1,4 +1,5 @@
-#from openai import OpenAI
+#from openai import 
+from user_agents import parse
 import json
 import base64
 import os
@@ -12,6 +13,10 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse,Response,FileResponse, HTMLResponse
 from fastapi import APIRouter, Response, Header, Form, Path, UploadFile
 
+import datetime
+from datetime import datetime, timedelta
+
+
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
@@ -21,6 +26,8 @@ from google.cloud import documentai
 from google.api_core.client_options import ClientOptions
 import os, json
 import claves # Archivo con las claves de acceso a la API de DocumentAI
+
+from scripts.py.modulo_graba_registro import graba_registro
 
 ## Variables de conexión a Base de Datos en Railway
 db_user=os.getenv("DB_USER")
@@ -57,7 +64,7 @@ async def cambiar_contenido(request: Request):
     datos = await request.json()
     ancho_pantalla = datos.get("ancho", 0)
     tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
-   
+    
     return templates.TemplateResponse(f"index-{tipo_dispositivo}.html", {'request':request}, media_type="text/html")
         
     #except Exception as e:
@@ -146,14 +153,75 @@ async def video_demo(request: Request, origen:str ):
 # --------------------------------------------------------------
 
 @app.post('/newUser/')
-async def new_user(request:Request, countryCode:str= Form(),numWa:str= Form(),nombre:str= Form(), consulta:str=Form()):
+async def new_user(request:Request, countryCode:str= Form(), ruc:str=Form(), numWa:str= Form(),nombre:str= Form(), email:str=Form(), consulta:str="", fecha:str=Form(), hora:str=Form()):
     print("el nombre es ----------- ", nombre)
     if len(nombre) > 3:
+
+        # Captura la dirección IP del usuario de la solicitud
+        ip_usuario = request.client.host
+        
+        # Supongamos que 'request' es la solicitud recibida por FastAPI
+        user_agent_string = request.headers.get('User-Agent')
+        user_agent = parse(user_agent_string)
+
+        # Determina el tipo de dispositivo
+        if user_agent.is_mobile:
+            tipo_dispositivo = "Móvil"
+        elif user_agent.is_tablet:
+            tipo_dispositivo = "Tableta"
+        else:
+            tipo_dispositivo = "Escritorio"
+        
+        print("dispositivo ========> ", tipo_dispositivo)
+
+        url_visitada="new_user"
+        boton_visitado="crear cuenta"
+        contactado_por="Duilio"
+
+        #Mensajes para el usuario mientras navega
+        mensaje_info="Bienvenido " + nombre
+        mensaje_aprovecha="Aprovecha"
+        mensaje_referidos="Invita a tus colegas"
+
+        foto_registrado="sin-foto"
+
+        #Genera CLAVE= numWa
+        clave=numWa
+
+        # Diccionario que representa los datos del formulario
+        datos_formulario = {
+            'pais_registrado': countryCode,
+            'ruc_registrado': ruc,
+            'whatsapp_registrado': numWa,
+            'nombres_registrado':nombre,
+            'email_registrado':email,
+            'consulta_registrado':consulta,
+            'ip_registrado':ip_usuario,
+            'fec_registrado':fecha,
+            'hora_registrado':hora,
+            'url_visitada': url_visitada,
+            'boton_visitado' : boton_visitado,
+            'dispositivo_conexion' : tipo_dispositivo,
+            'contactado_por' : contactado_por,
+            'clave_registrado':clave,
+            'mensaje_info':mensaje_info,
+            'mensaje_aprovecha':mensaje_aprovecha,
+            'mensaje_referidos': mensaje_referidos,
+            'foto_registrado':foto_registrado,
+            'fecha_sistema' : fecha,
+            'hora_sistema' : hora
+        }
+
+        #Envía Data a GRABAR en Tabla "registrados"
+        confirma_registro = graba_registro(datos_formulario)
 
         print("Código País ===> ", countryCode)
         print("N° WhatsApp ===> ", numWa)
         print("Nombres ===> ", nombre)
+        print("Correo Electr. ===> ", email)
         print("Consulta ===> ", consulta)
+        print("La Fecha es ====> ", fecha)
+        print("La hora es ====> ", hora)
         #print("La Clave ===> ", clave)
 
         return RedirectResponse("/servicios")

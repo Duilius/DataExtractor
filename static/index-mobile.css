@@ -205,7 +205,9 @@ Section: BENEFICIOS
 }
 
 #beneficios #lista-beneficios #google{
+	padding-top: 20px;
 	color:#fff;
+	text-align: center;
 }
 
 
@@ -284,10 +286,14 @@ Section: FAQ's
 }
 
 .faqs{
+	font-family: Onest; font-size: 80%;
 	padding:10px;
 	border:1px solid gray;
 }
 
+.rpta{font-family: Onest; font-size:85%; font-weight: 500; letter-spacing: 0.1rem; word-spacing: 2px; line-height: 18px;
+	background: #555; padding: 6px; border:1px solid #262626; color:#fff;
+}
 
 /*
 *********************
@@ -423,20 +429,23 @@ Section: VIDEOS-DEMO
 *Section para ALERTAS y MENSAJES
 *******************************/
 
-section #new-user{
-	background: red; width: 60%; height: 80px; border:1px solid wheat;	
+#new-user{
+	background: yellowgreen; width: 80%; height: 110px; border:1px solid wheat;	
 	margin:0px auto;
 	border-radius: 1px 1px 29px 1px;
 }
+#new-user h2{color:#262626; padding: 4px 0px 4px 8px;}
+#new-user p{color: #fff; padding: 4px 0px 4px 8px;text-shadow: 1px 1px 2px rgba(255,255,255,0.75);}
 
 
-form{
+
+#formulRegistro{
 	margin: 30px auto;
 	border-radius: 1px 1px 29px 1px;
 	/*border: 0.005em solid rgba(255,255,255,0.0711);*/
 	border: 1.05em solid rgba(249,205,72,0.9711);
 	box-shadow: rgba(0, 0, 0, 0.95) 0px 5px 55px;
-	width: 60%;
+	width: 100%;
 	height: auto;
 	padding: 20px 20px 20px 20px;
 }
@@ -482,7 +491,8 @@ input::placeholder{
 	color:#010505;
 	padding-left: 10px;
 }
-
+/*ESTILO PARA CAMPOS O ELEMENTOS OCULTOS*/
+.oculto{background: transparent; color:white;width: 50px; border:1px solid transparent;}	
 /*
 # Estilo común de Sections
 */
