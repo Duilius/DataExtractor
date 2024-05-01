@@ -395,7 +395,7 @@ Section: VIDEOS-DEMO
 *Section para ALERTAS y MENSAJES
 *******************************/
 
-section#new-user{
+#new-user{
 	display: grid;
 	background: red; width: 60%; height: 80px; border:1px solid wheat;	
 	margin:0px auto;
