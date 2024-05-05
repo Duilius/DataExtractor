@@ -25,14 +25,14 @@
 
 	<body>
 
-	<section id="mobile-pre-head">Demostración GRATIS ... <span> clic aquí ! </span></section>
+	<section id="mobile-pre-head">Demostración GRATIS ... <span> <a href="#new-user">clic aquí !</a> </span></section>
 
 	<section id="head">
 		<div id="logo-img">
 			<a href='/'><img width="45" height="45" src="{{url_for('static', path='dniextract/img/icons8-queen-bee-50.png')}}"></a>
 		</div>
 		<div id="logo_txt"><a href='/'><span id="data">Data</span><br><span id="extractor">Extractor</span></a></div>	
-		<div id="icon-menu"><i class='bx bx-menu bx-md'></i></div>
+		<div id="icon-menu"><!--<i class='bx bx-menu bx-md'></i>--></div>
 	</section>
 
 	<section id="titulo-img">
@@ -255,6 +255,7 @@
 		<details name="faqs">				
 			<summary class="faqs">¿Qué soporte ofrecen?</summary>
 				<p class="rpta">Brindamos soporte técnico de calidad y asistencia para ayudarte a maximizar los beneficios de Data Extractor.</p>
+				<p>Nuestro equipo trabaja en coordinación constante con el Equipo de Google, lo que garantiza respuestas eficientes e inmediatas, siempre.</p>
 		</details>
 	</section>
 
@@ -268,7 +269,7 @@
 			</ul>
 		</div>
 		<div id="videos">
-			<video class="el-video" poster="{{url_for('static', path='../static/img/poster-dni.jpeg')}}" autoplay="true" controls src="{{url_for('static', path='/img/demo-dni.mp4')}}"></video>
+			<video class="el-video" poster="{{url_for('static', path='../static/img/poster-dni.jpeg')}}" autoplay="false" controls src="{{url_for('static', path='/img/demo-dni.mp4')}}"></video>
 		</div>
 	</section>
 

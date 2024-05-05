@@ -1,6 +1,6 @@
 def determinar_tipo_dispositivo(ancho_pantalla):
-    breakpoint_mobile = 600
-    breakpoint_tablet = 1000
+    breakpoint_mobile = 2400
+    breakpoint_tablet = 2400
 
     print("ANCHO PANTALLA =============> ", ancho_pantalla)
     #ancho_pantalla = int(ancho_pantalla)
