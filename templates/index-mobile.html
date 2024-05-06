@@ -25,6 +25,17 @@
 
 	<body>
 
+		<nav id="vertical-menu">
+			<ul>
+			  <li><a href="/blog" hx-trigger='click' hx-get='/blog' target="_new">Blog</a></li>
+			  <li><a href="/servicios">Servicios</a></li>
+			  <li><a href="/contacto">Contacto</a></li>
+			  <li><a href="/precios">Precios</a></li>
+			</ul>
+		  </nav>
+		  
+		  		
+
 	<section id="mobile-pre-head">Demostración GRATIS ... <span> <a href="#new-user">clic aquí !</a> </span></section>
 
 	<section id="head">
@@ -32,7 +43,9 @@
 			<a href='/'><img width="45" height="45" src="{{url_for('static', path='dniextract/img/icons8-queen-bee-50.png')}}"></a>
 		</div>
 		<div id="logo_txt"><a href='/'><span id="data">Data</span><br><span id="extractor">Extractor</span></a></div>	
-		<div id="icon-menu"><!--<i class='bx bx-menu bx-md'></i>--></div>
+		<div id="menu-toggle" onclick="toggleMenu()">
+			<i class='bx bx-menu bx-md'></i>
+		</div>
 	</section>
 
 	<section id="titulo-img">
@@ -47,7 +60,7 @@
 		
 		</div>
 		<div id="fac" class="servicios" ><h3 hx-trigger='click' hx-get='/facturas'><a href="/facturas">FACTURAS</h3></a>
-			<p>Extrae datos de Boletas, Facturas, Tickests y actualiza tu Base de Datos o Libros Contables...</p>
+			<p>Extrae datos de Boletas, Facturas, Tickets y actualiza tu Base de Datos o Libros Contables...</p>
 			<span>CAPTURA Y PROCESA</span>
 		</div>
 		<div id="inf" class="servicios" ><h3 hx-trigger='click' hx-get='/info-extractor'><a href="/info-extractor">INFO</a></h3>
@@ -57,7 +70,7 @@
 
 		<div id="inventario">
 			<h2>INVENTARIO FÍSICO PATRIMONIAL</h2>
-			<p>Instituciones Públicas <span>Cualquier sector/tamaño</span></p>
+			<p>Instituciones Públicas <span>de cualquier sector y tamaño</span></p>
 			<p>Mediana Empresa<span> Cualquier rubro</span></p>
 			<p>Gran Empresa<span> Dentro o fuera del país</span></p>
 			<p>Mega	Empresa<span> Dentro o fuera del país</span></p>
@@ -80,17 +93,25 @@
 		</ul>
 
 		<h4>SECTOR PRIVADO</h4>
-		<ul id="privado">
-			<li>Gobierno Inteligente: reduce costos</li>
-			<li>Destaca la Institución: mayor presupuesto</li>
-			<li>Destacan los funcionarios: mayor respaldo</li>
-			<li>La Comunidad se beneficia !</li>
-		</ul>
-		<p>Con Inteligencia Artificial y muy poca inversión: avanza en el mercado, te posicionas mejor, ganas eficiencia, reduces tiempos, minimizas costos, ofreces mejor servicio, no te equivocas, resuelves muy rápido los problemas de tus clientes, ....<br> Qué esperas ?</p>
+		<p>Data Extractor ofrece una solución innovadora basada en inteligencia artificial diseñada para empresas de todos los tamaños y sectores. Nuestra plataforma permite extraer, procesar y registrar datos de manera rápida y precisa, proporcionando beneficios tangibles para tu empresa.</p>
+		<br>
+		<details name="leer-mas">
+			<summary class="leer-mas">Leer más ...</summary>
+				<ul id="privado">
+					<li>Reduce de costos: al optimizar procesos de captura y registro de datos</li>
+					<li>Minimiza errores: al eliminar tareas manuales</li>
+					<li>Aumenta eficiencia: automatiza procesos y usa menos recursos</li>
+					<li>Integración sin problemas: con sistemas y bases de datos existentes !</li>
+					<li>Soporte personalizado: garantizamos que obtengas el máximo valor de Data Extractor.</li>
+				</ul>
+		</details>
+
+		<br>
+		<p>Con Inteligencia Artificial y muy poca inversión: avanza en el mercado, te posicionas mejor, ganas eficiencia, reduces tiempos, minimizas costos, ofreces mejor servicio, no te equivocas, resuelves muy rápido los problemas de tus clientes, ....<br> Qué estás esperando ?</p>
 		<br>
 		<h6>No usar la Inteligencia Artificial te puede sacar del mercado, muy pronto.</h6>
 		<br>
-		<h2>Benficiate de ...</h2>
+		<h2>Benfíciate de ...</h2>
 		
 		<div id="lista-beneficios">
 			<div class="div-li">
@@ -98,7 +119,7 @@
 					<p>CERO ERRORES !</p>
 				</div>
 				<div class="div-p">
-					<p>Modelos y proesos de Inteligencia Artificial en constante actualización</p>
+					<p>Modelos y procesos de Inteligencia Artificial en constante actualización</p>
 					
 				</div>
 			</div>
@@ -201,7 +222,7 @@
 	</section>
 
 	<section id="faqs">
-		<h3>Preguntas Frecuentes</h3>
+		<h3>Preguntas Frecuentes sobre DataExtractor</h3>
 		<details name="faqs">
 			<summary class="faqs">¿Qué es DataExtractor?</summary>
 				<p class="rpta">Data Extractor es una solución de <b>software basada en inteligencia artificial</b> que permite extraer, procesar y registrar información de <u>DNIs</u>, <u>pasaportes</u>, <u>facturas</u>, <u>recibos</u>, y <u>etiquetas de inventario de bienes</u> en <i>instituciones públicas o empresas privadas</i>.</p>
@@ -217,7 +238,7 @@
 		</details>
 		<details name="faqs">
 			<summary class="faqs">¿Data Extractor me puede ayudar a vender más?</summary>
-				<p class="rpta">Sí, Data Extractor ayuda a empresas de todo tamaño y rubro a incrementar ventas sin destinar más recursos (trabajo ni tiempo). Regístrate y preguntános <a href='#'>aquí</a>.
+				<p class="rpta">Sí, Data Extractor ayuda a empresas de todo tamaño y rubro a incrementar ventas sin destinar más recursos (trabajo ni tiempo). <a href="#new-user">Regístrate y preguntános aquí</a>.
 				</p>
 		</details>		
 		<details name="faqs">				
@@ -226,7 +247,7 @@
 		</details>
 		<details name="faqs">				
 			<summary class="faqs">¿Puedo extraer otros tipos de datos?</summary>
-				<p class="rpta">Sí, solo hemos mencionado los más comunes. Hay quienes extraern datos de Contratos, Minutas, Declaraciones, Informes, Reportes, Pólizas, etc. Regístrate y consulta <a href="#">aquí.</a></p>
+				<p class="rpta">Sí, solo hemos mencionado los más comunes. Hay quienes extraern datos de Contratos, Minutas, Declaraciones, Informes, Reportes, Pólizas, etc.<a href="#new-user">Regístrate y consulta aquí.</a></p>
 		</details>		
 		<details name="faqs">				
 			<summary class="faqs">¿Es seguro usar Data Extractor?</summary>
@@ -250,12 +271,12 @@
 		</details>
 		<details name="faqs">				
 			<summary class="faqs">¿Puedo probar Data Extractor antes de comprar?</summary>
-				<p class="rpta">Sí, ofrecemos una prueba gratuita de Data Extractor para que puedas experimentar sus beneficios antes de tomar una decisión.</p>
+				<p class="rpta">Sí, ofrecemos una prueba gratuita de Data Extractor para que puedas experimentar sus beneficios antes de tomar una decisión. <a href="#new-user">!Regístrate aquí¡</a></p>
 		</details>
 		<details name="faqs">				
 			<summary class="faqs">¿Qué soporte ofrecen?</summary>
-				<p class="rpta">Brindamos soporte técnico de calidad y asistencia para ayudarte a maximizar los beneficios de Data Extractor.</p>
-				<p>Nuestro equipo trabaja en coordinación constante con el Equipo de Google, lo que garantiza respuestas eficientes e inmediatas, siempre.</p>
+				<p class="rpta">Brindamos soporte técnico de calidad y asistencia para ayudarte a maximizar los beneficios de Data Extractor.<br><br>
+				Nuestro equipo trabaja en coordinación constante con el Equipo de Google, lo que garantiza respuestas eficientes e inmediatas, siempre.</p>
 		</details>
 	</section>
 
@@ -273,9 +294,14 @@
 		</div>
 	</section>
 
+	
+	<div id="cta"><h2>Regístrate GRATIS<br> para una Demostración</h2></div>
+
+
 	<div id="new-user" >
+
 		<h2>Descubre cómo trabajan los mejores !</h2>
-		<p>Lideres y colaboradores que brillan usan Inteligencia Artificial</p>
+		<p>Los Lideres y Funcionarios que brillan usan Inteligencia Artificial</p>
 
 		<form method="post" action="/newUser" id="formulRegistro">
 			<div class="form-container">
@@ -334,6 +360,8 @@
 
 
 	<!--<script src="/static/js/captura_fecha_hora_ip.js"></script>-->
+	
+	
 	<script src="{{url_for('static', path='js/captura_fecha_hora_ip.js')}}" defer></script>
 
 </body>

@@ -1,0 +1,107 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  header, main, footer {
+    padding: 20px 0;
+  }
+  
+  header {
+    background-color: #007bff;
+    color: #fff;
+    text-align: center;
+  }
+  
+  .logo img {
+    height: 50px;
+  }
+  
+  .blog-title h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+  
+  .blog-title p {
+    font-size: 18px;
+  }
+  
+  main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+  }
+  
+  .blog-post {
+    width: 50% - 20px;
+    margin-bottom: 40px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+  }
+  
+/* Nuevos estilos para los artículos en tabletas horizontales, escritorio y anchos mayores a 900px */
+@media (min-width: 769px) {
+    main {
+        flex-wrap: nowrap; /* Evita que los artículos se envuelvan a la siguiente línea */
+      }
+    .blog-post {
+      width: 50% - 20px; /* Cambiamos el ancho de los artículos para que ocupen el 50% del contenedor */
+    }
+  }
+  
+  /* Nuevos estilos para anchos mayores a 900px */
+  @media (min-width: 900px) {
+    main {
+      flex-wrap: nowrap; /* Evita que los artículos se envuelvan a la siguiente línea */
+    }
+  
+    .blog-post {
+      width: 40% - 20px; /* Cambiamos el ancho de los artículos para que ocupen el 50% del contenedor */
+    }
+  }
+  
+  .blog-post:hover {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .image img {
+    width: 100%;
+    height: auto;
+  }
+  
+  .content {
+    padding: 20px;
+  }
+  
+  .content h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .content p {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .metadata {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .read-more {
+    display: block;
+    font-size: 16px;
+    color: #007bff;
+    text-decoration: none;
+    margin-top: 10px;
+  }
+  
