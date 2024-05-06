@@ -16,6 +16,53 @@
 	}
 }
 
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+  }
+  
+  #menu-toggle {
+	display: block;
+	margin: 20px;
+	padding: 10px 20px;
+	background-color:transparent;
+	color: #fff;
+	border: none;
+	cursor: pointer;
+  }
+  
+  #vertical-menu {
+	width: 200px;
+	height: 100vh;
+	position: fixed;
+	top: 0;
+	left: -200px;
+	background-color: #262626;
+	transition: left 0.3s ease;
+  }
+  
+  #vertical-menu ul {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+  }
+  
+  #vertical-menu ul li {
+	padding: 10px 20px;
+  }
+  
+  #vertical-menu ul li a {
+	text-decoration: none;
+	color: yellow;
+  }
+  
+  #vertical-menu ul li a:hover {
+	color: #007bff;
+  }
+  
+
+
 body{
 	/*background: #262626;*/
 	background-color: rgba(26, 26, 26, 1.0);
@@ -195,6 +242,8 @@ Section: BENEFICIOS
 #beneficios ul#privado{list-style-type: square; background: rgba(0,0,0,0.19);
 	padding: 20px; color: yellow; font-weight: 100; font-size: 88%;line-height: 25px;}
 
+#beneficios .leer-mas{height: 20px; padding-top: 5px; color:white; }
+
 .beneficios, .div-p{
 	width: 98%;
 	border: 1px solid whitesmoke;
@@ -310,6 +359,7 @@ Section: FAQ's
 .rpta{font-family: Onest; font-size:85%; font-weight: 500; letter-spacing: 0.1rem; word-spacing: 2px; line-height: 18px;
 	background: #555; padding: 6px; border:1px solid #262626; color:#fff;
 }
+.rpta a{color:yellow; text-decoration: none; font-size: 75%;}
 
 /*
 *********************
@@ -440,6 +490,16 @@ Section: VIDEOS-DEMO
 	height: 180px;
 }
 
+/*********************************
+*Section CTA (llamado a la acción)
+*********************************/
+#cta{
+	width: 80%; 
+	margin:0px auto;
+	color:white;
+	text-align: center;
+	margin-bottom: 20px;
+}
 
 /*******************************
 *Section para ALERTAS y MENSAJES

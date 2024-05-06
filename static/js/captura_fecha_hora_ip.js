@@ -10,3 +10,12 @@ function asignarFechaHora() {
     document.getElementById('laHora').value = hora;
 }
 
+function toggleMenu(){
+    
+    var menu = document.getElementById('vertical-menu');
+    if (menu.style.left === '-200px') {
+        menu.style.left = '0';
+    } else {
+        menu.style.left = '-200px';
+    }
+}

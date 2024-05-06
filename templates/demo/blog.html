@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog</title>
+<link rel="stylesheet" href="{{url_for( 'static', path='blog.css')}}">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="logo">
+        <a href='/'><img width="45" height="45" src="{{url_for('static', path='dniextract/img/icons8-queen-bee-50.png')}}"></a>
+    </div>
+    <div class="blog-title">
+      <h1>Blog de Ejemplo</h1>
+      <p>Explorando el mundo a través de la escritura</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <article class="blog-post">
+      <div class="image">
+        <img src="imagen1.jpg" alt="Imagen del artículo">
+      </div>
+      <div class="content">
+        <h2>Título del Artículo 1</h2>
+        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam et ipsum eget tortor vestibulum consequat. Vestibulum vel sapien at est malesuada porta.</p>
+        <p class="metadata">Fecha: 05 de mayo de 2024 | Autor: Juan Pérez</p>
+        <a href="#" class="read-more">Leer más ...</a>
+      </div>
+    </article>
+
+    <article class="blog-post">
+      <div class="image">
+        <img src="imagen2.jpg" alt="Imagen del artículo">
+      </div>
+      <div class="content">
+        <h2>Título del Artículo 2</h2>
+        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam et ipsum eget tortor vestibulum consequat. Vestibulum vel sapien at est malesuada porta.</p>
+        <p class="metadata">Fecha: 10 de mayo de 2024 | Autor: María Gómez</p>
+        <a href="#" class="read-more">Leer más ...</a>
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <p>Derechos de autor © 2024 Blog de Ejemplo. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+</body>
+</html>

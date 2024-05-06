@@ -333,3 +333,8 @@ async def upload_fotos(request: Request, fotos: List[UploadFile]):
             # Manejar otras excepciones de lectura/escritura
             lectura_archivo=e
             return templates.TemplateResponse("partial_yape.html", {"request": request, "lectura_archivo":lectura_archivo})
+
+@app.get('/blog')
+async def blog(request:Request):
+
+    return templates.TemplateResponse("demo/blog.html",{'request':request})
