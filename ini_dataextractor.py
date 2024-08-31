@@ -67,7 +67,8 @@ async def cambiar_contenido(request: Request):
     ancho_pantalla = datos.get("ancho", 0)
     tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
     
-    return templates.TemplateResponse(f"index-{tipo_dispositivo}.html", {'request':request}, media_type="text/html")
+    #return templates.TemplateResponse(f"index-{tipo_dispositivo}.html", {'request':request}, media_type="text/html")
+    return templates.TemplateResponse("index-mobile.html", {'request':request}, media_type="text/html")
         
     #except Exception as e:
     #        print("qué será =====> ", e)
