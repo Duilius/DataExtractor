@@ -19,3 +19,15 @@ function toggleMenu(){
         menu.style.left = '-200px';
     }
 }
+
+
+function fotoChica(input) {
+    alert("ssssssssssssss");
+            const foto_chica = document.getElementById("foto-empleado");
+
+            if (input.value === "") {
+                foto_chica.src = "{{ url_for('static', path='img/foto-no-hallado.jpeg') }}";
+            } else {
+                foto_chica.src = "{{ url_for('static', path='dniextract/img/') }}" + input.value + ".jpeg";
+            }
+}

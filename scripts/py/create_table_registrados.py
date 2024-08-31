@@ -20,6 +20,7 @@ Base = declarative_base()
 class Registrados(Base):
     __tablename__ = 'registrados'
     id_registrado = Column(Integer, primary_key=True,autoincrement=True)
+    dni_usuario = Column(String(8))
     pais_registrado = Column(String(25))
     ruc_registrado = Column(String(11))
     whatsapp_registrado = Column(String(9))
@@ -38,6 +39,9 @@ class Registrados(Base):
     mensaje_aprovecha= Column(String(255))
     mensaje_referidos= Column(String(255))
     foto_registrado= Column(String(150))
+    area_usuario= Column(String(255))
+    area_jefe_usuario= Column(String(255))
+    jefe_usuario = Column(String(100))
     fecha_sistema = Column(Date)
     hora_sistema = Column(Time)
 

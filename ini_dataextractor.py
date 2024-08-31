@@ -10,7 +10,7 @@ from typing import Optional, List
 import uvicorn
 import fastapi
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import RedirectResponse,Response,FileResponse, HTMLResponse
+from fastapi.responses import RedirectResponse,Response,FileResponse, HTMLResponse,JSONResponse
 from fastapi import APIRouter, Response, Header, Form, Path, UploadFile
 
 import datetime
@@ -27,7 +27,9 @@ from google.api_core.client_options import ClientOptions
 import os, json
 import claves # Archivo con las claves de acceso a la API de DocumentAI
 
+from scripts.py.modulo_consulta_registro import consulta_registro
 from scripts.py.modulo_graba_registro import graba_registro
+from scripts.py.modulo_verify_username import busca_username
 
 ## Variables de conexión a Base de Datos en Railway
 db_user=os.getenv("DB_USER")
@@ -334,6 +336,36 @@ async def upload_fotos(request: Request, fotos: List[UploadFile]):
             lectura_archivo=e
             return templates.TemplateResponse("partial_yape.html", {"request": request, "lectura_archivo":lectura_archivo})
 
+#######################
+# /busca-usuarios
+#######################
+@app.post('/busca-usuarios')
+async def busca_usuarios(request:Request, busca_usuario:str=Form()):
+    print("Se busca a : ====> ", busca_usuario)
+    valor = busca_usuario
+    users =consulta_registro(valor)
+    print("Resultado =====>", users)
+
+    return templates.TemplateResponse("demo/usuarios_responsables.html",{"request":request,"users":users})
+
+#######################
+# Ruta para verificar si el username existe
+#######################
+@app.post("/verify-username")
+async def verify_username(username:str=Form(...)):
+    print("Usuario a loguearse ========>", username)
+    data = busca_username(username)
+    
+    #return JSONResponse(content=response_data)
+
+    print("la data contiene =====>  ", data)
+
+    if data["existe"] == True:
+        print("Resultado de búsqueda ==========>", data["id"], " --- Nombres ===>", data["name"])
+    else:
+        print("usuario no encontrado")
+
+    return RedirectResponse("/servicios")
 @app.get('/blog')
 async def blog(request:Request):
 

@@ -1,0 +1,116 @@
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Estilos del Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s;
+}
+.modal-content h2{
+    color:#262626;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.close {
+    color: red;
+    float: right;
+    font-size: 2rem;
+    font-weight: bold;
+    border:1px dotted red;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 5em;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin: 10px 0 5px;
+    position: relative;
+    text-align: left;
+    color: #262626; font-size: 0.75rem; font-weight: 700;
+}
+
+input {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+input:hover{
+    border: 1px solid #007BFF;
+}
+button[type="submit"] {
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.options {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.options a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.options a:hover {
+    text-decoration: underline;
+}
+
+.password{
+    font-size: 0.55rem;
+}
+
+/*ESTILOS DE #div.messages: ALERTAS O MENSAJES AL LOGUEARSE*/
+.message{ font-size: 0.75rem;}
+#passwordMessage{ padding-bottom: 20px;}
+
+.oculto{display: none;}
+
+#usernameMessage{color:#000; font-size: 0.75em;}
+#passwordMessage{color:#000; font-size: 0.75em;}

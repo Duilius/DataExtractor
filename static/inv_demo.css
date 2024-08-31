@@ -1,0 +1,17 @@
+#tipo-demo{width: 100%;; text-align: left; padding-top: 4px;padding-bottom: 10px;}
+
+#tipo-demo form #busca-usuario{background: #262626; color:aqua; border:1px solid aqua;border-radius: 3px; height: 25px;}
+
+#data-empleado{border:1px solid aqua;
+    display: grid;
+    grid-auto-flow: column;
+    padding: 6px;
+}
+
+#tipo-demo #data-empleado #texto-empleado{ border: 1px solid yellow; width: 95%; height: 120px;}
+#tipo-demo #data-empleado #texto-empleado p{ margin-left: 6px;line-height: 5px;}
+
+#tipo-demo #data-empleado #img-empleado{ border:1px solid white; width: 5%; height: 90px;}
+#tipo-demo #data-empleado #img-empleado #foto-empleado{ min-width: 80px; max-height: 120px;}
+
+/*#foto-empleado{min-width: 80px; max-height: 120px;}*/

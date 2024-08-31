@@ -1,0 +1,47 @@
+{% if users %}
+    <!--{{ users }}-->
+
+	<div id="cerrar" 
+	_="
+	on click add .oculto to #lista-usuarios
+	then put '' into #busca_usuario.value
+	"><i class='bx bx-x-circle cerrar' style='color:#cfc8c8'></i></div>
+	{% for user in users %}
+
+<ul class="lista-empleados">
+	<li class="empleado">
+	  <div class="datos-empleado">
+		<p><u>Usuario responsable</u>:<span class="nombres">{{ user[1] }}</span></p>
+		<p>Código: {{ user[0] }} | &nbsp; <span class="sede">Sede: &nbsp;ABCDEF</span></p>
+		<p><span class="tag-area">Área del usuario</span>: <span class="area">{{ user[2] }}</span></p>
+		<p><u>Jefe del usuario</u></p>
+		<p>Nombres del Jefe: {{ user[4] }}</p>
+		<p>Área del Jefe del Empleado:  {{ user[3] }}</p>
+	  </div>
+	  <input type="hidden" id="codigo-{{ user[0] }}" value="{{ user[0] }}">
+	  <input type="hidden" id="nombres-{{ user[0] }}" value="{{ user[1] }}">
+	  <input type="hidden" id="gerencia-{{ user[0] }}" value="{{ user[2] }}">
+
+	  <div class="foto-empleado">
+		<img src="{{ url_for('static', path='dniextract/img/' + user[0] + '.jpeg') }}" width="100%">
+		<button class="seleccionar"
+		_="
+		on click
+			put #codigo-{{ user[0] }}.value into #codigo.value then
+			put #nombres-{{ user[0] }}.value into #apellidos.value then
+			put #gerencia-{{ user[0] }}.value into #gerencia.value then
+			put '' into #busca_usuario.value then
+			put '/static/dniextract/img/' + {{user[0]}} + '.jpeg' into #foto-empleado.src then
+			add .oculto to #lista-usuarios
+		"
+		>
+		<i class='bx bx-check-double' style='color:#25f10f'></i>Seleccionar</button>
+	  </div>
+	  
+	</li>
+	<!-- Otros elementos de la lista aquí -->
+	{% endfor %}
+  
+  {% else %}
+	<p>Ningún usuario para asignar !</p>
+{% endif %}

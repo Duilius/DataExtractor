@@ -1,0 +1,73 @@
+.lista-empleados {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    height: 450px;
+    /*overflow-y: auto;*/
+  }
+  
+  .empleado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .datos {
+    display: flex;
+    align-items: center;
+  }
+  
+  .datos-empleado {
+    margin-right: 20px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 10px;
+  }
+  
+  .datos-empleado p {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #999;
+  }
+  
+  .foto-empleado {
+    flex-shrink: 0;
+    width: 120px; /* Ancho fijo para la foto */
+    
+  }
+  
+  .foto-empleado img {
+    width: 100%;
+    height: auto;
+    border-radius: 20%; /* Para hacer un borde redondeado */
+  }
+  
+  .lista-empleados> .empleado> .foto-empleado> button.seleccionar {
+    background-color: yellowgreen;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .lista-empleados> .empleado> .foto-empleado> button.seleccionar:hover {
+    background-color: #f10c0c;
+    cursor:pointer
+  }
+  
+  .sede{background-color: yellow; padding: 2px; border-radius: 2px; font-size: 0.75em; font-weight: 500;}
+
+  .tag-area{text-decoration: underline; text-decoration-color: yellow;}
+  .area{background-color: yellow; padding: 2px; border-radius: 2px; font-size: 0.75em; font-weight: 500;}
+  .nombres{background-color: white; padding: 2px; border-radius: 2px; font-size: 0.75em; font-weight: 500; color:black;}
+
+  #cerrar{font-size: 1.25em; position: fixed; right: 5.4%; margin-top: 2px; text-align: center; padding: 5px;}
+  #cerrar:hover{background: yellow; border-radius: 50%;}
+  .cerrar:hover{color:red;cursor: pointer;} 
+
+  .cierra-lista-empleados{display: none;}
