@@ -2,6 +2,7 @@
 rtf_ocr_claves.json
 #pycache
 __pycache__/
+claves.py
 
 openai-env/
 dinamic/
