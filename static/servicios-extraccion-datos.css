@@ -1,5 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@200&display=swap');
 body{background: #262626;}
-h1{color: white;}
+h1{color: white;font-size: 0.95em; text-align: center;text-transform:uppercase; font-family: Onest;}
 
 #los-servicios{
     display: grid;
@@ -17,6 +18,9 @@ h1{color: white;}
     border:1px solid rgba(255,255,255,0.311);
     padding:10px; border-radius: 4px;
 }
+
+.los-servicios a{font-family: Onest; font-size: 0.65em; text-decoration: none;}
+
 .los-servicios h2{
     color:palegreen;
     letter-spacing: 1px;
@@ -26,11 +30,11 @@ h1{color: white;}
 
 #form-servicio{
     width: 100%;
-    height: 600px;
+    height: 550px;
     margin-top: 5px;
     border:1px solid rgba(255,255,255,0.5);
     display: grid;
-    place-content: center;
+    /*place-content: center;*/
     justify-items: center;
 }
 
@@ -41,16 +45,29 @@ h1{color: white;}
 #com-h3{color:green;}
 #car-h3{color:orange;}
 
+#tipo-demo{background: #161616;border:1px solid rgba(55,155,55,0.5); width: 0 auto; height: auto;
+    margin-top: 2px;padding-left: 4px; padding-right: 4px;}
+
 #inv-img-subida{
     font-size: 10rem;
     color:white;
     border: 6px solid whitesmoke; border-radius: 10px;
-    width: 94%; height: 400px;
+    width: 94%; height: 250px;
     max-width: 94%; /* Establece el ancho máximo del contenedor */
     max-height:400px; /* Establece la altura máxima del contenedor */
     overflow: scroll; /* Oculta cualquier parte de la imagen que exceda los límites del contenedor */
     text-align: center;
+    margin-top: 25px;
 }
+
+
+/**************************/
+#lista-usuarios{ background: #555; z-index: 10000; color: yellow;
+                    width: 90%; min-height: 180px; padding: 2px 5px;
+                    overflow-y: auto; position: absolute; top:160px;}
+.oculto{display: none;}
+.mostrar{display: block;}
+/**************************/
 
 #botonera{background: cyan;}
 #descripcion p{color:white;}

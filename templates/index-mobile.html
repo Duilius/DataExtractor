@@ -6,6 +6,7 @@
 
 		<!--<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>-->
 		<script src="https://unpkg.com/htmx.org@1.8.4"></script>
+		<script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 		<!--<link rel="stylesheet" href="../css/asmr_style.css">-->
@@ -15,8 +16,8 @@
 		<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 		<!-- Style DESKTOP del index/home/start/iniio de DataExtractor-->
 		<link rel="stylesheet" href="{{url_for( 'static', path='index-mobile.css')}}">
-		<!--<link rel="stylesheet" href="index-mobile.css">-->
-
+		<link rel="stylesheet" href="{{url_for( 'static', path='ventana_login.css')}}">
+		<link rel="stylesheet" href="{{url_for( 'static', path='lista_empleados.css')}}">
 		
 		<title>DNIExtractor - Demo</title>
 		<!---->
@@ -27,14 +28,13 @@
 
 		<nav id="vertical-menu">
 			<ul>
-			  <li><a href="/blog" hx-trigger='click' hx-get='/blog' target="_new">Blog</a></li>
-			  <li><a href="/servicios">Servicios</a></li>
-			  <li><a href="/contacto">Contacto</a></li>
-			  <li><a href="/precios">Precios</a></li>
+				<li><a href="/blog" hx-trigger='click' hx-get='/blog' target="_new">Blog</a></li>
+				<li><a href="/servicios">Servicios</a></li>
+				<li><a href="/contacto">Contacto</a></li>
+				<li><a href="/precios">Precios</a></li>
 			</ul>
-		  </nav>
-		  
-		  		
+		</nav>
+
 
 	<section id="mobile-pre-head">Demostración GRATIS ... <span> <a href="#new-user">clic aquí !</a> </span></section>
 
@@ -49,8 +49,47 @@
 	</section>
 
 	<section id="titulo-img">
+		<div id="consultar">
+			<h6>Deja tu consulta y <BR>crea tu cuenta, GRATIS !</h6>
+			<span ><a href="#new-user">CONSULTAR</a></span>
+		</div>
 		<!--<p>Data - EXTRACTOR !</p>-->
-		<img src="{{url_for( 'static', path='img/iman-amarillo-1.jpeg')}}" width="40%">
+		<img src="{{url_for( 'static', path='img/iman-amarillo-1.jpeg')}}" width="70%">
+		<br>
+
+		<div id="ingresar">
+			<h6>Ya tienes cuenta:</h6>
+			<button id="loginBtn" onclick="abreModal()">INGRESAR</button>
+
+			<!--VENTANA MODAL-->
+			<div id="loginModal" class="modal">
+				<div class="modal-content">
+					<span class="close">x</span>
+					<h2>Inicio de Sesión</h2>
+					<form id="loginForm" method="post" action="/verify-username">
+						<label for="username">Usuario:</label>
+						<input type="text" id="username" name="username" required placeholder="Email ..."
+						hx-post="/verify-username" autocomplete="on"
+						hx-trigger="keyup changed delay:1000ms"
+						hx-target="#usernameMessage"
+						onblur="verificaUserCorreo()"
+						>
+						<div id="usernameMessage" class="message"></div>
+
+						<label for="password">Contraseña:</label>
+						<input type="password" id="password" name="password" required autocomplete="off" placeholder="Clave: N° WhatsApp" onfocus="avisaFormatoClave()" onkeyup="soloDigitos()" onblur="verificaPassword()">
+						<div id="passwordMessage" class="message"></div>
+						
+						<button id="boton_registro" type="submit">Iniciar Sesión</button>
+					</form>
+					<div class="options">
+						<a href="#" id="forgotPassword" class="password">Olvidé la contraseña</a>
+						<a href="#" id="changePassword" class="password">Cambiar de contraseña</a>
+					</div>
+				</div>
+			</div>
+		
+		</div>
 	</section>
 
 	<section id="servicios">
@@ -302,7 +341,7 @@
 
 		<h2>Descubre cómo trabajan los mejores !</h2>
 		<p>Los Lideres y Funcionarios que brillan usan Inteligencia Artificial</p>
-
+		<!--
 		<form method="post" action="/newUser" id="formulRegistro">
 			<div class="form-container">
 				<div class="form-div">
@@ -350,6 +389,7 @@
 				
 			</div>
 		</form>
+	-->
 	</div>
 
 	<section id="ver-mas"></section>
@@ -363,6 +403,7 @@
 	
 	
 	<script src="{{url_for('static', path='js/captura_fecha_hora_ip.js')}}" defer></script>
-
+	<script src="{{url_for('static', path='js/ventana_login.js')}}" defer></script>
+	
 </body>
 </html>

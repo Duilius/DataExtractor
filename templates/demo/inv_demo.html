@@ -13,8 +13,38 @@
 </head>
 <body>
     <div id="tipo-demo">
-        <h3 id="inv-h3">Inventario - Demo</h3>
+        <form>
+            <input type="search" name="busca_usuario" size="20" id="busca_usuario" placeholder="Código o Apellido - trabajador"
+            hx-post="/busca-usuarios"
+            hx-trigger="keyup changed delay:1000ms"
+            hx-target="#lista-usuarios"
+            _="on keyup 
+                if my.value.length is greater than 2
+                    remove .oculto from #lista-usuarios 
+                else
+                    add .oculto to #lista-usuarios
+                end
+             "  
+            />
+            <div id="data-empleado">
+                <div id="texto-empleado">
+                    <p>
+                        <input type="text" class="data-empleado" id="codigo" size="20" onchange="fotoChica(this)">
+                        <br>
+                        <input type="text" class="data-empleado" readonly id="apellidos" size="20"> - 
+                        <!--<input type="text" class="data-empleado" readonly id="nombres" size="20">-->
+                        <br>
+                        <input type="text" class="data-empleado" readonly id="gerencia" size="30" placeholder="xxxxxxxxxxxxxxx">
+                    </p>
+                </div>
+            
+                <div id="img-empleado">
+                     <img id="foto-empleado" src="{{ url_for('static', path='img/foto-no-hallado.jpeg') }}" alt="Foto del empleado" min-width="60px" min-height="100px">
+                </div>
+            </div>
+        </form>
     </div>
+    <div id="lista-usuarios" class="oculto"></div>
 
     <div id="inv-img-subida">
         
@@ -136,6 +166,20 @@
 </script>
 
 
+<script>
+
+function fotoChica(input) {
+    alert("EL SRC ===> " + input);
+            const foto_chica = document.getElementById("foto-empleado");
+
+            if (input.value === "") {
+                foto_chica.src = "{{ url_for('static', path='img/foto-no-hallado.jpeg') }}";
+            } else {
+                foto_chica.src = "{{ url_for('static', path='dniextract/img/') }}" + input.value + ".jpeg";
+            }
+}
+
+</script>
 
 </body>
 </html>

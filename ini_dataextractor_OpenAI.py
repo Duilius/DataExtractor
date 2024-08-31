@@ -209,7 +209,7 @@ async def upload_fotos(request: Request, fotos: List[UploadFile]):
         #Cod 2019:
         #Color:
         response2 = client.chat.completions.create(
-            model='gpt-3.5-turbo',
+            model='gpt-4-turbo-2024-04-09',
             messages=[
                 {"role":"system", "content":[
                     {

@@ -71,7 +71,7 @@ body{
 
 @media (min-width: 600px) and (max-width:1200px ) {
 	body {
-		width: 60%;
+		width: 80%;
 		margin: 0px auto;
 	}
 	#new-user{height: 190px;}
@@ -84,6 +84,23 @@ body{
 	}
 	#new-user{height: 80px;}
 }
+
+/*BOTONES: CONSULTAR e INGRESAR*/
+#consultar{padding-top: 10px;padding-bottom: 20px;}
+	#consultar h6{ margin-bottom: 15px;}
+	#consultar span{ margin-top: 10px;padding:12px; font-size: 0.75rem; font-weight: 500; border:1px solid white; border-radius:6px; margin-top: 20px;
+	color: #262626;
+	background: yellow; cursor:pointer;
+	}
+	#consultar span:hover{opacity: 75%; color:#000;}
+	#consultar span a{text-decoration: none; color:#262626;}
+
+#ingresar{padding-top: 10px;padding-bottom: 20px;}
+	#ingresar h6{ margin-bottom: 15px;}
+	#ingresar span{ margin-top: 10px;padding:12px; font-size: 0.75rem; font-weight: 500; border:1px solid white; border-radius:6px; margin-top: 20px;
+	cursor: pointer;}	
+	#ingresar span:hover{opacity: 95%; color:#fff; border:1px solid yellow;}
+
 
 #contenedor_dniextractor{
 	display: grid;
