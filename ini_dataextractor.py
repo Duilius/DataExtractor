@@ -55,7 +55,8 @@ app.mount( "/static" , StaticFiles(directory="static"), name="static")
 @app.get('/')
 async def root(request:Request):
     
-    return templates.TemplateResponse("ini-dataextractor.html", {'request':request}, media_type="text/html")
+    return templates.TemplateResponse("index-mobile.html", {'request':request}, media_type="text/html")
+    #return templates.TemplateResponse("ini-dataextractor.html", {'request':request}, media_type="text/html")
 
 # --------------------------------------------------------------
 # Recibe ancho de pantalla (al cargar o al redimensionar)
