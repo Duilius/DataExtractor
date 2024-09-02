@@ -371,3 +371,22 @@ async def verify_username(username:str=Form(...)):
 async def blog(request:Request):
 
     return templates.TemplateResponse("demo/blog.html",{'request':request})
+
+
+
+@app.get('/blog-articulo/leer')
+async def blog(request: Request, art: str):
+
+    if art=="1":
+        pag_articulo ="mejores-herramientas-inventario"
+    if art=="2":
+        pag_articulo="incumplimiento_inventario"
+    if art=="3":
+        pag_articulo="razones_inventariar"
+    if art=="4":
+        pag_articulo="sugerencias_ia_estado"
+    if art=="5":
+        pag_articulo="sugerencias_5g_estado"
+
+    return templates.TemplateResponse(F"demo/"+pag_articulo+".html",{'request':request})
+
