@@ -1,4 +1,5 @@
 #secrets
+scripts/py/claves.py
 rtf_ocr_claves.json
 #pycache
 __pycache__/
