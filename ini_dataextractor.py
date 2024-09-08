@@ -18,7 +18,6 @@ from fastapi.staticfiles import StaticFiles
 from utils.dispositivo import determinar_tipo_dispositivo
 
 #from scripts.py.claves import inventario_demo_key
-import claves
 
 from scripts.py.modulo_consulta_registro import consulta_registro
 from scripts.py.modulo_graba_registro import graba_registro
