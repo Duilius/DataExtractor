@@ -7,7 +7,7 @@ scripts/py/claves.py
 rtf_ocr_claves.json
 #pycache
 __pycache__/
-claves.py
+#claves.py
 claves_dataextractor.py
 
 openai-env/
