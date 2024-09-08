@@ -19,6 +19,3 @@ RUN apt-get update && \
 
 # Exponer el puerto 8000 (este es el puerto en el que Uvicorn escuchará internamente)
 EXPOSE 8000
-
-# Configurar el comando de inicio
-CMD ["python", "ini_dataextractor.py"]
