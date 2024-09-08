@@ -310,3 +310,17 @@ async def blog(request: Request, art: str):
         pag_articulo="sugerencias_5g_estado"
 
     return templates.TemplateResponse(F"demo/"+pag_articulo+".html",{'request':request})
+
+
+
+import os
+import uvicorn
+from fastapi import FastAPI
+
+app = FastAPI()
+
+# Definiciones de rutas y lógica aquí...
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))  # Usa el puerto de la variable de entorno o el puerto 8000 por defecto
+    uvicorn.run("ini_dataextractor:app", host="0.0.0.0", port=port)

@@ -1,29 +1,24 @@
-#web: uvicorn ini_dataextractor:app --host 0.0.0.0 --port $PORT
-
-# Usa una imagen base de Python
+# Usar una imagen base de Python
 FROM python:3.11-slim
 
-# Instala dependencias del sistema para Tesseract y otras librerías necesarias
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    libtesseract-dev \
-    tesseract-ocr-spa \
-    build-essential \
-    python3-dev \
-    && apt-get clean
-
-# Establece el directorio de trabajo
+# Crear un directorio para la aplicación
 WORKDIR /app
 
-# Copia el archivo de requisitos e instálalos
-COPY requirements.txt requirements.txt
+# Copiar los archivos de requisitos y la aplicación
+COPY requirements.txt /app/
+COPY . /app/
+
+# Instalar las dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia el código de la aplicación
-COPY . .
+# Instalar Tesseract y sus dependencias
+RUN apt-get update && \
+    apt-get install -y tesseract-ocr && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Exponer el puerto
-#EXPOSE $PORT
+# Exponer el puerto 8000 (este es el puerto en el que Uvicorn escuchará internamente)
+EXPOSE 8000
 
-# Ejecuta la aplicación
-CMD ["uvicorn", "ini_dataextractor:app", "--host", "0.0.0.0", "--port", "$PORT"]
+# Configurar el comando de inicio
+CMD ["python", "ini_dataextractor.py"]
