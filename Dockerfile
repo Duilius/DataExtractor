@@ -18,4 +18,4 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Exponer el puerto 8000 (este es el puerto en el que Uvicorn escuchará internamente)
-EXPOSE 8000
+#EXPOSE 8000
