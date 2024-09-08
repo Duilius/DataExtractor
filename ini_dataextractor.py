@@ -162,7 +162,7 @@ async def new_user(request:Request, countryCode:str= Form(),numWa:str= Form(),no
         print("Consulta ===> ", consulta)
         #print("La Clave ===> ", clave)
 
-        return RedirectResponse(url="https://dataextractor.cloud/servicios", status_code=302)
+        return RedirectResponse(url="https://dataextractor.cloud/servicios", status_code=307)
     else:
         print('muy corto =========== ', nombre)
 
@@ -287,7 +287,7 @@ async def verify_username(username:str=Form(...)):
     else:
         print("usuario no encontrado")
 
-    return RedirectResponse(url="https://dataextractor.cloud/servicios", status_code=302)
+    return RedirectResponse(url="https://dataextractor.cloud/servicios", status_code=307)
 @app.get('/blog')
 async def blog(request:Request):
 
