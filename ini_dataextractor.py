@@ -162,7 +162,7 @@ async def new_user(request:Request, countryCode:str= Form(),numWa:str= Form(),no
         print("Consulta ===> ", consulta)
         #print("La Clave ===> ", clave)
 
-        return RedirectResponse("/servicios")
+        return RedirectResponse(url="https://dataextractor.cloud/servicios", status_code=302)
     else:
         print('muy corto =========== ', nombre)
 
@@ -186,10 +186,10 @@ async def extractorDe(request:Request, tiposervicio:str=""):
 ### SERVICIO: INVENTARIO ####
 @app.post("/upload_fotos")
 async def upload_fotos(request: Request, fotos: List[UploadFile]):
+      # Configurar la ruta a Tesseract solo si está en un entorno local (Windows)
+    if os.name == 'nt':
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     
-    # Configurar la ruta a Tesseract si no está en el PATH
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
     def detect_orientation_and_text(image_path):
         # Cargar la imagen con OpenCV
         img = cv2.imread(image_path)
@@ -287,7 +287,7 @@ async def verify_username(username:str=Form(...)):
     else:
         print("usuario no encontrado")
 
-    return RedirectResponse("/servicios")
+    return RedirectResponse(url="https://dataextractor.cloud/servicios", status_code=302)
 @app.get('/blog')
 async def blog(request:Request):
 
