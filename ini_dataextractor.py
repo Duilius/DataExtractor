@@ -18,17 +18,11 @@ from fastapi.staticfiles import StaticFiles
 from utils.dispositivo import determinar_tipo_dispositivo
 
 #from scripts.py.claves import inventario_demo_key
+import claves
 
 from scripts.py.modulo_consulta_registro import consulta_registro
 from scripts.py.modulo_graba_registro import graba_registro
 from scripts.py.modulo_verify_username import busca_username
-
-import pytesseract
-from PIL import Image
-import cv2
-import numpy as np
-import re
-
 
 ## Variables de conexión a Base de Datos en Railway
 db_user=os.getenv("DB_USER")
@@ -162,14 +156,16 @@ async def new_user(request:Request, countryCode:str= Form(),numWa:str= Form(),no
         print("Consulta ===> ", consulta)
         #print("La Clave ===> ", clave)
 
-        return RedirectResponse(url="https://dataextractor.cloud/servicios", status_code=307)
+        return RedirectResponse("/servicios")
     else:
         print('muy corto =========== ', nombre)
 
 @app.post('/servicios')
 async def servicios(request:Request):
 
-    return templates.TemplateResponse("servicios-extraccion-datos.html",{'request':request})
+    #return templates.TemplateResponse("servicios-extraccion-datos.html",{'request':request})
+    return templates.TemplateResponse("demo/inv_demo.html",{'request':request})
+    #return templates.TemplateResponse("demo/inventario_activos.html",{'request':request})
 
 #Tipos de Servicio: DNI, Recetas, Listas Compra, Inventario, Facturas, Reconoc Facial
 @app.get('/extractorde')
@@ -182,79 +178,122 @@ async def extractorDe(request:Request, tiposervicio:str=""):
     #En el caso de INVENTARIO: las imágenes cargadas/tomadas las procesa la ruta ==>> /upload_fotos
 
 
-
 ### SERVICIO: INVENTARIO ####
 @app.post("/upload_fotos")
 async def upload_fotos(request: Request, fotos: List[UploadFile]):
-      # Configurar la ruta a Tesseract solo si está en un entorno local (Windows)
-    if os.name == 'nt':
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     
-    def detect_orientation_and_text(image_path):
-        # Cargar la imagen con OpenCV
-        img = cv2.imread(image_path)
-
-        # Convertir la imagen a escala de grises
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        # Aplicar binarización adaptativa para mejorar la segmentación
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-
-        # Detectar contornos que podrían ser etiquetas
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        etiqueta_data = []
-        
-        for contour in contours:
-            # Obtener el bounding box de cada contorno
-            rect = cv2.minAreaRect(contour)
-            angle = rect[-1]  # El ángulo está en el último valor del rectángulo
-
-            # Clasificar la orientación
-            if -10 < angle < 10:
-                orientacion = "Horizontal"
-            elif 80 < abs(angle) < 100:
-                orientacion = "Vertical"
-            else:
-                orientacion = f"Inclinación de {angle:.2f} grados"
-
-            # Crear una máscara para la etiqueta
-            mask = np.zeros_like(gray)
-            cv2.drawContours(mask, [contour], -1, (255), -1)
-            etiqueta = cv2.bitwise_and(gray, gray, mask=mask)
-
-            # Extraer texto con Tesseract
-            texto_etiqueta = pytesseract.image_to_string(etiqueta, lang='spa')
-
-            etiqueta_data.append({
-                "orientacion": orientacion,
-                "texto": texto_etiqueta.strip()
-            })
-
-        return etiqueta_data
+    def encode_image(image_path):
+        with open(image_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+        return encoded_string
 
     script_directory = os.path.dirname(os.path.abspath(__file__))
-    all_etiquetas = []
+    
+    print(os.listdir())  # Para ver si 'claves.py' está en el mismo directorio
+    print(dir(claves))   # Para ver qué contiene el módulo 'claves'
+
+    # Usa la clave de la API desde la variable de entorno si está disponible, de lo contrario usa la de claves.py
+    #api_key = os.getenv("inventario_demo_key", claves.inventario_demo_key)
+
+
+    # Invocar la clave de la API desde la variable de entorno
+    api_key = os.getenv("inventario_demo_key")
+
+    # Asegurarse de que la clave se haya recuperado correctamente
+    if not api_key:
+        raise ValueError("La clave de API de OpenAI no se ha encontrado en las variables de entorno.")
+
+    client = OpenAI(api_key=api_key)
 
     for foto in fotos:
-        # Guardar la imagen en el servidor
+        # Guardar la imagen localmente en el servidor
         photo_path = os.path.join(script_directory, foto.filename)
         with open(photo_path, "wb") as photo_file:
             photo_file.write(await foto.read())
 
-        # Procesar la imagen y detectar etiquetas
-        etiquetas_detectadas = detect_orientation_and_text(photo_path)
-        all_etiquetas.extend(etiquetas_detectadas)
+        # Codificar la imagen como Base64 y construir la URL
+        image_url = f"data:image/jpeg;base64,{encode_image(photo_path)}"
 
-    # Mostrar los resultados en la terminal
-    print(f"Total de etiquetas detectadas: {len(all_etiquetas)}")
-    for etiqueta in all_etiquetas:
-        print(f"Etiqueta: {etiqueta['texto']} | Orientación: {etiqueta['orientacion']}")
+        # Enviar la imagen a OpenAI
+        response = client.chat.completions.create(
+            model='gpt-4o',
+            messages=[
+                {   
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Extraer la información del documento proporcionado, incluyendo el color principal del objeto:\n"
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": image_url}
+                        }
+                    ],
+                }
+            ],
+            max_tokens=600,
+        )
 
-    return {"total_etiquetas": len(all_etiquetas), "detalles": all_etiquetas}
+        response_text = response.choices[0].message.content
+        
+        #Pedimos que formatee el texto a lo que se necesita:
+        #CodPatrimonial ===> No tiene guión "-"
+        #Cod 2023: 
+        #Cod 2021:
+        #Cod 2019:
+        #Color:
+        response2 = client.chat.completions.create(
+            model='gpt-4-turbo-2024-04-09',
+            messages=[
+                {"role":"system", "content":[
+                    {
+                        "type":"text",
+                        "text":"Ofréceme los datos numéricos de las Etiquetas CORPAC S.A., INV. 2023, INV, 2021, INV. 2019 e INV. 2021"
+                    }
+                ]
+                 },
+                { "role": "user",
+                  "content":[
+                        {
+                            "type": "text",
+                            "text": response_text
+                        }
+                  ]
+                }
+                ],
+            max_tokens=20
+        )
+        
+        print("Respuesta de OpenAI-2:", response2)
+        print("Respuesta de OpenAI-1:", response_text)
+        #Aquí le pedimos a CHATGPT que interprete y clasifique los datos
 
 
+        # Procesar la respuesta de OpenAI
+        """
+        try:
+            json_string = response.choices[0].message.content
+            json_string = json_string.replace("```json\n", "").replace("\n```", "")
+            json_data = json.loads(json_string)
+        except (IndexError, json.JSONDecodeError) as e:
+            print(f"Error al procesar la respuesta de OpenAI: {e}")
+            continue
 
+        # Guardar los datos JSON en un archivo
+        filename_without_extension = os.path.splitext(os.path.basename(photo_path))[0]
+        json_filename = f"{filename_without_extension}.json"
+        json_path = os.path.join(script_directory, "Data", json_filename)
+
+        try:
+            with open(json_path, 'w') as file:
+                json.dump(json_data, file, indent=4)
+                print(f"Datos JSON guardados en {json_path}")
+        except Exception as e:
+            print(f"Error al guardar los datos JSON: {e}")
+        """
+
+    #return {"message": "Proceso completado"}
 
 
 
@@ -287,7 +326,7 @@ async def verify_username(username:str=Form(...)):
     else:
         print("usuario no encontrado")
 
-    return RedirectResponse(url="https://dataextractor.cloud/servicios", status_code=307)
+    return RedirectResponse("/servicios")
 @app.get('/blog')
 async def blog(request:Request):
 

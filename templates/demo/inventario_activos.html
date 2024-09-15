@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORPAC Inventario 2024</title>
+    <link rel="stylesheet" href="{{url_for( 'static', path='inventario_activos2.css')}}">
+    <script src="{{url_for('static', path='js/inventario_activos2.js')}}" defer></script>
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="CORPAC Logo" id="logo">
+        <h1>CORPAC</h1>
+        <h2>Inventario 2024</h2>
+        <nav>
+            <button id="darkModeToggle">Modo Oscuro</button>
+            <button id="loginBtn">Login</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="jefeBusqueda">
+            <input type="text" id="busquedaJefe" placeholder="Código o Apellidos y Nombres">
+            <div id="resultadosBusqueda"></div>
+            <div id="jefeSeleccionado"></div>
+        </section>
+
+        <section id="colaboradores">
+            <h3>Colaboradores</h3>
+            <div id="listaColaboradores"></div>
+        </section>
+
+        <section id="camara">
+            <h3>Cámara</h3>
+            <button id="toggleCamara">Cámara ON/OFF</button>
+            <div id="visorCamara">
+                <p>Aquí se mostrará la imagen de la cámara</p>
+            </div>
+            <div id="miniaturas"></div>
+            <div id="opcionesFotos">
+                <button id="eliminarFoto">Eliminar</button>
+                <button id="guardarFoto">Guardar</button>
+                <button id="procesarFoto">Procesar</button>
+            </div>
+            <button id="tomarFoto">TOMAR FOTO</button>
+        </section>
+
+        <section id="registroBien" style="display: none;">
+            <h3>Registro del Bien</h3>
+            <input type="text" id="descripcionBien" placeholder="Descripción del Bien">
+            <input type="text" id="codigoBarras" placeholder="Código de Barras">
+            <input type="text" id="cod2023" placeholder="Cód-2023">
+            <input type="text" id="cod2022" placeholder="Cód-2022">
+            <input type="text" id="color" placeholder="Color">
+            <input type="text" id="material" placeholder="Material">
+            <input type="number" id="largo" placeholder="L">
+            <input type="number" id="ancho" placeholder="A">
+            <input type="number" id="alto" placeholder="Alto">
+            <textarea id="observaciones" placeholder="Observaciones"></textarea>
+            <div>
+                <label>En uso:</label>
+                <input type="radio" name="enUso" value="Si"> Si
+                <input type="radio" name="enUso" value="No"> No
+            </div>
+            <div>
+                <label>Estado:</label>
+                <input type="radio" name="estado" value="B"> B
+                <input type="radio" name="estado" value="R"> R
+                <input type="radio" name="estado" value="M"> M
+            </div>
+            <button id="descartar">DESCARTAR</button>
+            <button id="registrar">REGISTRAR</button>
+        </section>
+    </main>
+
+    <div id="modalFoto" class="modal">
+        <span class="cerrar">&times;</span>
+        <img class="modal-content" id="imgAmpliada">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

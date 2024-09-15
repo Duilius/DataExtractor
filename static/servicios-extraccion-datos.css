@@ -3,6 +3,7 @@ body{background: #262626;}
 h1{color: white;font-size: 0.95em; text-align: center;text-transform:uppercase; font-family: Onest;}
 
 #los-servicios{
+    background: #262626;
     display: grid;
     grid-auto-flow: column;
     grid-template-columns: repeat(3, 1fr);

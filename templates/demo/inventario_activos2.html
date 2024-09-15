@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORPAC Inventario 2024</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="logo-corpac.png" alt="CORPAC Logo" id="logo">
+            <h1>CORPAC</h1>
+        </div>
+        <h2>INVENTARIO - 2024</h2>
+        <nav>
+            <button id="darkModeToggle">Modo Oscuro</button>
+            <button id="loginBtn">Login</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="jefeBusqueda">
+            <h3>Jefe Área</h3>
+            <input type="text" id="busquedaJefe" placeholder="Código o Apellidos y Nombres">
+            <div id="resultadosBusqueda"></div>
+            <div id="jefeSeleccionado">
+                <div class="jefe-info">
+                    <div>
+                        <p>Cod: <span id="jefeCodigo"></span></p>
+                        <p>Apellidos y Nombres: <span id="jefeNombre"></span></p>
+                        <p>Sub Gerencia de: <span id="jefeArea"></span></p>
+                    </div>
+                    <img id="jefeFoto" src="" alt="Foto del Jefe">
+                </div>
+                <div class="jefe-superior-info">
+                    <div>
+                        <p>Cod: <span id="superiorCodigo"></span></p>
+                        <p>Apellidos y Nombres: <span id="superiorNombre"></span></p>
+                        <p>Gerencia de: <span id="superiorArea"></span></p>
+                    </div>
+                    <img id="superiorFoto" src="" alt="Foto del Superior">
+                </div>
+            </div>
+        </section>
+
+        <section id="colaboradores">
+            <h3>Colaboradores - Jefe Área</h3>
+            <div id="listaColaboradores"></div>
+        </section>
+
+        <section id="camara">
+            <h3>CAMARA ON OFF</h3>
+            <div id="visorCamara">
+                <p>VISOR - CAMARA</p>
+            </div>
+            <div id="miniaturas"></div>
+            <div id="opcionesFotos">
+                <button id="eliminarFoto">Eliminar</button>
+                <button id="guardarFoto">Guardar</button>
+                <button id="procesarFoto">Procesar</button>
+            </div>
+            <button id="tomarFoto">TOMAR FOTO</button>
+        </section>
+
+        <section id="registroBien">
+            <h3>Descripción del Bien</h3>
+            <div class="registro-grid">
+                <input type="text" id="codBarras" placeholder="Cod.Barras">
+                <input type="text" id="cod2023" placeholder="Cod-2023">
+                <input type="text" id="cod2022" placeholder="Cod-2022">
+                <input type="text" id="color" placeholder="Color">
+                <input type="text" id="material" placeholder="Material">
+                <input type="text" id="largo" placeholder="L">
+                <input type="text" id="ancho" placeholder="A">
+                <input type="text" id="alto" placeholder="Alto">
+            </div>
+            <textarea id="observaciones" placeholder="Observaciones"></textarea>
+            <div class="estado-uso">
+                <div>
+                    <label>En uso:</label>
+                    <input type="radio" name="enUso" value="Si"> Si
+                    <input type="radio" name="enUso" value="No"> No
+                </div>
+                <div>
+                    <label>Estado:</label>
+                    <input type="radio" name="estado" value="B"> B
+                    <input type="radio" name="estado" value="R"> R
+                    <input type="radio" name="estado" value="M"> M
+                </div>
+            </div>
+            <div class="botones-registro">
+                <button id="descartar">DESCARTAR</button>
+                <button id="registrar">REGISTRAR</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="modalFoto" class="modal">
+        <span class="cerrar">&times;</span>
+        <img class="modal-content" id="imgAmpliada">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
