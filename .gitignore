@@ -13,3 +13,6 @@ claves_dataextractor.py
 openai-env/
 dinamic/
 config/
+
+#CARPETA BACKUP_LOCAL
+backup-local/

@@ -4,181 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <link rel="stylesheet" href="{{url_for( 'static', path='inv_demo.css')}}">
 
-    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+    <title>DataExtractor - Captura de Imágenes</title>
 
-    <title>DataExtractor - Inventario demo</title>
 </head>
 <body>
-    <div id="tipo-demo">
-        <form>
-            <input type="search" name="busca_usuario" size="20" id="busca_usuario" placeholder="Código o Apellido - trabajador"
-            hx-post="/busca-usuarios"
-            hx-trigger="keyup changed delay:1000ms"
-            hx-target="#lista-usuarios"
-            _="on keyup 
-                if my.value.length is greater than 2
-                    remove .oculto from #lista-usuarios 
-                else
-                    add .oculto to #lista-usuarios
-                end
-             "  
-            />
-            <div id="data-empleado">
-                <div id="texto-empleado">
-                    <p>
-                        <input type="text" class="data-empleado" id="codigo" size="20" onchange="fotoChica(this)">
-                        <br>
-                        <input type="text" class="data-empleado" readonly id="apellidos" size="20"> - 
-                        <!--<input type="text" class="data-empleado" readonly id="nombres" size="20">-->
-                        <br>
-                        <input type="text" class="data-empleado" readonly id="gerencia" size="30" placeholder="xxxxxxxxxxxxxxx">
-                    </p>
-                </div>
-            
-                <div id="img-empleado">
-                     <img id="foto-empleado" src="{{ url_for('static', path='img/foto-no-hallado.jpeg') }}" alt="Foto del empleado" min-width="60px" min-height="100px">
-                </div>
-            </div>
-        </form>
-    </div>
-    <div id="lista-usuarios" class="oculto"></div>
 
-    <div id="inv-img-subida">
-        
-        <i class='bx bx-camera inv-img-subida'></i></span>
-        
-    </div>
+<div id="camera-container">
+    <video id="video" autoplay></video>
+    <button id="take-photo-btn">Tomar Foto</button>
+</div>
 
-    <div id="datos-grabados">
-        <div id="descripcion"><p>Descripción del Bien</p></div>
-        <div id="codigos-leidos"></div>
-    </div>
+<div id="gallery"></div>
 
-    <div id="botonera">
-        <form hx-encoding='multipart/form-data' hx-post='/upload_fotos'>
-            <input type="file" name="fotos" accept=".pdf, .png, .jpg, .jpeg" onchange="previewImage(event)">
-            <button  type="submit" 
-                    hx-post="/upload_fotos" 
-                    hx-trigger="click" 
-                    hx-swap="innerHTML"
-                    hx-target="#codigos-leidos" >
-                SUBIR FOTO
-            </button> 
-            <button onclick="startCamera()">
-            TOMAR FOTO</button> 
-        </form>
-    </div>
+<button id="process-btn">Procesar Fotos Seleccionadas</button>
 
-    <div id="enviado">
-        <p>Revisa tu Email</p>
-    </div>
+<script>
+    let video = document.getElementById('video');
+    let gallery = document.getElementById('gallery');
+    let photoIndex = 1;
+    let photos = [];
 
-    <script>
-        // Función para acceder a la cámara
-        async function startCamera() {
-          try {
+    // Acceder a la cámara
+    async function startCamera() {
+        try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            // Manipular el flujo de la cámara según tus necesidades
-          } catch (error) {
+            video.srcObject = stream;
+        } catch (error) {
             console.error('Error al acceder a la cámara:', error);
-          }
         }
-      </script>
+    }
 
+    // Tomar una foto
+    function takePhoto() {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-<!-- MOSTRAR IMAGEN SUBIDA/CARGADA -->
-<script>
-  /*
-  function previewImage(event) {
-      const fileInput = event.target;
-      const files = fileInput.files;
-      const imagePreview = document.getElementById('inv-img-subida');
+        const photoDataUrl = canvas.toDataURL('image/png');
+        const photoId = 'foto-' + photoIndex++;
 
-      if (files.length > 0) {
-          const file = files[0];
-          const reader = new FileReader();
+        // Crear el contenedor de la miniatura
+        const photoContainer = document.createElement('div');
+        photoContainer.classList.add('photo-container');
 
-          reader.onload = function (e) {
-              const imageUrl = e.target.result;
-              const imgElement = document.createElement('img');
-              imgElement.src = imageUrl;
+        // Crear la miniatura de la foto
+        const img = document.createElement('img');
+        img.src = photoDataUrl;
+        photoContainer.appendChild(img);
 
-              imgElement.style.width  = '100%'; // Establece el ancho de la imagen al 100% del contenedor
-              imgElement.style.height = 'auto'; // La altura se ajustará automáticamente para mantener la proporción
+        // Crear el checkbox
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.classList.add('checkbox');
+        photoContainer.appendChild(checkbox);
 
-              imagePreview.innerHTML = ''; // Limpiar la vista previa existente
-              imagePreview.appendChild(imgElement);
-          };
+        // Agregar un identificador
+        const photoIdText = document.createElement('div');
+        photoIdText.classList.add('photo-id');
+        photoIdText.textContent = photoId;
+        photoContainer.appendChild(photoIdText);
 
-          reader.readAsDataURL(file);
-      }
-  }
-*/
-  function startCamera() {
-      // Lógica para activar la cámara y capturar la imagen
-      // Esta parte debe ser implementada según la API de captura de imágenes del navegador
-      alert('La funcionalidad de tomar una foto aún no está implementada.');
-  }
-</script>
+        // Agregar la foto al array de fotos
+        photos.push({
+            id: photoId,
+            dataUrl: photoDataUrl,
+            selected: checkbox,
+        });
 
+        // Agregar la foto a la galería
+        gallery.appendChild(photoContainer);
+    }
 
-<script>
-  let cropper;
+    // Procesar las fotos seleccionadas
+    async function processSelectedPhotos() {
+        const selectedPhotos = photos.filter(photo => photo.selected.checked);
 
-  function previewImage(event) {
-      const file = event.target.files[0];
-      const image = document.createElement('img');
-      const cropperContainer = document.getElementById('inv-img-subida');
+        if (selectedPhotos.length === 0) {
+            alert('Por favor selecciona al menos una foto para procesar.');
+            return;
+        }
 
-      const fileInput = event.target;
-      const files = fileInput.files;
-      const imagePreview = document.getElementById('inv-img-subida');
+        // Enviar las fotos seleccionadas a GPT-4o y almacenarlas en el servidor
+        for (const photo of selectedPhotos) {
+            console.log('Procesando foto:', photo.id);
 
-      image.onload = function () {
-          cropper = new Cropper(image, {
-              aspectRatio: 1, // Proporción de aspecto (opcional)
-              viewMode: 2, // Vista libre
-          });
-          cropperContainer.innerHTML = '';
-          cropperContainer.appendChild(image);
-      };
+            // Aquí deberías agregar la lógica para guardar la foto en un servidor o en Drive
+            await savePhotoToServer(photo.dataUrl, photo.id);
+        }
 
-      const reader = new FileReader();
+        alert('Fotos procesadas correctamente.');
+    }
 
-      reader.onload = function (e) {
-              const imageUrl = e.target.result;
-              const imgElement = document.createElement('img');
-              imgElement.src = imageUrl;
+    // Simula guardar la foto en un servidor
+    async function savePhotoToServer(dataUrl, id) {
+        // Lógica para enviar los datos al servidor o Drive
+        console.log(`Guardando foto ${id} en el servidor...`);
+        // Implementar la llamada al backend con fetch() o similar
+    }
 
-              imgElement.style.width  = '100%'; // Establece el ancho de la imagen al 100% del contenedor
-              imgElement.style.height = 'auto'; // La altura se ajustará automáticamente para mantener la proporción
+    // Agregar eventos a los botones
+    document.getElementById('take-photo-btn').addEventListener('click', takePhoto);
+    document.getElementById('process-btn').addEventListener('click', processSelectedPhotos);
 
-              imagePreview.innerHTML = ''; // Limpiar la vista previa existente
-              imagePreview.appendChild(imgElement);
-          };
-
-
-      reader.readAsDataURL(file);
-  }
-</script>
-
-
-<script>
-
-function fotoChica(input) {
-    alert("EL SRC ===> " + input);
-            const foto_chica = document.getElementById("foto-empleado");
-
-            if (input.value === "") {
-                foto_chica.src = "{{ url_for('static', path='img/foto-no-hallado.jpeg') }}";
-            } else {
-                foto_chica.src = "{{ url_for('static', path='dniextract/img/') }}" + input.value + ".jpeg";
-            }
-}
-
+    // Iniciar la cámara al cargar la página
+    startCamera();
 </script>
 
 </body>
