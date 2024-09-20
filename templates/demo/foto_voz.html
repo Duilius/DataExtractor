@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura de Foto con Voz</title>
+    <style>
+        #voiceCaptureBtn { margin-left: 10px; }
+        #statusMessage { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <button id="cameraBtn">Encender Cámara</button>
+    <button id="captureBtn" disabled>Tomar Foto</button>
+    <button id="voiceCaptureBtn">Captura por Voz</button>
+    <div id="statusMessage"></div>
+    <video id="videoElement" style="display:none;"></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        let stream;
+        let recognition;
+        const videoElement = document.getElementById('videoElement');
+        const canvas = document.getElementById('canvas');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const voiceCaptureBtn = document.getElementById('voiceCaptureBtn');
+        const statusMessage = document.getElementById('statusMessage');
+
+        cameraBtn.onclick = toggleCamera;
+        captureBtn.onclick = capturePhoto;
+        voiceCaptureBtn.onclick = toggleVoiceCapture;
+
+        function toggleCamera() {
+            if (stream) {
+                stopCamera();
+            } else {
+                startCamera();
+            }
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoElement.srcObject = stream;
+                videoElement.play();
+                cameraBtn.textContent = 'Apagar Cámara';
+                captureBtn.disabled = false;
+                videoElement.style.display = 'block';
+                updateStatus('Cámara encendida');
+            } catch (err) {
+                console.error('Error al acceder a la cámara:', err);
+                updateStatus('No se pudo acceder a la cámara. Por favor, asegúrese de que está conectada y tiene los permisos necesarios.', true);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                videoElement.srcObject = null;
+                cameraBtn.textContent = 'Encender Cámara';
+                captureBtn.disabled = true;
+                videoElement.style.display = 'none';
+                updateStatus('Cámara apagada');
+            }
+        }
+
+        function capturePhoto() {
+            if (stream) {
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                canvas.getContext('2d').drawImage(videoElement, 0, 0);
+                const imageDataUrl = canvas.toDataURL('image/jpeg');
+                console.log('Foto capturada:', imageDataUrl);
+                updateStatus('Foto capturada con éxito');
+            } else {
+                updateStatus('Por favor encienda la cámara primero', true);
+            }
+        }
+
+        function toggleVoiceCapture() {
+            if (recognition && recognition.running) {
+                stopVoiceCapture();
+            } else {
+                startVoiceCapture();
+            }
+        }
+
+        function startVoiceCapture() {
+            try {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'es-ES';
+                recognition.continuous = true;
+                recognition.interimResults = false;
+
+                recognition.onresult = (event) => {
+                    const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                    console.log('Comando detectado:', command);
+                    if (command.includes('tomar foto') || command.includes('capturar')) {
+                        capturePhoto();
+                    }
+                };
+
+                recognition.onend = () => {
+                    if (voiceCaptureBtn.textContent === 'Detener Captura por Voz') {
+                        recognition.start();
+                    }
+                };
+
+                recognition.start();
+                voiceCaptureBtn.textContent = 'Detener Captura por Voz';
+                updateStatus('Captura por voz activada. Diga "tomar foto" o "capturar" en cualquier momento para tomar una foto.');
+            } catch (error) {
+                console.error('Error al iniciar el reconocimiento de voz:', error);
+                updateStatus('No se pudo iniciar el reconocimiento de voz. Asegúrese de que su navegador lo soporta.', true);
+            }
+        }
+
+        function stopVoiceCapture() {
+            if (recognition) {
+                recognition.stop();
+                voiceCaptureBtn.textContent = 'Captura por Voz';
+                updateStatus('Captura por voz desactivada');
+            }
+        }
+
+        function updateStatus(message, isError = false) {
+            statusMessage.textContent = message;
+            statusMessage.style.color = isError ? 'red' : 'black';
+            speak(message);
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                speechSynthesis.speak(utterance);
+            } else {
+                console.warn('La síntesis de voz no está soportada en este navegador.');
+            }
+        }
+    </script>
+</body>
+</html>
