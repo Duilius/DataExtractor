@@ -1,148 +1,333 @@
+/* Ejemplo de implementación */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans&display=swap');
+
 body {
-    font-family: Arial, sans-serif;
+  font-family: 'Open Sans', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Roboto', sans-serif;
+}
+
+
+* {
     margin: 0;
     padding: 0;
-    background-color: #f0f0f0;
+    box-sizing: border-box;
 }
 
-header {
-    background-color: #fff;
-    padding: 10px;
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+#main-header {
+    position: sticky;
+    top: 0;
+    background-color: #222;
+    color: white;
+    z-index: 1000;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#header-content {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    align-items: flex-start;
+    max-width: 1200px;
+    margin: auto;
+    padding: 10px;
 }
 
-.logo-container {
+#logo-title {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 #logo {
-    width: 50px;
     height: 50px;
     margin-right: 10px;
 }
 
-main {
-    padding: 20px;
+h2 {
+    font-size: 1.2rem;
+    margin-top: 5px;
 }
 
-section {
-    background-color: #fff;
-    margin-bottom: 20px;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-h3 {
-    margin-top: 0;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 10px;
-}
-
-input[type="text"], textarea {
-    width: 100%;
-    padding: 5px;
-    margin-bottom: 10px;
-}
-
-#jefeSeleccionado, .jefe-info, .jefe-superior-info {
+#button-container {
     display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
-#jefeFoto, #superiorFoto {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-}
-
-#visorCamara {
-    width: 100%;
-    height: 300px;
-    background-color: #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-#miniaturas {
-    display: flex;
-    overflow-x: auto;
-    margin-bottom: 10px;
-}
-
-.miniatura {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    margin-right: 5px;
-    cursor: pointer;
-}
-
-#opcionesFotos {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-#tomarFoto {
-    width: 100%;
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.registro-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    flex-direction: column;
+    align-items: flex-end;
     gap: 10px;
 }
 
-.estado-uso {
+#auth-buttons, #modeToggle {
     display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
+    flex-direction: column;
+    gap: 5px;
 }
 
-.botones-registro {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
+.btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
+    font-size: 0.8rem;
+    width: 100px;
+    text-align: center;
 }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
+.btn:active {
+    transform: scale(0.98);
+}
+
+#loginBtn {
+    background-color: #007bff;
+    color: white;
+}
+
+#logoutBtn {
+    background-color: #dc3545;
+    color: white;
+}
+
+/*Botones de login / logout*/
+.btn_log{
+    font-size: 60%;
+    width: 60px;
+    padding: 4px 8px;
+}
+
+#darkModeBtn {
+    background-color: #343a40;
+    color: white;
+}
+
+#lightModeBtn {
+    background-color: #f8f9fa;
+    color: black;
+}
+
+#midModeBtn {
+    background-color: #6c757d;
+    color: white;
+}
+
+@media (min-width: 768px) {
+    #header-content {
+        align-items: center;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-top: 0;
+    }
+
+    #button-container {
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+    }
+}
+
+
+/* Camera section */
+#camera-section {
+    margin: 10px auto;
+    max-width: 800px;
+    text-align: center;
+}
+    #camera-section>#cameraToggle{
+        width:220px;
+        border: 1px solid #262626;
+    }
+    #tomarFoto{
+        width: 220px;
+        border: 1px solid #262626;
+    }
+
+#camera-visor {
+    margin: 5px auto;
+    border: 3px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 640px;
+    height: 360px;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+video {
     width: 100%;
     height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.9);
+    object-fit: cover;
 }
 
-.modal-content {
-    margin: auto;
-    display: block;
-    width: 80%;
-    max-width: 700px;
+/* Thumbnail section */
+#thumbnail-section {
+    margin: 10px auto;
+    max-width: 800px;
+    text-align: center;
+    border:1px solid #262626;
+    border-radius: 10px;
+    padding-bottom: 1px;
+    background-color: #222;
 }
 
-.cerrar {
+    #miniaturas{
+        background-color: #343a40;
+    }
+
+.carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+}
+
+.carousel img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+    border-color: #6c757d;
+}
+
+/* Nuevos estilos para la ampliación de imagen */
+.image-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.large-image {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.close-btn {
     position: absolute;
-    top: 15px;
-    right: 35px;
-    color: #f1f1f1;
-    font-size: 40px;
-    font-weight: bold;
+    top: 20px;
+    right: 20px;
+    background-color: white;
+    color: black;
+    border: none;
+    font-size: 24px;
     cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 50%;
+}
+
+
+#action-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    background-color: #343a40;
+    padding:8px 0px;
+    border-radius: 10px;
+}
+
+/*SECCIÓN DESCRIPCIÓN DEL BIEN*/
+#form-section {
+    /* ... otros estilos ... */
+    padding: 10px; /* Reducido de 15px */
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between; /* Distribuye el espacio uniformemente */
+    margin-bottom: 10px; /* Reducido de 15px */
+    padding: 5px 0; /* Reducido de 10px */
+    border-bottom: 1px solid #e0e0e0;
+    overflow-x: auto;
+    width: 100%;
+}
+
+.form-field {
+    flex: 1 1 100%; /* Cambiado de 1 0 auto */
+    min-width: 0; /* Permite que los elementos se encojan más allá de su contenido */
+    margin-right: 5px; /* Un pequeño espacio entre campos */
+}
+
+.form-field input {
+    width: 100%; /* Cambiado de 60% */
+    padding: 6px; /* Reducido de 8px */
+    font-size: 12px; /* Aumentado ligeramente de 10px para mejor legibilidad */
+}
+
+    .form-field input .text-ancho {
+        min-width:100%;
+    }
+
+.form-field input.medidas {
+    max-width: 50px; /* Reducido de 60px */
+}
+
+/* Ajuste para pantallas más grandes */
+@media screen and (min-width: 768px) {
+    #form-section {
+        padding: 15px; /* Reducido de 20px */
+    }
+
+    .form-field input {
+        padding: 8px; /* Reducido de 10px */
+    }
+}
+  
+
+/* Estado section */
+#estado-section {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.option-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.option-group label {
+    font-weight: bold;
+}
+
+/* Modos de color */
+body.dark-mode {
+    background-color: #121212;
+    color: #f5f5f5;
+}
+
+body.light-mode {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+body.mid-mode {
+    background-color: #bdbdbd;
+    color: #212529;
 }
