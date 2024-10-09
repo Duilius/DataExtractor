@@ -214,7 +214,6 @@
             document.getElementById('searchByArea').addEventListener('click', function() {
                 htmx.ajax('GET', workerSearchUrl, '#modal-body');
             });
-            
 
             document.getElementById('searchByWorker').addEventListener('click', function() {
                 htmx.ajax('GET', workerSearchUrl, '#modal-body').then(function() {
