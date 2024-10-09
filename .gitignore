@@ -6,7 +6,7 @@ reemplazo.py
 *.jpg
 *.png
 #secrets
-claves.py
+#claves.py
 scripts/py/claves.py
 rtf_ocr_claves.json
 #scripts en statis/js
