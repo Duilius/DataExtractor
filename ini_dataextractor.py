@@ -5,7 +5,6 @@ import boto3
 import traceback
 import re
 import numpy as np
-import cv2
 from openai import OpenAI  # Cambié OpenAI por openai
 #from openai.types import OpenAIError
 from openai import OpenAIError
