@@ -1,0 +1,49 @@
+.editor-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .edit-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: yellow;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 5px;
+  }
+  
+  .edit-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .edit-btn i {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .btn-text {
+    display: none;
+  }
+  
+  @media (min-width: 768px) {
+    .btn-text {
+      display: block;
+    }
+  }

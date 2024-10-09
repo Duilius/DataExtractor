@@ -1,0 +1,127 @@
+/* utils.css */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #ffc107;
+    --text-color: #333;
+    --background-color: #f8f9fa;
+    --border-color: #dee2e6;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    transition: background-color 0.3s ease;
+}
+
+.dark-mode {
+    --text-color: #f8f9fa;
+    --background-color: #333;
+    --border-color: #555;
+}
+
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#main-header {
+    background-color: #262626;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+#logo-title a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+}
+
+#logo-title img {
+    margin-right: 10px;
+}
+
+#logo_txt {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#logo_txt span {
+    display: block;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+#user-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn {
+    background-color: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #fff;
+    color: #262626;
+}
+
+.icon-btn {
+    padding: 5px;
+    border-radius: 50%;
+}
+
+#languageToggle img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+#auth-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn_log {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+#darkModeBtn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}

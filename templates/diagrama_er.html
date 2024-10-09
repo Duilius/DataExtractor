@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama Entidad-Relación Zoomable</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.14.0/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/panzoom/9.4.0/panzoom.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #diagram-container {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid #ccc;
+            overflow: hidden;
+        }
+        #mermaid-diagram {
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Diagrama Entidad-Relación del Sistema de Inventario</h1>
+    <div id="diagram-container">
+        <div id="mermaid-diagram" class="mermaid">
+        erDiagram
+            INSTITUCION ||--o{ SEDE : tiene
+            INSTITUCION ||--o{ EMPLEADO : emplea
+            INSTITUCION ||--o{ BIEN : posee
+            INSTITUCION ||--o{ PROCESO_INVENTARIO : realiza
+            SEDE ||--o{ OFICINA : contiene
+            OFICINA ||--o{ EMPLEADO : trabaja_en
+            EMPLEADO ||--o{ OFICINA : dirige
+            EMPLEADO ||--o{ MOVIMIENTO_BIEN : es_responsable
+            EMPLEADO ||--o{ INVENTARIO_BIEN : realiza
+            BIEN ||--o{ MOVIMIENTO_BIEN : tiene
+            BIEN ||--o{ INVENTARIO_BIEN : registrado_en
+            PROCESO_INVENTARIO ||--o{ INVENTARIO_BIEN : incluye
+            SEDE ||--o{ MOVIMIENTO_BIEN : origen
+            SEDE ||--o{ MOVIMIENTO_BIEN : destino
+
+            INSTITUCION {
+                int id PK
+                string nombre
+                string ruc
+            }
+            SEDE {
+                int id PK
+                int institucion_id FK
+                string nombre
+                string direccion
+            }
+            OFICINA {
+                int id PK
+                int sede_id FK
+                string codigo
+                string nombre
+                enum nivel
+                int jefe_id FK
+                int oficina_superior_id FK
+            }
+            EMPLEADO {
+                int id PK
+                int institucion_id FK
+                string codigo
+                string nombre
+                int oficina_id FK
+                boolean es_inventariador
+            }
+            BIEN {
+                int id PK
+                int institucion_id FK
+                string codigo_patrimonial
+                string descripcion
+                enum tipo
+                string material
+                string color
+                float largo
+                float ancho
+                float alto
+                string marca
+                string modelo
+                string numero_serie
+            }
+            MOVIMIENTO_BIEN {
+                int id PK
+                int bien_id FK
+                int empleado_id FK
+                int sede_origen_id FK
+                int sede_destino_id FK
+                enum tipo_movimiento
+                datetime fecha_desde
+                datetime fecha_hasta
+            }
+            PROCESO_INVENTARIO {
+                int id PK
+                int institucion_id FK
+                int anio
+                date fecha_inicio
+                date fecha_fin
+            }
+            INVENTARIO_BIEN {
+                int id PK
+                int bien_id FK
+                int proceso_inventario_id FK
+                string codigo_inventario
+                string codigo_inventario_anterior1
+                string codigo_inventario_anterior2
+                string observaciones
+                datetime fecha_registro
+                int inventariador_id FK
+            }
+        </div>
+    </div>
+    <div class="controls">
+        <button id="zoom-in">Zoom In</button>
+        <button id="zoom-out">Zoom Out</button>
+        <button id="reset">Reset</button>
+    </div>
+
+    <script>
+        mermaid.initialize({startOnLoad: true});
+        
+        window.onload = function() {
+            const element = document.getElementById('mermaid-diagram');
+            const panzoomInstance = panzoom(element, {
+                maxZoom: 5,
+                minZoom: 0.1,
+                beforeWheel: function(e) {
+                    // allow wheel-zoom only if altKey is down. Otherwise - ignore
+                    var shouldIgnore = !e.altKey;
+                    return shouldIgnore;
+                }
+            });
+
+            document.getElementById('zoom-in').addEventListener('click', function() {
+                panzoomInstance.zoomIn();
+            });
+
+            document.getElementById('zoom-out').addEventListener('click', function() {
+                panzoomInstance.zoomOut();
+            });
+
+            document.getElementById('reset').addEventListener('click', function() {
+                panzoomInstance.reset();
+            });
+        };
+    </script>
+</body>
+</html>

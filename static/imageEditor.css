@@ -1,0 +1,146 @@
+/* imageEditor.css */
+.image-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.image-container {
+    max-width: 90%;
+    max-height: 90%;
+    position: relative;
+}
+
+.large-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 98%; /* Aumentado para maximizar el ancho */
+    max-width: 600px; /* Aumentado para permitir más espacio en pantallas grandes */
+}
+
+.button-group {
+    display: flex;
+    gap: 5px;
+}
+
+
+.editor-container button {
+    background-color: #007bff; /* Azul */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.editor-container button:hover {
+    background-color: #0056b3; /* Azul más oscuro */
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ffc107; /* Amarillo */
+    color: black;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+}
+
+.close-btn:hover {
+    background-color: #ffab00; /* Amarillo más oscuro */
+}
+
+/*--------------------------------*/
+
+
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.edit-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.edit-btn:active {
+    transform: scale(0.95);
+}
+
+.edit-btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-text {
+    font-size: 12px;
+    margin-top: 4px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.icon-only .edit-btn {
+    flex-direction: row;
+    font-size: 24px;
+}
+
+.icon-only .btn-text {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .editor-container {
+        width: 95%; /* Ligeramente reducido para pantallas muy pequeñas */
+    }
+    
+    .edit-btn {
+        min-height: 50px;
+        font-size: 18px;
+    }
+    
+    .btn-text {
+        font-size: 10px;
+    }
+}

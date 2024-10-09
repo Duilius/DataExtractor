@@ -1,0 +1,79 @@
+/* gallery.css */
+#thumbnail-section {
+    background-color: #fffaf0; /* Amarillo muy claro */
+    border: 2px solid #ffc107; /* Amarillo */
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#miniaturas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.miniatura {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 2px solid #007bff; /* Azul */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.miniatura:hover {
+    transform: scale(1.05);
+}
+
+.miniatura-container.editada .miniatura{
+    border: 2px solid #ffc107; /* Borde amarillo para imágenes editadas */
+}
+
+#action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#action-buttons .btn {
+    background-color: #007bff; /* Azul */
+    color: white;
+}
+
+#action-buttons .btn:hover {
+    background-color: #0056b3; /* Azul más oscuro */
+}
+
+#dropZone {
+    border: 2px dashed #ffc107; /* Amarillo */
+    border-radius: 5px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+    background-color: #fff9c4; /* Amarillo muy claro */
+    cursor: pointer;
+}
+
+#dropZone.drag-over {
+    background-color: #fff176; /* Amarillo más intenso */
+}
+
+#camera-visor {
+    width: 100%;
+    max-width: 640px;
+    height: 360px; /* Reducido de 480px */
+    margin: 0 auto;
+    background-color: #000;
+    position: relative;
+    overflow: hidden;
+}
+
+#cameraFeed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

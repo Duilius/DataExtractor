@@ -1,0 +1,50 @@
+<div class="search-modal"></div>
+    <h2>Búsqueda por Área</h2>
+    
+    <div class="search-container">
+        <input type="text" id="area-search" placeholder="Buscar área..." minlength="3">
+        <div id="area-results" class="search-results"></div>
+    </div>
+    
+    <div class="selected-item">
+        <strong>Área seleccionada:</strong>
+        <span id="selected-area">Ninguna</span>
+    </div>
+    
+    <button id="show-dependencies" class="btn" disabled>Mostrar Dependencias</button>
+    
+    <div class="search-container">
+        <div id="sub-area-results" class="search-results"></div>
+    </div>
+    
+    <div class="selected-item">
+        <strong>Sub-área seleccionada:</strong>
+        <span id="selected-sub-area">Ninguna</span>
+    </div>
+    
+    <button id="show-sub-dependencies" class="btn" disabled>Mostrar Sub-Dependencias</button>
+    
+    <div class="search-container">
+        <div id="sub-sub-area-results" class="search-results"></div>
+    </div>
+    
+    <div class="selected-item">
+        <strong>Sub-sub-área seleccionada:</strong>
+        <span id="selected-sub-sub-area">Ninguna</span>
+    </div>
+    
+    <h3>Empleados</h3>
+    <div id="employees-list" class="employees-container"></div>
+
+    <button type="submit">Buscar</button>
+</div>
+
+
+<script>
+document.getElementById('area-search-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const area = document.getElementById('area-select').value;
+    // Aquí irá la lógica para buscar y mostrar los resultados
+    document.getElementById('area-search-results').innerHTML = `Mostrando resultados para: ${area}`;
+});
+</script>

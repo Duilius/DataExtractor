@@ -1,13 +1,21 @@
+#Archivos en la raíz(root)
 reemplazo.py
+*ultima.py
+*old.py
 #imagenes
 *.jpg
 *.png
 #secrets
+claves.py
 scripts/py/claves.py
 rtf_ocr_claves.json
+#scripts en statis/js
+static/js/*copia*.js
+static/js/*-7-oct*.js
+
 #pycache
 __pycache__/
-#claves.py
+#claves.py  
 claves_dataextractor.py
 
 openai-env/
