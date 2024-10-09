@@ -157,9 +157,7 @@ async def servicios(request: Request):
 
 @app.get('/demo-inventario')
 async def servicios(request: Request):
-    #return templates.TemplateResponse("demo/inv_demo.html", {'request': request})
     return templates.TemplateResponse("demo/inventario_activos2.html", {'request': request})
-    #return templates.TemplateResponse("demo/inv_demo_old_old.html", {'request': request})
 
 @app.get('/fotos')
 async def fotos(request: Request):

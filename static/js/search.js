@@ -1,5 +1,9 @@
 // search.js
 
+// Asegúrate de que estas URLs usen HTTPS o sean relativas
+const areaSearchUrl = '/templates/demo/area_search.html';
+const workerSearchUrl = '/templates/demo/worker_search.html';
+
 export function initializeSearch() {
     const searchByAreaBtn = document.getElementById('searchByArea');
     const searchByWorkerBtn = document.getElementById('searchByWorker');
@@ -26,18 +30,20 @@ function openModal(contentUrl) {
     const modal = document.getElementById('modal');
     const modalBody = document.getElementById('modal-body');
 
-    console.log("Abriendo modal con URL:", contentUrl);  // Añadir este log
+     // Asegurar que la URL use HTTPS
+     const secureUrl = new URL(contentUrl, window.location.origin).href;
+    console.log("Abriendo modal con URL:", secureUrl);
 
-    fetch(contentUrl)
+    fetch(secureUrl)
         .then(response => {
-            console.log("Respuesta recibida:", response.status);  // Añadir este log
+            console.log("Respuesta recibida:", response.status);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.text();
         })
         .then(html => {
-            console.log("Contenido HTML recibido");  // Añadir este log
+            console.log("Contenido HTML recibido");
             modalBody.innerHTML = html;
             modal.style.display = 'block';
             setTimeout(() => {
