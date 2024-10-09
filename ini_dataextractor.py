@@ -177,7 +177,7 @@ async def serve_template(request: Request, path: str):
 # SERVICIO: INVENTARIO
 # --------------------------------------------------------------
 # Inicializar el cliente de OpenAI
-client = OpenAI(api_key=os.getenv("inventario_demo_key"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Inicializar el cliente de S3
 s3_client = boto3.client(
