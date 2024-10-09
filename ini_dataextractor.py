@@ -46,7 +46,6 @@ db_name = os.getenv("DB_NAME")
 db_type = os.getenv("DB_TYPE")
 
 app = FastAPI()
-app.add_middleware(HTTPSRedirectMiddleware)
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
