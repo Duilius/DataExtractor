@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama ERD Completo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.11.0/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/panzoom/9.4.0/panzoom.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #1e1e1e; 
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #bb86fc; }
+        #diagram-container { 
+            width: 90%; 
+            height: 80vh; 
+            border: 1px solid #bb86fc; 
+            overflow: hidden; 
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #mermaid-diagram { 
+            transform-origin: center center;
+        }
+        #zoom-controls { margin-top: 10px; }
+        button { 
+            margin-right: 10px; 
+            background-color: #bb86fc; 
+            color: #000000; 
+            border: none; 
+            padding: 5px 10px; 
+            cursor: pointer;
+        }
+        button:hover { background-color: #3700b3; }
+    </style>
+</head>
+<body>
+    <h1>Diagrama Entidad-Relación Completo</h1>
+    <div id="diagram-container">
+        <div id="mermaid-diagram" class="mermaid">
+        %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#bb86fc', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#ffffff', 'lineColor': '#03dac6', 'secondaryColor': '#03dac6', 'tertiaryColor': '#ff7597'}}}%%
+        erDiagram
+            INSTITUCION ||--o{ EMPLEADO : tiene
+            INSTITUCION ||--o{ OFICINA : tiene
+            INSTITUCION ||--o{ CATEGORIA : tiene
+            INSTITUCION ||--o{ BIEN : tiene
+            EMPLEADO ||--o{ OFICINA : "trabaja en"
+            EMPLEADO ||--o{ OFICINA : dirige
+            EMPLEADO ||--o{ MOVIMIENTO_BIEN : "es responsable"
+            EMPLEADO ||--o{ ASIGNACION_BIEN : "tiene asignado"
+            EMPLEADO ||--o{ SESION_CONFIRMACION : confirma
+            BIEN ||--o{ MOVIMIENTO_BIEN : tiene
+            BIEN ||--o{ ASIGNACION_BIEN : "es asignado"
+            CATEGORIA ||--o{ BIEN : clasifica
+            OFICINA ||--o{ INVENTARIO : tiene
+            INVENTARIO ||--o{ DETALLE_INVENTARIO : contiene
+            BIEN ||--o{ DETALLE_INVENTARIO : "está en"
+            EMPLEADO }o--o{ ROL : tiene
+            ROL }o--o{ PERMISO : tiene
+            
+            INSTITUCION {
+                int id PK
+                string nombre
+                string ruc
+                string direccion
+                string telefono
+                string email
+            }
+            
+            OFICINA {
+                int id PK
+                int institucion_id FK
+                int jefe_id FK
+                string nombre
+                string codigo
+            }
+            
+            EMPLEADO {
+                int id PK
+                int institucion_id FK
+                int oficina_id FK
+                string codigo
+                string nombre
+                string email
+                string celular
+                boolean es_inventariador
+                string password_hash
+                string foto_perfil
+            }
+            
+            CATEGORIA {
+                int id PK
+                int institucion_id FK
+                string nombre
+                string codigo
+            }
+            
+            BIEN {
+                int id PK
+                int categoria_id FK
+                int institucion_id FK
+                string codigo
+                string nombre
+                string descripcion
+                string marca
+                string modelo
+                string serie
+                date fecha_adquisicion
+                decimal valor_adquisicion
+                string estado
+            }
+            
+            MOVIMIENTO_BIEN {
+                int id PK
+                int bien_id FK
+                int empleado_responsable_id FK
+                date fecha_movimiento
+                string tipo_movimiento
+                string descripcion
+            }
+            
+            ASIGNACION_BIEN {
+                int id PK
+                int bien_id FK
+                int empleado_id FK
+                date fecha_asignacion
+                date fecha_devolucion
+                string estado
+            }
+            
+            SESION_CONFIRMACION {
+                int id PK
+                int empleado_id FK
+                datetime fecha_inicio
+                datetime fecha_fin
+                string estado
+            }
+            
+            INVENTARIO {
+                int id PK
+                int oficina_id FK
+                date fecha_inicio
+                date fecha_fin
+                string estado
+            }
+            
+            DETALLE_INVENTARIO {
+                int id PK
+                int inventario_id FK
+                int bien_id FK
+                string estado
+                string observaciones
+            }
+            
+            PERMISO {
+                int id PK
+                string nombre
+                string descripcion
+            }
+            
+            ROL {
+                int id PK
+                string nombre
+                string descripcion
+            }
+            
+            EMPLEADO_ROL {
+                int id PK
+                int empleado_id FK
+                int rol_id FK
+            }
+            
+            ROL_PERMISO {
+                int id PK
+                int rol_id FK
+                int permiso_id FK
+            }
+            
+            CONFIGURACION {
+                int id PK
+                string clave
+                string valor
+                string descripcion
+            }
+        </div>
+    </div>
+    <div id="zoom-controls">
+        <button id="zoom-in">Zoom In</button>
+        <button id="zoom-out">Zoom Out</button>
+        <button id="reset">Reset</button>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#bb86fc',
+                primaryTextColor: '#ffffff',
+                primaryBorderColor: '#ffffff',
+                lineColor: '#03dac6',
+                secondaryColor: '#03dac6',
+                tertiaryColor: '#ff7597'
+            }
+        });
+
+        window.addEventListener('load', function() {
+            const element = document.getElementById('mermaid-diagram');
+            const zoomInstance = panzoom(element, {
+                maxZoom: 5,
+                minZoom: 0.1,
+                boundsPadding: 0.1
+            });
+
+            document.getElementById('zoom-in').addEventListener('click', function() {
+                zoomInstance.zoomIn();
+            });
+
+            document.getElementById('zoom-out').addEventListener('click', function() {
+                zoomInstance.zoomOut();
+            });
+
+            document.getElementById('reset').addEventListener('click', function() {
+                zoomInstance.reset();
+            });
+        });
+    </script>
+</body>
+</html>

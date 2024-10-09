@@ -1,0 +1,68 @@
+<section id="form-section" hx-swap="outerHTML" hx-on::after-settle="limpiarFotosProcessadas()">
+    <div class="form-row">
+        <div class="form-field">
+            <div class="field-header">Cód. Patr.</div>
+            <input type="text" id="cod-patr" maxlength="10" placeholder="Cód. Patr." value="{{ datos.INV_Patrim }}">
+        </div>
+        <div class="form-field">
+            <div class="field-header">Cód-2023</div>
+            <input type="text" id="cod-2023" maxlength="10" placeholder="Cód-2023" value="{{ datos.INV_2023 }}">
+        </div>
+        <div class="form-field">
+            <div class="field-header">Cód-2022</div>
+            <input type="text" id="cod-2022" maxlength="10" placeholder="Cód-2022" value="{{ datos.INV_2021 }}">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-field">
+            <div class="field-header">Color</div>
+            <input type="text" id="color" maxlength="20" placeholder="Color" value="{{ datos.Color }}">
+        </div>
+        <div class="form-field">
+            <div class="field-header">Material</div>
+            <input type="text" id="material" maxlength="20" placeholder="Material" value="{{ datos.Material }}">
+        </div>
+        <div class="form-field">
+            <div class="field-header">Largo</div>
+            <input type="number" class="medidas" id="largo" step="0.01" placeholder="Largo">
+        </div>
+        <div class="form-field">
+            <div class="field-header">Ancho</div>
+            <input type="number" class="medidas" id="ancho" step="0.01" placeholder="Ancho">
+        </div>
+        <div class="form-field">
+            <div class="field-header">Alto</div>
+            <input type="number" class="medidas" id="alto" step="0.01" placeholder="Alto">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-field">
+            <div class="field-header">Marca</div>
+            <input type="text" id="marca" maxlength="10" placeholder="Marca" value="{{ datos.Marca }}">
+        </div>
+        <div class="form-field">
+            <div class="field-header">Modelo</div>
+            <input type="text" id="modelo" maxlength="10" placeholder="Modelo" value="{{ datos.Modelo }}">
+        </div>
+        <div class="form-field">
+            <div class="field-header">N° Serie</div>
+            <input type="text" id="num-serie" maxlength="10" placeholder="N° Serie" value="{{ datos.N_Serie }}">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-field">
+            <div class="field-header">Descripción</div>
+            <input type="text" id="descripcion" class="text-ancho" maxlength="300" placeholder="Descripción del bien" value="{{ datos.Descripcion }}">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-field">
+            <div class="field-header">Observaciones</div>
+            <input type="text" id="observaciones" class="text-ancho" maxlength="300" placeholder="Observaciones ...">
+        </div>
+    </div>
+</section>

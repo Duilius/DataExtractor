@@ -1,144 +1,240 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Inventarios</title>
-    <link rel="stylesheet" href="{{url_for( 'static', path='inventario_activos2.css')}}">
-    <script src="{{url_for('static', path='js/inventario_activos2.js')}}" defer></script>
-</head>
-<body>
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gestión de Inventarios</title>
 
-    <header id="main-header">
-        <div id="header-content">
-            <div id="logo-title">
-                <a href='/'><img width="45" height="45" src="{{url_for('static', path='dniextract/img/icons8-queen-bee-50.png')}}"></a>
-                <div id="logo_txt"><a href='/'><span id="data">Data</span><br><span id="extractor">Extractor</span></a></div>
-            </div>
-            <div id="button-container">
-                <div id="auth-buttons">
+		<script src="https://unpkg.com/htmx.org@1.8.4"></script>
+		<script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+
+        <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
+
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <link rel="stylesheet" href="{{url_for('static', path='main.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='search.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='worker_info.css')}}">
+    
+        <link rel="stylesheet" href="{{url_for('static', path='utils.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='camera.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='gallery.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='imageEditor.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='formHandler.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='worker_search.css')}}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropper/4.1.0/cropper.min.css">
+        <link rel="stylesheet" href="{{url_for('static', path='botones_editor_image.css')}}">
+    </head>
+    <body>
+        <header id="main-header">
+            <div id="header-content">
+                <div id="logo-title">
+                    <a href='/'>
+                        <img width="30" height="30" src="{{ url_for('static', path='img/icons8-queen-bee-50.png') }}" alt="Inicio">
+                        <span id="logo_txt">Data<span>Extractor</span></span>
+                    </a>
+                </div>
+                <nav id="main-nav">
+                    <!-- Aquí irán los enlaces de navegación -->
+                </nav>
+                <div id="user-controls">
+                    <button id="languageToggle" class="btn icon-btn">
+                        <img src="{{ url_for('static', path='img/flag-us.png') }}" alt="English" id="langIcon">
+                    </button>
                     <button id="loginBtn" class="btn btn_log">Login</button>
-                    <button id="logoutBtn" class="btn btn_log" disabled>Logout</button>
+                    <button id="logoutBtn" class="btn btn_log" style="display: none;">Logout</button>
+                    <button id="darkModeBtn" class="btn icon-btn">🌙</button>
                 </div>
-                <!--
-                <div id="modeToggle">
-                    <button id="darkModeBtn" class="btn">Oscuro</button>
-                    <button id="lightModeBtn" class="btn">Claro</button>
-                    <button id="midModeBtn" class="btn">Intermedio</button>
+            </div>
+        </header>
+    
+        <nav>
+            <button id="searchByArea" class="search-btn"><i class="fas fa-building"></i> Buscar por Área</button>
+            <button id="searchByWorker" class="search-btn"><i class="fas fa-user"></i> Buscar por Trabajador</button>
+        </nav>
+
+        <main>
+            <section id="worker-info">
+                <img id="worker-photo" src="{{ url_for('static', path='img/foto-no-hallado.jpeg') }}" alt="Foto del trabajador">
+                <div id="worker-details">
+                    <p id="worker-name">Nombre del Trabajador</p>
+                    <p id="worker-area">Área de Trabajo</p>
                 </div>
-                -->
+            </section>
+
+            <section id="camera-section">
+                <button id="cameraToggle" class="btn">Cámara On/Off</button>
+                <div id="camera-visor"> 
+                    <video id="cameraFeed" autoplay></video>
+                </div>
+                <button id="tomarFoto" class="btn">TOMAR FOTO</button>
+                <button id="voiceCaptureBtn" class="btn">FOTO POR VOZ</button>
+            </section>
+    
+            <section id="thumbnail-section">
+                <div id="miniaturas" class="carousel">
+                    <!-- Miniaturas se agregarán aquí -->
+                </div>
+                <div id="action-buttons">
+                    <button id="eliminarFoto" class="btn" disabled>Eliminar</button>
+                    <button id="subirFoto" class="btn">Subir Foto</button>
+                    <button id="guardarFoto" class="btn" disabled>Guardar</button>
+                    <button id="procesarFoto" class="btn" disabled>
+                        Procesar
+                    </button>
+                </div>
+                <div id="loading" class="htmx-indicator">Procesando...</div>
+                <div id="dropZone">
+                    Arrastra y suelta imágenes aquí
+                </div>
+                <input type="file" id="fileInput" style="display: none;" accept="image/*" multiple>
+            </section>
+    
+            <div id="tabs">
+                <button class="tab-btn active" data-tab="camera">Cámara</button>
+                <button class="tab-btn" data-tab="item-info">Información del Bien</button>
+            </div>
+
+            <section id="item-info" class="tab-content">
+                <!-- Aquí irá la información del bien inventariado -->
+                <form id="item-form">
+                    <!-- Campos del formulario -->
+                </form>
+            </section>
+
+
+            <section id="form-section" hx-swap="outerHTML" hx-on::after-settle="limpiarFotosProcessadas()" style="display: none;">
+            <!--
+                <div class="form-header">
+                    <h2>Detalles del Inventario</h2>
+                    <button id="openModalBtn" class="btn btn-modal">Ver en Modal</button>
+                </div>
+            -->
+                <div class="form-row">
+                    <div class="form-field">
+                        <div class="field-header">Cód. Patr.</div>
+                        <input type="text" id="cod-patr" maxlength="10" placeholder="Cód. Patr.">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Cód-2023</div>
+                        <input type="text" id="cod-2023" maxlength="10" placeholder="Cód-2023">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Cód-2022</div>
+                        <input type="text" id="cod-2022" maxlength="10" placeholder="Cód-2022">
+                    </div>
+                </div>
+            
+                <div class="form-row">
+                    <div class="form-field">
+                        <div class="field-header">Color</div>
+                        <input type="text" id="color" maxlength="20" placeholder="Color">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Material</div>
+                        <input type="text" id="material" maxlength="20" placeholder="Material">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Largo</div>
+                        <input type="number" class="medidas" id="largo" step="0.01" placeholder="Largo">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Ancho</div>
+                        <input type="number" class="medidas" id="ancho" step="0.01" placeholder="Ancho">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Alto</div>
+                        <input type="number" class="medidas" id="alto" step="0.01" placeholder="Alto">
+                    </div>
+                </div>
+            
+                <div class="form-row">
+                    <div class="form-field">
+                        <div class="field-header">Marca</div>
+                        <input type="text" id="marca" maxlength="10" placeholder="Marca">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Modelo</div>
+                        <input type="text" id="modelo" maxlength="10" placeholder="Modelo">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">N° Serie</div>
+                        <input type="text" id="num-serie" maxlength="10" placeholder="N° Serie">
+                    </div>
+                </div>
+            
+                <div class="form-row">
+                    <div class="form-field">
+                        <div class="field-header">Descripción</div>
+                        <input type="text" id="descripcion" class="text-ancho" maxlength="300" placeholder="Descripción del bien">
+                    </div>
+                </div>
+            
+                <div class="form-row">
+                    <div class="form-field">
+                        <div class="field-header">Observaciones</div>
+                        <input type="text" id="observaciones" class="text-ancho" maxlength="300" placeholder="Observaciones ...">
+                    </div>
+                </div>
+            </section>
+    
+            <div id="estado-section">
+                <div class="radio-group">
+                    <span>En uso:</span>
+                    <label><input type="radio" name="enUso" value="Sí"> Sí</label>
+                    <label><input type="radio" name="enUso" value="No"> No</label>
+                </div>
+                <div class="radio-group">
+                    <span>Estado:</span>
+                    <label><input type="radio" name="estado" value="Bueno"> B</label>
+                    <label><input type="radio" name="estado" value="Regular"> R</label>
+                    <label><input type="radio" name="estado" value="Malo"> M</label>
+                </div>
+            </div>
+        </main>
+    
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modal-body"></div>
             </div>
         </div>
-    </header>
-
-    <main>
-        <section id="camera-section">
-            <button id="cameraToggle" class="btn">Cámara On/Off</button>
-            <div id="camera-visor"> 
-                <video id="cameraFeed" autoplay></video>
-            </div>
-            <button id="tomarFoto" class="btn">TOMAR FOTO</button>
-            <button id="voiceCaptureBtn" class="btn">FOTO POR VOZ</button>
-        </section>
-
-        <section id="thumbnail-section">
-            <div id="miniaturas" class="carousel">
-                <!-- Miniaturas se agregarán aquí -->
-            </div>
-            <div id="action-buttons">
-                <button id="eliminarFoto" class="btn" disabled>Eliminar</button>
-                <button id="guardarFoto" class="btn" disabled>Guardar</button>
-                <button id="procesarFoto" class="btn" disabled>Procesar</button>
-            </div>
-        </section>
-
-        <section id="form-section" style="display: none;">
-            <div class="form-row">
-              <div class="form-field">
-                <div class="field-header">Cód. Patr.</div>
-                <input type="text" id="cod-patr" maxlength="10" placeholder="Cód. Patr.">
-              </div>
-              <div class="form-field">
-                <div class="field-header">Cód-2023</div>
-                <input type="text" id="cod-2023" maxlength="10" placeholder="Cód-2023">
-              </div>
-              <div class="form-field">
-                <div class="field-header">Cód-2022</div>
-                <input type="text" id="cod-2022" maxlength="10" placeholder="Cód-2022">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <div class="field-header">Color</div>
-                <input type="text" id="color" maxlength="20" placeholder="Color">
-              </div>
-              <div class="form-field">
-                <div class="field-header">Material</div>
-                <input type="text" id="material" maxlength="20" placeholder="Material">
-              </div>
-              <div class="form-field">
-                <div class="field-header">Largo</div>
-                <input type="number" class="medidas" id="largo" step="0.01" placeholder="Largo">
-              </div>
-              <div class="form-field">
-                <div class="field-header">Ancho</div>
-                <input type="number" class="medidas" id="ancho" step="0.01" placeholder="Ancho">
-              </div>
-              <div class="form-field">
-                <div class="field-header">Alto</div>
-                <input type="number" class="medidas" id="alto" step="0.01" placeholder="Alto">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <div class="field-header">Marca</div>
-                <input type="text" id="marca" maxlength="10" placeholder="Marca">
-              </div>
-              <div class="form-field">
-                <div class="field-header">Modelo</div>
-                <input type="text" id="modelo" maxlength="10" placeholder="Modelo">
-              </div>
-              <div class="form-field">
-                <div class="field-header">N° Serie</div>
-                <input type="text" id="num-serie" maxlength="10" placeholder="N° Serie">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <div class="field-header">Descripción</div>
-                <input type="text" id="descipcion" class="text-ancho" maxlength="300" placeholder="Descripción del bien">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <div class="field-header">Observaciones</div>
-                <input type="text" id="observaciones" class="text-ancho" maxlength="300" placeholder="Observaciones ...">
-              </div>
-            </div>
-          </section>
-
-        <section id="estado-section">
-            <div class="option-group">
-                <label for="enUso">En uso:</label>
-                <input type="radio" id="siUso" name="enUso" value="Sí"> Sí
-                <input type="radio" id="noUso" name="enUso" value="No"> No
-            </div>
-            <div class="option-group">
-                <label for="estado">Estado:</label>
-                <input type="radio" id="bueno" name="estado" value="Bueno"> B
-                <input type="radio" id="regular" name="estado" value="Regular"> R
-                <input type="radio" id="malo" name="estado" value="Malo"> M
-            </div>
-        </section>
-    </main>
-
-    <button id="descargarFoto" class="btn" disabled>Descargar</button>
-    <button id="registrarFoto" class="btn" disabled>Registrar</button>
-
     
+        <div class="form-buttons">
+            <button id="descartar" class="btn">Descartar</button>
+            <button id="registrarFoto" class="btn">Registrar</button>
+        </div>
+    
+
+        <script>
+            
+            document.getElementById('searchByWorker').addEventListener('click', function() {
+                htmx.ajax('GET', workerSearchUrl, '#modal-body');
+            });
+            
+
+            document.getElementById('searchByWorker').addEventListener('click', function() {
+                htmx.ajax('GET', workerSearchUrl, '#modal-body').then(function() {
+                    htmx.process(document.querySelector('#modal-body')); // Re-inicializa HTMX dentro del modal
+                });
+            });
+            
+
+            /*
+            document.addEventListener("htmx:afterOnLoad", function(evt) {
+                if (evt.detail.target.id === "modal-container") {
+                    // Aquí puedes agregar lógica si necesitas personalizar el comportamiento después de cargar el modal
+                }
+            });
+            */
+            var areaSearchUrl = "{{ url_for('serve_template', path='demo/area_search.html') }}";
+            var workerSearchUrl = "{{ url_for('serve_template', path='demo/worker_search.html') }}";
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+        <script type="module" src="{{url_for('static', path='js/main.js')}}"></script>
+        
+        <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
+        <script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}" defer></script>
 </body>
 </html>

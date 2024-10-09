@@ -1,5 +1,9 @@
-#from openai import 
-from user_agents import parse
+#import pytesseract
+import numpy as np
+import cv2
+from openai import OpenAI  # Cambié OpenAI por openai
+#from openai.types import OpenAIError
+from openai import OpenAIError
 import json
 import base64
 import os
@@ -10,333 +14,51 @@ from typing import Optional, List
 import uvicorn
 import fastapi
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import RedirectResponse,Response,FileResponse, HTMLResponse,JSONResponse
-from fastapi import APIRouter, Response, Header, Form, Path, UploadFile
+from fastapi.responses import RedirectResponse, Response, FileResponse, HTMLResponse
+from fastapi import APIRouter, Form, UploadFile
 
-import datetime
-from datetime import datetime, timedelta
-
+from fastapi.responses import JSONResponse
 
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
-##Importing the Modules Needed to Extract Text with Google Artificial Intelligence
+from utils.dispositivo import determinar_tipo_dispositivo
 
-from google.cloud import documentai
-from google.api_core.client_options import ClientOptions
-import os, json
-import claves # Archivo con las claves de acceso a la API de DocumentAI
+import claves
 
-from scripts.py.modulo_consulta_registro import consulta_registro
+from scripts.py.buscar_por_trabajador_inventario import consulta_registro
+#from scripts.py.modulo_consulta_registro import consulta_registro
 from scripts.py.modulo_graba_registro import graba_registro
 from scripts.py.modulo_verify_username import busca_username
 
 ## Variables de conexión a Base de Datos en Railway
-db_user=os.getenv("DB_USER")
-db_password=os.getenv("DB_PASSWORD")
-db_host=os.getenv("DB_HOST")
-db_port=os.getenv("DB_PORT")
-db_name=os.getenv("DB_NAME")
-db_type=os.getenv("DB_TYPE")
+db_user = os.getenv("DB_USER")
+db_password = os.getenv("DB_PASSWORD")
+db_host = os.getenv("DB_HOST")
+db_port = os.getenv("DB_PORT")
+db_name = os.getenv("DB_NAME")
+db_type = os.getenv("DB_TYPE")
 
-
-
-from utils.dispositivo import determinar_tipo_dispositivo
-
-app=FastAPI()
+app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
-app.mount( "/static" , StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # --------------------------------------------------------------
 # Load DNI Extractor - Home
 # --------------------------------------------------------------
-
 @app.get('/')
-async def root(request:Request):
-    
-    return templates.TemplateResponse("index-mobile.html", {'request':request}, media_type="text/html")
-    #return templates.TemplateResponse("ini-dataextractor.html", {'request':request}, media_type="text/html")
-
-# --------------------------------------------------------------
-# Recibe ancho de pantalla (al cargar o al redimensionar)
-# --------------------------------------------------------------
-@app.route("/cambiar_contenido", methods=["POST"] )
-#async def cambiar_contenido(request: Request, datos: dict):
-async def cambiar_contenido(request: Request):
-    datos = await request.json()
-    ancho_pantalla = datos.get("ancho", 0)
-    tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
-    
-    #return templates.TemplateResponse(f"index-{tipo_dispositivo}.html", {'request':request}, media_type="text/html")
-    return templates.TemplateResponse("index-mobile.html", {'request':request}, media_type="text/html")
-        
-    #except Exception as e:
-    #        print("qué será =====> ", e)
-    #        raise HTTPException(status_code=500, detail=str(e))
+async def root(request: Request):
+    return templates.TemplateResponse("index-mobile.html", {'request': request}, media_type="text/html")
 
 
-# --------------------------------------------------------------
-# DNI-EXTRACTOR: Maneja rutas
-# --------------------------------------------------------------
+# ------------------------------------------------------------------
+# Página de Demostraciones: demos.html , viene de: index-mobile.html
+# ------------------------------------------------------------------
+@app.get('/pagina-demos')
+async def demos(request: Request):
+    return templates.TemplateResponse("demos.html", {'request': request}, media_type="text/html")
 
-@app.get('/dni')
-async def root(request:Request):
-    
-    return templates.TemplateResponse("dniextractor/ini-dni.html", {'request':request}, media_type="text/html")
-
-
-@app.route("/contenido_dni", methods=["POST"] )
-async def contenido_dni(request: Request):
-
-    datos = await request.json()
-    ancho_pantalla = datos.get("ancho", 0)
-    tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
-        
-    return templates.TemplateResponse(f"dniextractor/dni-{tipo_dispositivo}.html", {'request':request}, media_type="text/html")
-
-
-# --------------------------------------------------------------
-# FAC-EXTRACTOR: Maneja rutas
-# --------------------------------------------------------------
-
-@app.get("/facturas")
-async def root(request:Request):
-    
-    return templates.TemplateResponse("facextractor/ini-fac.html", {'request':request}, media_type="text/html")
-
-@app.route("/contenido_fac", methods=["POST"] )
-async def contenido_fac(request: Request):
-
-    datos = await request.json()
-    ancho_pantalla = datos.get("ancho", 0)
-    tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
-        
-    return templates.TemplateResponse(f"facextractor/fac-{tipo_dispositivo}.html", {'request':request}, media_type="text/html")
-
-# --------------------------------------------------------------
-# INF-EXTRACTOR: Maneja rutas
-# --------------------------------------------------------------
-
-@app.get("/info-extractor")
-async def root(request:Request):
-    
-    return templates.TemplateResponse("infextractor/ini-inf.html", {'request':request}, media_type="text/html")
-
-@app.route("/contenido_inf", methods=["POST"] )
-async def contenido_inf(request: Request):
-
-    datos = await request.json()
-    ancho_pantalla = datos.get("ancho", 0)
-    tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
-        
-    return templates.TemplateResponse(f"infextractor/inf-{tipo_dispositivo}.html", {'request':request}, media_type="text/html")
-
-
-# --------------------------------------------------------------
-# Recibe "src" del Video de DEMOSTRACIÓN a Cargar
-# --------------------------------------------------------------
-@app.get("/videos-demo")
-async def video_demo(request: Request, origen:str ):
-    #origen = request.query_params.get("origen")
-    
-    print("Origen del Video", origen)
-    
-    # Construct the video source URL based on the selected option
-    #src_video = f"/static/videos-demo/{origen}.mp4"
-
-        
-    print("Video sobre ======> XXXXXXXXX", type(origen))
-    
-    return templates.TemplateResponse("videos-demo.html", {'request':request, "origen":origen})
-        
-    
-
-# --------------------------------------------------------------
-# Recibe Datos de Registro Nuevo Usuario - Prueba
-# --------------------------------------------------------------
-
-@app.post('/newUser/')
-async def new_user(request:Request, countryCode:str= Form(), ruc:str=Form(), numWa:str= Form(),nombre:str= Form(), email:str=Form(), consulta:str="", fecha:str=Form(), hora:str=Form()):
-    print("el nombre es ----------- ", nombre)
-    if len(nombre) > 3:
-
-        # Captura la dirección IP del usuario de la solicitud
-        ip_usuario = request.client.host
-        
-        # Supongamos que 'request' es la solicitud recibida por FastAPI
-        user_agent_string = request.headers.get('User-Agent')
-        user_agent = parse(user_agent_string)
-
-        # Determina el tipo de dispositivo
-        if user_agent.is_mobile:
-            tipo_dispositivo = "Móvil"
-        elif user_agent.is_tablet:
-            tipo_dispositivo = "Tableta"
-        else:
-            tipo_dispositivo = "Escritorio"
-        
-        print("dispositivo ========> ", tipo_dispositivo)
-
-        url_visitada="new_user"
-        boton_visitado="crear cuenta"
-        contactado_por="Duilio"
-
-        #Mensajes para el usuario mientras navega
-        mensaje_info="Bienvenido " + nombre
-        mensaje_aprovecha="Aprovecha"
-        mensaje_referidos="Invita a tus colegas"
-
-        foto_registrado="sin-foto"
-
-        #Genera CLAVE= numWa
-        clave=numWa
-
-        # Diccionario que representa los datos del formulario
-        datos_formulario = {
-            'pais_registrado': countryCode,
-            'ruc_registrado': ruc,
-            'whatsapp_registrado': numWa,
-            'nombres_registrado':nombre,
-            'email_registrado':email,
-            'consulta_registrado':consulta,
-            'ip_registrado':ip_usuario,
-            'fec_registrado':fecha,
-            'hora_registrado':hora,
-            'url_visitada': url_visitada,
-            'boton_visitado' : boton_visitado,
-            'dispositivo_conexion' : tipo_dispositivo,
-            'contactado_por' : contactado_por,
-            'clave_registrado':clave,
-            'mensaje_info':mensaje_info,
-            'mensaje_aprovecha':mensaje_aprovecha,
-            'mensaje_referidos': mensaje_referidos,
-            'foto_registrado':foto_registrado,
-            'fecha_sistema' : fecha,
-            'hora_sistema' : hora
-        }
-
-        #Envía Data a GRABAR en Tabla "registrados"
-        confirma_registro = graba_registro(datos_formulario)
-
-        print("Código País ===> ", countryCode)
-        print("N° WhatsApp ===> ", numWa)
-        print("Nombres ===> ", nombre)
-        print("Correo Electr. ===> ", email)
-        print("Consulta ===> ", consulta)
-        print("La Fecha es ====> ", fecha)
-        print("La hora es ====> ", hora)
-        #print("La Clave ===> ", clave)
-
-        return RedirectResponse("/servicios")
-    else:
-        print('muy corto =========== ', nombre)
-
-@app.post('/servicios')
-async def servicios(request:Request):
-
-    return templates.TemplateResponse("servicios-extraccion-datos.html",{'request':request})
-
-#Tipos de Servicio: DNI, Recetas, Listas Compra, Inventario, Facturas, Reconoc Facial
-@app.get('/extractorde')
-async def extractorDe(request:Request, tiposervicio:str=""):
-    print("Tipo de Servicio elegido: ", tiposervicio)
-
-    return templates.TemplateResponse("demo/"+tiposervicio+"_demo.html", {'request':request})
-    
-    #Hay un archivo por cada tipo de Servicio  <===
-    #En el caso de INVENTARIO: las imágenes cargadas/tomadas las procesa la ruta ==>> /upload_fotos
-
-
-### SERVICIO: INVENTARIO #### 👈👈👈
-@app.post("/upload_fotos")
-async def upload_fotos(request: Request, fotos: List[UploadFile]):
-
-    def encode_image(image_path):
-        with open(image_path, "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-        return encoded_string
-
-    script_directory = os.path.dirname(os.path.abspath(__file__))
-
-
-    ## Variables de entorno - Servicio de Google Cloud
-    endpoint = os.getenv('ENDPOINT')
-    project_id = os.getenv('PROJECT_ID')
-    processor_id = os.getenv('PROCESSOR_ID') # Create processor in Cloud Console
-    location = os.getenv('REGION') # Format is 'us' or 'eu'
-
-    #Create an instantiate to "DocumentProcessorServiceClient" class
-    client = documentai.DocumentProcessorServiceClient(
-            client_options=ClientOptions(api_endpoint=f"{location}-{endpoint}"))
-
-    #Get processor path
-    name = client.processor_path(project_id, location, processor_id)
-
-    carpeta_pdf = getcwd() + "/templates/image"
-
-    for file_uri in fotos:
-
-        #Get mime_type
-        if file_uri.filename.endswith('.pdf'):
-            mime_type = "application/pdf"
-        elif file_uri.filename.endswith('.jpg') or file_uri.filename.endswith('.jpeg'):
-            mime_type = "image/jpeg"
-        elif file_uri.filename.endswith('.png'):
-            mime_type = "image/png"
-        else:
-            # Establecer un valor predeterminado en caso de que no se encuentre ninguna extensión compatible
-            mime_type = "application/octet-stream"  # Tipo MIME genérico para datos binarios
-
-        lectura_archivo=""
-
-        try:
-            with open(file_uri.filename, 'rb') as file_bites:
-                file_content_bites = file_bites.read()
-                # Procesar el contenido del archivo, como guardar en una base de datos o realizar operaciones adicionales
-                lectura_archivo="OK"
-
-                #Create a "RawDocument" object (encapsulate the file content + mime_type)
-                raw_file_documentai = documentai.RawDocument(
-                    content=file_content_bites,
-                    mime_type=mime_type)
-
-                #Request to process the document (raw_file_documentai)
-                request_doc = documentai.ProcessRequest(
-                    name=name,
-                    raw_document=raw_file_documentai)   
-                
-                #Request the document to be processed and receive the response
-                response = client.process_document(request=request_doc)
-                document = response.document #Get the document object, already processed, from the response
-                
-                print("EL resultado es ===> ", document)
-
-                #Validate and Filter each document 👀
-                ###cabezera,json_data = filter_document(document)
-
-                #Insert the document into the database
-                ###mto_pagado, num_operacion = save_storage(cabezera,json_data)
-
-                #print("MONTO PAGADO ================>", mto_pagado)
-                #print("OERACION N°  ================>", num_operacion)
-
-                #Return the result of query
-                ###results, count_result = show_table_yape()
-
-                #Return the result of the insertion
-                ###print("Monto pagado: S/. ", mto_pagado)
-                ###print("Número de operación: ", num_operacion)	
-                ###return templates.TemplateResponse("partial_yape.html", {"request": request,"yapes": results, "toal_yapes_hoy": count_result, "lectura_archivo":lectura_archivo})
-
-        except FileNotFoundError:
-            # Manejar el caso cuando el archivo no se encuentra
-            lectura_archivo="No-hallado"
-            return templates.TemplateResponse("partial_yape.html", {"request": request, "lectura_archivo":lectura_archivo})
-        except IOError as e:
-            # Manejar otras excepciones de lectura/escritura
-            lectura_archivo=e
-            return templates.TemplateResponse("partial_yape.html", {"request": request, "lectura_archivo":lectura_archivo})
 
 #######################
 # /busca-usuarios
@@ -350,44 +72,279 @@ async def busca_usuarios(request:Request, busca_usuario:str=Form()):
 
     return templates.TemplateResponse("demo/usuarios_responsables.html",{"request":request,"users":users})
 
-#######################
-# Ruta para verificar si el username existe
-#######################
-@app.post("/verify-username")
-async def verify_username(username:str=Form(...)):
-    print("Usuario a loguearse ========>", username)
-    data = busca_username(username)
+
+# --------------------------------------------------------------
+# Recibe ancho de pantalla (al cargar o al redimensionar)
+# --------------------------------------------------------------
+@app.post("/cambiar_contenido")
+async def cambiar_contenido(request: Request):
+    datos = await request.json()
+    ancho_pantalla = datos.get("ancho", 0)
+    tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
     
-    #return JSONResponse(content=response_data)
+    return templates.TemplateResponse("inventario_activos.html", {'request': request}, media_type="text/html")
 
-    print("la data contiene =====>  ", data)
+# --------------------------------------------------------------
+# DNI-EXTRACTOR: Maneja rutas
+# --------------------------------------------------------------
+@app.get('/dni')
+async def dni_root(request: Request):
+    return templates.TemplateResponse("dniextractor/ini-dni.html", {'request': request}, media_type="text/html")
 
-    if data["existe"] == True:
-        print("Resultado de búsqueda ==========>", data["id"], " --- Nombres ===>", data["name"])
+@app.post("/contenido_dni")
+async def contenido_dni(request: Request):
+    datos = await request.json()
+    ancho_pantalla = datos.get("ancho", 0)
+    tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
+    return templates.TemplateResponse(f"dniextractor/dni-{tipo_dispositivo}.html", {'request': request}, media_type="text/html")
+
+# --------------------------------------------------------------
+# FAC-EXTRACTOR: Maneja rutas
+# --------------------------------------------------------------
+@app.get("/facturas")
+async def facturas_root(request: Request):
+    return templates.TemplateResponse("facextractor/ini-fac.html", {'request': request}, media_type="text/html")
+
+@app.post("/contenido_fac")
+async def contenido_fac(request: Request):
+    datos = await request.json()
+    ancho_pantalla = datos.get("ancho", 0)
+    tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
+    return templates.TemplateResponse(f"facextractor/fac-{tipo_dispositivo}.html", {'request': request}, media_type="text/html")
+
+# --------------------------------------------------------------
+# INF-EXTRACTOR: Maneja rutas
+# --------------------------------------------------------------
+@app.get("/info-extractor")
+async def info_extractor_root(request: Request):
+    return templates.TemplateResponse("infextractor/ini-inf.html", {'request': request}, media_type="text/html")
+
+@app.post("/contenido_inf")
+async def contenido_inf(request: Request):
+    datos = await request.json()
+    ancho_pantalla = datos.get("ancho", 0)
+    tipo_dispositivo = determinar_tipo_dispositivo(ancho_pantalla)
+    return templates.TemplateResponse(f"infextractor/inf-{tipo_dispositivo}.html", {'request': request}, media_type="text/html")
+
+# --------------------------------------------------------------
+# Recibe "src" del Video de DEMOSTRACIÓN a Cargar
+# --------------------------------------------------------------
+@app.get("/videos-demo")
+async def video_demo(request: Request, origen: str):
+    print("Origen del Video", origen)
+    return templates.TemplateResponse("videos-demo.html", {'request': request, "origen": origen})
+
+# --------------------------------------------------------------
+# Recibe Datos de Registro Nuevo Usuario - Prueba
+# --------------------------------------------------------------
+@app.post('/newUser/')
+async def new_user(request: Request, countryCode: str = Form(), numWa: str = Form(), nombre: str = Form(), consulta: str = Form()):
+    print("el nombre es ----------- ", nombre)
+    if len(nombre) > 3:
+        return RedirectResponse("/servicios")
     else:
-        print("usuario no encontrado")
+        print('muy corto =========== ', nombre)
 
-    return RedirectResponse("/servicios")
-@app.get('/blog')
-async def blog(request:Request):
-
-    return templates.TemplateResponse("demo/blog.html",{'request':request})
-
+@app.post('/servicios')
+async def servicios(request: Request):
+    #return templates.TemplateResponse("demo/inv_demo.html", {'request': request})
+    return templates.TemplateResponse("demo/inventario_activos2.html", {'request': request})
 
 
-@app.get('/blog-articulo/leer')
-async def blog(request: Request, art: str):
+@app.get('/demo-inventario')
+async def servicios(request: Request):
+    #return templates.TemplateResponse("demo/inv_demo.html", {'request': request})
+    return templates.TemplateResponse("demo/inventario_activos2.html", {'request': request})
+    #return templates.TemplateResponse("demo/inv_demo_old_old.html", {'request': request})
 
-    if art=="1":
-        pag_articulo ="mejores-herramientas-inventario"
-    if art=="2":
-        pag_articulo="incumplimiento_inventario"
-    if art=="3":
-        pag_articulo="razones_inventariar"
-    if art=="4":
-        pag_articulo="sugerencias_ia_estado"
-    if art=="5":
-        pag_articulo="sugerencias_5g_estado"
+@app.get('/fotos')
+async def fotos(request: Request):
+    #return templates.TemplateResponse("demo/inv_demo.html", {'request': request})
+    return templates.TemplateResponse("demo/foto_voz.html", {'request': request})
 
-    return templates.TemplateResponse(F"demo/"+pag_articulo+".html",{'request':request})
+#PROCESA ARCHIVOS HTML (area_search.html y worker_search.html) contenidos en modal (.modal)
+#al hacer clic en botones: BUSCAR POR AREA o BUSCAR POR TRABAJADOR
+@app.get("/templates/{path:path}")
+async def serve_template(request: Request, path: str):
+    return templates.TemplateResponse(path, {"request": request})
 
+
+# --------------------------------------------------------------
+# SERVICIO: INVENTARIO
+# --------------------------------------------------------------
+
+# Inicializar el cliente de OpenAI
+client = OpenAI(api_key=os.getenv("inventario_demo_key"))
+
+# Función para codificar la imagen en base64
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode("utf-8")
+
+import json
+import re
+
+
+import json
+import re
+import os
+from fastapi import FastAPI, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
+from openai import OpenAIError  # Asegúrate de tener la importación correcta para errores
+
+
+
+def clean_value(value):
+    """Limpia los valores para asegurar que sean válidos en el JSON"""
+    if isinstance(value, str):
+        # Elimina comas o puntos problemáticos, o trunca si es necesario
+        return value.replace(',', '').replace('.', '').strip()[:50]  # Limitar a 50 caracteres
+    return value
+
+def merge_dicts(dict1, dict2):
+    """Combina dos diccionarios según las reglas definidas."""
+    combined = dict1.copy()  # Copiar el primer diccionario
+
+    for key, value in dict2.items():
+        value = clean_value(value)  # Limpiar el valor antes de fusionar
+        if value != "No aplica":
+            if combined[key] == "No aplica":
+                combined[key] = value
+
+    return combined
+
+@app.post("/upload_fotos")
+async def upload_fotos(fotos: List[UploadFile]):
+    if not client.api_key:
+        raise HTTPException(status_code=500, detail="La clave de API de OpenAI no se ha encontrado en las variables de entorno.")
+
+    # Diccionario combinado inicializado
+    datos_combinados = {
+        "Cod. Patrim": "No aplica",
+        "Cod. 2023": "No aplica",
+        "Cod. 2021": "No aplica",
+        "Marca": "No aplica",
+        "Modelo": "No aplica",
+        "N Serie": "No aplica",
+        "Color": "No aplica",
+        "Descripción": "No aplica"
+    }
+
+    for foto in fotos:
+        try:
+            # Guardar y procesar imagen
+            photo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), foto.filename)
+            with open(photo_path, "wb") as photo_file:
+                photo_file.write(await foto.read())
+
+            image_base64 = encode_image(photo_path)
+
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": """
+                            A continuación, se te proporcionarán varias imágenes que contienen etiquetas de inventario de bienes. Extrae la información en el siguiente formato de diccionario sin agregar texto explicativo ni comentarios adicionales. Solo proporciona la estructura del diccionario y asegúrate de que esté bien formateado como JSON:
+
+                            diccionario = {
+                                "Cod. Patrim": valor extraído,
+                                "Cod. 2023": valor extraído,
+                                "Cod. 2021": valor extraído,
+                                "Marca": valor extraído,
+                                "Modelo": valor extraído,
+                                "N Serie": valor extraído,
+                                "Color": valor extraído,
+                                "Descripción": valor extraído
+                            }
+
+                            Considera las siguientes reglas:
+                            1. El primer valor del diccionario corresponderá al Código Patrimonial, el cual nunca tiene guiones y nunca es igual a ningún otro código en ninguna de las etiquetas. Esta etiqueta no indica el año ni las palabras "inventario", "INV" ni ninguna referencia a ello. Es decir, no puede haber un código patrimonial (campo Cod. Patrim.)que contenga un guion, ni estar prcedido o titulado, ni nada parecido, con los términos INVENTARIO, INV., INVENT., etc.
+                            2. Los campos "Cod. 2023" y "Cod. 2021" siempre tienen un guión.
+                            3. No siempre están presentes en una imagen la "Marca", el "Modelo", ni el "N de Serie".
+                            4. El colorsiempre extraelo y prioriza el de la imagen que capta el objeto completo o de la foto panorámica.
+                            5. La descripción debe corresponder con la de la imagen panorámica y/o la que muestre el objeto principal y/o de mayor tamaño que se aprecie en la foto.
+                            6. Para el año 2023, la etiqueta debe contener "INV. 2023".
+                            7. Para el año 2021, la etiqueta debe contener "INV. 2021".
+                            8. Si algún dato contiene comas, puntos, o elementos que puedan causar problemas en la construcción del JSON, trunca el dato o simplifícalo.
+                            9. Si no se encuentra un dato o hay duda, escribe "No Aplica" en su lugar.
+                            10. Si se procesan varias imágenes, combina los datos en un único diccionario sin duplicados y sin campos innecesarios.
+                            
+                            Responder solo con el siguiente formato:
+                            
+                            diccionario = {
+                                "Cod. Patrim": valor extraído,
+                                "Cod. 2023": valor extraído,
+                                "Cod. 2021": valor extraído,
+                                "Marca": valor extraído,
+                                "Modelo": valor extraído,
+                                "N Serie": valor extraído,
+                                "Color": valor extraído,
+                                "Material": valor extraído,
+                                "Descripción": valor extraído
+                            }
+
+                            Esto es importantísimo: al diccionario ofrecido le darás el nombre diccionario. 
+
+                            Intenta siempre describir la imagen para darle valor al campo "Descripción", siempre y cuando tengas visión completa del objeto principal de la imagen.
+
+                            Recuerda que este reconocimiento es respecto a objetos o bienes y que no interesan los espacios o ambientes en que estos encuentran. Es decir, fíjate, enfoca o concéntrate en el objeto de mayor volumen o tamaño; ese es el objeto que debes describir.
+
+                            El resultado debe ser un diccionario JSON sin explicaciones adicionales, solo los datos solicitados. Siempre debes devolver un JSON válido, incluso si alguna de las imagenes no tiene ninguna etiqueta y/o es necesario truncar o procesar parcialmente los datos.
+
+                            Si tienes dificultad, poca información, escasa o nula fiabilidad o duda para darle valor a un campo, asignale el valor "No Aplica", pero SIEMPRE DEVUELVE UN JSON VÁLIDO.
+                            Si debes truncar o no puedes interpretar alguno de los campos, simplemente le asignas el valor "No Aplica", pero DEVUELVE o RESPONDE SIEMPRE con un Json válido.
+                            """
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            }
+                        }
+                    ]
+                }
+            ]
+
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                max_tokens=300
+            )
+
+            response_text = response.choices[0].message.content.strip()
+
+            if not response_text:
+                raise ValueError("La respuesta de GPT-4 Vision está vacía")
+
+            # Extracción del bloque JSON usando expresiones regulares
+            json_match = re.search(r"\{.*?\}", response_text, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                try:
+                    response_dict = json.loads(json_str)  # Validar JSON
+                except json.JSONDecodeError:
+                    raise ValueError("La respuesta no es un JSON válido")
+
+                # Combinar los datos en el diccionario final
+                datos_combinados = merge_dicts(datos_combinados, response_dict)
+            else:
+                raise ValueError("La respuesta no contiene un JSON válido")
+
+        except ValueError as e:
+            return JSONResponse(content={"status": "error", "detail": str(e)}, status_code=500)
+        except OpenAIError as e:
+            return JSONResponse(content={"status": "error", "detail": f"Error al procesar la imagen: {str(e)}"}, status_code=500)
+        except Exception as e:
+            return JSONResponse(content={"status": "error", "detail": f"Error inesperado: {str(e)}"}, status_code=500)
+        finally:
+            if os.path.exists(photo_path):
+                os.remove(photo_path)
+
+    # Asegurarnos de devolver correctamente el diccionario combinado
+    # Imprimir el diccionario combinado en la terminal
+    print(datos_combinados)
+
+    # Asegurarnos de devolver correctamente el diccionario combinado
+    return JSONResponse(content={"diccionario": datos_combinados}, status_code=200)

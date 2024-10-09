@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+    <link rel="stylesheet" href="{{url_for('static', path='worker_search.css')}}">
+    <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
+</head>
+<body>
+
+<h2>Búsqueda por Trabajador</h2>
+
+<div id="tipo-demo">
+    <form id="worker-search-form">
+        <input type="search" name="busca_usuario" size="20" id="busca_usuario" placeholder="Código o Apellido - trabajador" 
+        hx-post="/busca-usuarios"
+        hx-trigger="keyup changed delay:1000ms"
+        hx-target="#lista-usuarios"
+        _="on keyup 
+            if my.value.length is greater than 2
+                remove .oculto from #lista-usuarios 
+            else
+                add .oculto to #lista-usuarios
+            end
+         "/>
+
+    </form>
+
+</div>
+<div id="lista-usuarios" class="oculto"></div>
+
+<div id="inv-img-subida">
+    
+    <i class='bx bx-camera inv-img-subida'></i></span>
+    
+</div>
+
+<script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
+<script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}"></script>
+</body>
+</html>
+

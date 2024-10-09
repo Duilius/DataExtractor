@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+
+    <title>DataExtractor - Inventario demo</title>
+</head>
+<body>
+    <div id="tipo-demo">
+        <form>
+            <input type="search" name="busca_usuario" size="20" id="busca_usuario" placeholder="Código o Apellido - trabajador"
+            hx-post="/busca-usuarios"
+            hx-trigger="keyup changed delay:1000ms"
+            hx-target="#lista-usuarios"
+            _="on keyup 
+                if my.value.length is greater than 2
+                    remove .oculto from #lista-usuarios 
+                else
+                    add .oculto to #lista-usuarios
+                end
+             "  
+            />
+            <div id="data-empleado">
+                <div id="texto-empleado">
+                    <p>
+                        <input type="text" class="data-empleado" id="codigo" size="20" onchange="fotoChica(this)">
+                        <br>
+                        <input type="text" class="data-empleado" readonly id="apellidos" size="20">
+                        <!--<input type="text" class="data-empleado" readonly id="nombres" size="20">-->
+                        <br>
+                        <input type="text" class="data-empleado" readonly id="gerencia" size="30" placeholder="xxxxxxxxxxxxxxx">
+                    </p>
+                </div>
+            
+                <div id="img-empleado">
+                     <img id="foto-empleado" src="{{ url_for('static', path='img/foto-no-hallado.jpeg') }}" alt="Foto del empleado" min-width="60px" min-height="100px">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="lista-usuarios" class="oculto"></div>
+
+    <div id="inv-img-subida">
+        
+        <i class='bx bx-camera inv-img-subida'></i></span>
+        
+    </div>
+
+    <div id="datos-grabados">
+        <div id="descripcion"><p>Descripción del Bien</p></div>
+        <div id="codigos-leidos"></div>
+    </div>
+
+    <div id="botonera">
+        <form hx-encoding='multipart/form-data' hx-post='/upload_fotos'>
+            <input type="file" name="fotos" accept=".pdf, .png, .jpg, .jpeg" onchange="previewImage(event)">
+            <button  type="submit" 
+                    hx-post="/upload_fotos" 
+                    hx-trigger="click" 
+                    hx-swap="innerHTML"
+                    hx-target="#codigos-leidos" >
+                SUBIR FOTO
+            </button> 
+            <button onclick="startCamera()">
+            ABRIR CAMARA</button> 
+        </form>
+    </div>
+
+    <div id="enviado">
+        <p>Revisa tu Email</p>
+    </div>
+
+    <script>
+        // Función para acceder a la cámara
+        async function startCamera() {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            // Manipular el flujo de la cámara según tus necesidades
+          } catch (error) {
+            console.error('Error al acceder a la cámara:', error);
+          }
+        }
+      </script>
+
+
+<!-- MOSTRAR IMAGEN SUBIDA/CARGADA -->
+<script>
+
+  function previewImage(event) {
+      const fileInput = event.target;
+      const files = fileInput.files;
+      const imagePreview = document.getElementById('inv-img-subida');
+
+      if (files.length > 0) {
+          const file = files[0];
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+              const imageUrl = e.target.result;
+              const imgElement = document.createElement('img');
+              imgElement.src = imageUrl;
+
+              imgElement.style.width  = '100%'; // Establece el ancho de la imagen al 100% del contenedor
+              imgElement.style.height = 'auto'; // La altura se ajustará automáticamente para mantener la proporción
+
+              imagePreview.innerHTML = ''; // Limpiar la vista previa existente
+              imagePreview.appendChild(imgElement);
+          };
+
+          reader.readAsDataURL(file);
+      }
+  }
+
+/*
+  function startCamera() {
+      // Lógica para activar la cámara y capturar la imagen
+      // Esta parte debe ser implementada según la API de captura de imágenes del navegador
+      alert('La funcionalidad de tomar una foto aún no está implementada.');
+  }
+  */
+</script>
+
+
+<script>
+  let cropper;
+
+  function previewImage(event) {
+      const file = event.target.files[0];
+      const image = document.createElement('img');
+      const cropperContainer = document.getElementById('inv-img-subida');
+
+      const fileInput = event.target;
+      const files = fileInput.files;
+      const imagePreview = document.getElementById('inv-img-subida');
+
+      image.onload = function () {
+          cropper = new Cropper(image, {
+              aspectRatio: 1, // Proporción de aspecto (opcional)
+              viewMode: 2, // Vista libre
+          });
+          cropperContainer.innerHTML = '';
+          cropperContainer.appendChild(image);
+      };
+
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+              const imageUrl = e.target.result;
+              const imgElement = document.createElement('img');
+              imgElement.src = imageUrl;
+
+              imgElement.style.width  = '100%'; // Establece el ancho de la imagen al 100% del contenedor
+              imgElement.style.height = 'auto'; // La altura se ajustará automáticamente para mantener la proporción
+
+              imagePreview.innerHTML = ''; // Limpiar la vista previa existente
+              imagePreview.appendChild(imgElement);
+          };
+
+
+      reader.readAsDataURL(file);
+  }
+</script>
+
+
+<script>
+
+function fotoChica(input) {
+    alert("EL SRC ===> " + input);
+            const foto_chica = document.getElementById("foto-empleado");
+
+            if (input.value === "") {
+                foto_chica.src = "{{ url_for('static', path='img/foto-no-hallado.jpeg') }}";
+            } else {
+                foto_chica.src = "{{ url_for('static', path='dniextract/img/') }}" + input.value + ".jpeg";
+            }
+}
+
+</script>
+
+</body>
+</html>

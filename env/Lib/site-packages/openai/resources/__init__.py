@@ -48,6 +48,22 @@ from .models import (
     ModelsWithStreamingResponse,
     AsyncModelsWithStreamingResponse,
 )
+from .batches import (
+    Batches,
+    AsyncBatches,
+    BatchesWithRawResponse,
+    AsyncBatchesWithRawResponse,
+    BatchesWithStreamingResponse,
+    AsyncBatchesWithStreamingResponse,
+)
+from .uploads import (
+    Uploads,
+    AsyncUploads,
+    UploadsWithRawResponse,
+    AsyncUploadsWithRawResponse,
+    UploadsWithStreamingResponse,
+    AsyncUploadsWithStreamingResponse,
+)
 from .embeddings import (
     Embeddings,
     AsyncEmbeddings,
@@ -142,4 +158,16 @@ __all__ = [
     "AsyncBetaWithRawResponse",
     "BetaWithStreamingResponse",
     "AsyncBetaWithStreamingResponse",
+    "Batches",
+    "AsyncBatches",
+    "BatchesWithRawResponse",
+    "AsyncBatchesWithRawResponse",
+    "BatchesWithStreamingResponse",
+    "AsyncBatchesWithStreamingResponse",
+    "Uploads",
+    "AsyncUploads",
+    "UploadsWithRawResponse",
+    "AsyncUploadsWithRawResponse",
+    "UploadsWithStreamingResponse",
+    "AsyncUploadsWithStreamingResponse",
 ]
