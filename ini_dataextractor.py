@@ -1,6 +1,4 @@
 #import pytesseract
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
-
 from io import BytesIO
 from PIL import Image  # Añadida esta importación
 import boto3
