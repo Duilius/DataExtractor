@@ -31,44 +31,35 @@ function openModal(contentUrl) {
     const modalBody = document.getElementById('modal-body');
 
      // Asegurar que la URL use HTTPS
-     const secureUrl = new URL(contentUrl, window.location.origin).href;
-    console.log("Abriendo modal con URL:", secureUrl);
+     //const secureUrl = new URL(contentUrl, window.location.origin).href;
+     console.log("Abriendo modal con URL:", contentUrl);
 
-    fetch(secureUrl)
-        .then(response => {
-            console.log("Respuesta recibida:", response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(html => {
-            console.log("Contenido HTML recibido");
-            modalBody.innerHTML = html;
-            modal.style.display = 'block';
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 10);
-        })
-        .catch(error => {
-            console.error('Error loading modal content:', error);
-            modalBody.innerHTML = `<p>Error al cargar el contenido: ${error.message}</p>`;
-            modal.style.display = 'block';
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 10);
-        });
-
-    const closeBtn = modal.querySelector('.close');
-    if (closeBtn) {
-        closeBtn.onclick = closeModal;
-    }
-
-    window.onclick = (event) => {
-        if (event.target === modal) {
-            closeModal();
+     fetch(contentUrl, {
+        headers: {
+            'HX-Request': 'true'
         }
-    };
+    })
+    .then(response => {
+        console.log("Respuesta recibida:", response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+    })
+    .then(html => {
+        console.log("Contenido HTML recibido");
+        modalBody.innerHTML = html;
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+        htmx.process(modalBody);
+    })
+    .catch(error => {
+        console.error('Error loading modal content:', error);
+        modalBody.innerHTML = `<p>Error al cargar el contenido: ${error.message}</p>`;
+        modal.style.display = 'block';
+    });
 }
 
 function closeModal() {

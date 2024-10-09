@@ -166,10 +166,8 @@ async def fotos(request: Request):
 
 #PROCESA ARCHIVOS HTML (area_search.html y worker_search.html) contenidos en modal (.modal)
 #al hacer clic en botones: BUSCAR POR AREA o BUSCAR POR TRABAJADOR
-@app.get("/templates/{path:path}")
+@app.get("/templates/{path:path}", response_class=HTMLResponse)
 async def serve_template(request: Request, path: str):
-    if request.url.scheme != 'https':
-        return RedirectResponse(request.url.replace(scheme='https'))
     return templates.TemplateResponse(path, {"request": request})
 
 
