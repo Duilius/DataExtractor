@@ -1,4 +1,6 @@
 #import pytesseract
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+
 from io import BytesIO
 from PIL import Image  # Añadida esta importación
 import boto3
@@ -44,6 +46,7 @@ db_name = os.getenv("DB_NAME")
 db_type = os.getenv("DB_TYPE")
 
 app = FastAPI()
+app.add_middleware(HTTPSRedirectMiddleware)
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -168,6 +171,8 @@ async def fotos(request: Request):
 #al hacer clic en botones: BUSCAR POR AREA o BUSCAR POR TRABAJADOR
 @app.get("/templates/{path:path}")
 async def serve_template(request: Request, path: str):
+    if request.url.scheme != 'https':
+        return RedirectResponse(request.url.replace(scheme='https'))
     return templates.TemplateResponse(path, {"request": request})
 
 
