@@ -1,5 +1,16 @@
 /* Añadir al final de main.css */
+body{
+  width: 99%;
+  margin: 0px auto;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
 
+main{
+  width: 98%;
+  margin: 0px auto;
+}
 /* Estilos para los nuevos botones de búsqueda */
 .search-btn {
     background-color: var(--primary-color);
@@ -159,3 +170,76 @@ header {
   .close:hover {
     color: var(--text-primary);
   }
+
+
+/*RADIO BUTTONS DE EN-USO y ESTADO Y */
+#estado-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px; /* Disminuir padding */
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #333;
+  color: #fff;
+  max-width: 97%;
+  margin: 5 auto; /* Para centrar horizontalmente */
+  font-size: 14px; /* Tamaño de fuente ligeramente reducido */
+}
+
+.radio-group {
+  display: flex;
+  align-items: center;
+}
+
+.radio-group span {
+  margin-right: 8px;
+  color: #fff; /* Color del texto */
+  font-size: 14px; /* Tamaño de fuente reducido */
+}
+
+.radio-group label {
+  margin-right: 10px;
+  color: #fff; /* Color del texto */
+  font-size: 14px;
+}
+
+input[type="radio"] {
+  margin-left: 3px; /* Espacio reducido entre botón y texto */
+  margin-right: 3px;
+}
+
+
+
+  /*Estilos para botón DESCARTAR y REGISTRAR*/
+  #form-buttons-container {
+    display: flex;
+    justify-content: space-between; /* Para que los botones queden a los extremos */
+    align-items: center;
+    max-width: 600px; /* Limitar el ancho del contenedor */
+    margin: 0 auto; /* Centrar el contenedor */
+    padding: 10px;
+    background-color: #333; /* Fondo oscuro */
+    border-radius: 8px; /* Bordes redondeados */
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #fff; /* Color de texto blanco */
+}
+
+.descartar-btn {
+    background-color: #f44336; /* Color rojo para el botón de Descartar */
+}
+
+.registrar-btn {
+    background-color: #4CAF50; /* Color verde para el botón de Registrar */
+}
+
+.btn:hover {
+    opacity: 0.8; /* Efecto de opacidad al pasar el ratón */
+}

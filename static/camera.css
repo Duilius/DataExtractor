@@ -1,5 +1,6 @@
 /* camera.css */
 #camera-section {
+    text-align: center;
     background-color: #f0f8ff; /* Azul claro */
     border: 2px solid #007bff; /* Azul */
     border-radius: 10px;
