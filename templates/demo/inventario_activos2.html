@@ -93,11 +93,6 @@
                 <input type="file" id="fileInput" style="display: none;" accept="image/*" multiple>
             </section>
     
-            <div id="tabs">
-                <button class="tab-btn active" data-tab="camera">Cámara</button>
-                <button class="tab-btn" data-tab="item-info">Información del Bien</button>
-            </div>
-
             <section id="item-info" class="tab-content">
                 <!-- Aquí irá la información del bien inventariado -->
                 <form id="item-form">
@@ -107,12 +102,7 @@
 
 
             <section id="form-section" hx-swap="outerHTML" hx-on::after-settle="limpiarFotosProcessadas()" style="display: none;">
-            <!--
-                <div class="form-header">
-                    <h2>Detalles del Inventario</h2>
-                    <button id="openModalBtn" class="btn btn-modal">Ver en Modal</button>
-                </div>
-            -->
+            
                 <div class="form-row">
                     <div class="form-field">
                         <div class="field-header">Cód. Patr.</div>
@@ -184,16 +174,17 @@
             <div id="estado-section">
                 <div class="radio-group">
                     <span>En uso:</span>
-                    <label><input type="radio" name="enUso" value="Sí"> Sí</label>
-                    <label><input type="radio" name="enUso" value="No"> No</label>
+                    <label>Sí<input type="radio" name="enUso" value="Sí"></label>
+                    <label>No<input type="radio" name="enUso" value="No"></label>
                 </div>
                 <div class="radio-group">
                     <span>Estado:</span>
-                    <label><input type="radio" name="estado" value="Bueno"> B</label>
-                    <label><input type="radio" name="estado" value="Regular"> R</label>
-                    <label><input type="radio" name="estado" value="Malo"> M</label>
+                    <label>B<input type="radio" name="estado" value="Bueno"></label>
+                    <label>R<input type="radio" name="estado" value="Regular"></label>
+                    <label>M<input type="radio" name="estado" value="Malo"></label>
                 </div>
             </div>
+            
         </main>
     
         <div id="modal" class="modal">
@@ -203,10 +194,11 @@
             </div>
         </div>
     
-        <div class="form-buttons">
-            <button id="descartar" class="btn">Descartar</button>
-            <button id="registrarFoto" class="btn">Registrar</button>
+        <div id="form-buttons-container">
+            <button id="descartarData" class="btn descartar-btn">Descartar</button>
+            <button id="registrarFoto" class="btn registrar-btn">Registrar</button>
         </div>
+        
     
 
         <script>
