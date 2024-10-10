@@ -8,4 +8,3 @@ os.environ['DB_HOST']="roundhouse.proxy.rlwy.net"
 os.environ['DB_PORT']="37890"
 os.environ['DB_NAME']="railway"
 os.environ['DB_TYPE']="mysql+pymysql"
-

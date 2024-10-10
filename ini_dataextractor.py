@@ -174,6 +174,7 @@ async def serve_template(request: Request, path: str):
 # --------------------------------------------------------------
 # SERVICIO: INVENTARIO
 # --------------------------------------------------------------
+
 # Inicializar el cliente de OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -208,43 +209,36 @@ def resize_image(image_data: bytes, max_size: tuple) -> bytes:
         img.save(buffer, format="PNG")
         return buffer.getvalue()
 
-def upload_image_to_s3(file_data: bytes, uuid: str) -> str:
+# Nueva función para generar nombres de archivos
+def generate_image_filename(cod_usuario: str, cod_empleado: str, tipo_imagen: str, inv_2024: str) -> str:
+    return f"CORPAC-{cod_usuario}-{cod_empleado}-{tipo_imagen}-{inv_2024}.jpg"
+
+# Función modificada para subir la imagen con el nombre correcto
+def upload_image_to_s3(file_data: bytes, filename: str) -> str:
     try:
-        s3_filename = f"{uuid}.png"
-        s3_client.put_object(Body=file_data, Bucket=BUCKET_NAME, Key=s3_filename)
-        return f"https://{BUCKET_NAME}.s3.amazonaws.com/{s3_filename}"
+        s3_client.put_object(Body=file_data, Bucket=BUCKET_NAME, Key=filename)
+        return f"https://{BUCKET_NAME}.s3.amazonaws.com/{filename}"
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al subir la imagen a S3: {str(e)}")
 
 @app.post("/upload_fotos")
 async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uuid: List[str] = Form(...)):
-    #print("--- Inicio de la solicitud ---")
-    #print(f"Content-Type: {request.headers.get('Content-Type')}")
-
-    
     form = await request.form()
-    #print("Form data:", form)
     
+    # Aquí recibimos COD_USUARIO y COD_EMPLEADO desde el formulario
+    cod_usuario = form.get('cod_usuario')
+    cod_empleado = form.get('cod_empleado')
+
     fotos = form.getlist("fotos")
     uuid = form.getlist("uuid")
-    
-    #print(f"Received {len(fotos)} photos and {len(uuid)} UUIDs")
-    
-    for i, (foto, id) in enumerate(zip(fotos, uuid)):
-        if isinstance(foto, UploadFile):
-            content = await foto.read()
-            #print(f"Photo {i}: filename={foto.filename}, size={len(content)} bytes, UUID={id}")
-            await foto.seek(0)
-        else:
-            print(f"Photo {i}: type={type(foto)}, UUID={id}")
 
-    if not client.api_key:
-        raise HTTPException(status_code=500, detail="La clave de API de OpenAI no se ha encontrado en las variables de entorno.")
-
+    # Diccionario de datos combinados
     datos_combinados = {
         "INV_Patrim": "No disponible",
+        "INV_2024": "No disponible",
         "INV_2023": "No disponible",
         "INV_2021": "No disponible",
+        "INV_2019": "No disponible",
         "Marca": "No disponible",
         "Modelo": "No disponible",
         "N_Serie": "No disponible",
@@ -265,7 +259,23 @@ async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uu
         base64_image = base64.b64encode(resized_image).decode("utf-8")
         image_contents.append(base64_image)
 
-        url_imagen = upload_image_to_s3(resized_image, uuid_value)
+        # Aquí determinamos el tipo de imagen según el contenido del diccionario
+        if "Descripcion" in datos_combinados:
+            tipo_imagen = "PANOR"   
+        elif "N_Serie" in datos_combinados:
+            tipo_imagen = "SERIE"
+        elif "INV_2023" in datos_combinados:
+            tipo_imagen = "CODIGOS"
+        else:
+            tipo_imagen = "OTROS"
+
+        # Generamos el nombre del archivo
+        filename = generate_image_filename(cod_usuario, cod_empleado, tipo_imagen, "INV_2024")
+
+        # Subimos la imagen a S3 con el nombre correcto
+        url_imagen = upload_image_to_s3(resized_image, filename)
+
+        print("La URL de la imagen es: ====>", url_imagen)
 
     try:
         prompt = """
@@ -279,8 +289,10 @@ async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uu
             Responde SIEMPRE con un diccionario JSON válido en este formato exacto, usando "No disponible" para datos faltantes:
             {
                 "INV_Patrim": "valor o No disponible",
+                "INV_2024": "valor o No disponible",
                 "INV_2023": "valor o No disponible",
                 "INV_2021": "valor o No disponible",
+                "INV_2019": "valor o No disponible",
                 "Marca": "valor o No disponible",
                 "Modelo": "valor o No disponible",
                 "N_Serie": "valor o No disponible",
@@ -295,7 +307,6 @@ async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uu
             El diccionario combinado solo debe tener una única clave, no puedes repetir claves.
             Un mismo valor no puede repetirse en diferentes claves; ante la duda asigna como valor No disponible.
             """
-
         messages = [
             {"role": "system", "content": "Eres un asistente experto en toma de inventario de bienes."},
             {"role": "user", "content": [
