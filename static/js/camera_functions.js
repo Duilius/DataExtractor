@@ -8,39 +8,25 @@ let recognition;
 let isVoiceCaptureActive = false;
 let cropper;
 
+let currentCameraIndex = 0;
+let cameras = [];
+
 async function toggleCamera() {
+    if (cameras.length === 0) {
+        cameras = await getCameras();
+    }
+
     if (!cameraOn) {
         try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices = devices.filter(device => device.kind === 'videoinput');
-            
-            // Intentar encontrar la cámara posterior
-            const rearCamera = videoDevices.find(device => 
-                /(back|rear|environment|behind)/i.test(device.label)
-            );
-            
-            const constraints = {
-                video: rearCamera
-                    ? { deviceId: { exact: rearCamera.deviceId } }
-                    : { facingMode: 'environment' }
-            };
-
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: cameras[currentCameraIndex].deviceId } }
+            });
             document.getElementById('cameraFeed').srcObject = stream;
             cameraOn = true;
-            speak("Cámara posterior encendida");
+            speak("Cámara encendida");
         } catch (err) {
-            console.error("Error al encender la cámara posterior: ", err);
-            // Fallback a cualquier cámara disponible
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                document.getElementById('cameraFeed').srcObject = stream;
-                cameraOn = true;
-                speak("Cámara encendida");
-            } catch (fallbackErr) {
-                console.error("Error al encender cualquier cámara: ", fallbackErr);
-                speak("Error al encender la cámara");
-            }
+            console.error("Error al encender la cámara: ", err);
+            speak("Error al encender la cámara");
         }
     } else {
         let stream = document.getElementById('cameraFeed').srcObject;
@@ -398,6 +384,25 @@ if (typeof window !== 'undefined') {
     window.capturePhoto = capturePhoto;
     window.toggleVoiceCapture = toggleVoiceCapture;
     window.procesarImagenes = procesarImagenes;
+}
+
+
+async function getCameras() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter(device => device.kind === 'videoinput');
+}
+
+
+async function switchCamera() {
+    if (!cameraOn) {
+        speak("Por favor, enciende la cámara primero.");
+        return;
+    }
+
+    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+    await toggleCamera();
+    await toggleCamera();
+    speak("Cambiando a la siguiente cámara");
 }
 
 console.log("Script camera_functions.js cargado");

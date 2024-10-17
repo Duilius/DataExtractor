@@ -12,10 +12,12 @@ export function initializeCamera() {
     const cameraToggle = document.getElementById('cameraToggle');
     const tomarFotoBtn = document.getElementById('tomarFoto');
     const voiceCaptureBtn = document.getElementById('voiceCaptureBtn');
+    const switchCameraBtn = document.getElementById('switchCameraBtn');
 
     cameraToggle.addEventListener('click', toggleCamera);
     tomarFotoBtn.addEventListener('click', capturePhoto);
     voiceCaptureBtn.addEventListener('click', toggleVoiceCapture);
+    switchCameraBtn.addEventListener('click', switchCamera);
 }
 
 function toggleCamera() {
