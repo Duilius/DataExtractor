@@ -27,6 +27,7 @@
         <link rel="stylesheet" href="{{url_for('static', path='worker_search.css')}}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropper/4.1.0/cropper.min.css">
         <link rel="stylesheet" href="{{url_for('static', path='botones_editor_image.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='autenticacion_modal2.css')}}">
     </head>
     <body>
         <header id="main-header">
@@ -67,6 +68,7 @@
 
             <section id="camera-section">
                 <button id="cameraToggle" class="btn">Cámara On/Off</button>
+                <button id="switchCameraBtn" class="btn" style="background: orange;">Cambiar Cámara</button>
                 <div id="camera-visor"> 
                     <video id="cameraFeed" autoplay></video>
                 </div>
@@ -201,13 +203,14 @@
                 <div id="modal-body"></div>
             </div>
         </div>
-    
+        
+        <!--MODAL PARA LOGUEARSE o AUTENTICARSE-->
+        <div id="authModalContainer" class="modalLogin"></div>
         <div id="form-buttons-container">
             <button id="descartarData" class="btn descartar-btn">Descartar</button>
             <button id="registrarFoto" class="btn registrar-btn">Registrar</button>
         </div>
         
-    
 
         <script>
             
@@ -232,5 +235,6 @@
         
         <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
         <script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}" defer></script>
+
 </body>
 </html>
