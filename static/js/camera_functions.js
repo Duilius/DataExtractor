@@ -8,30 +8,40 @@ let recognition;
 let isVoiceCaptureActive = false;
 let cropper;
 
-function toggleCamera() {
+async function toggleCamera() {
     if (!cameraOn) {
-        navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: { exact: "environment" } } 
-        })
-        .then(stream => {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            // Intentar encontrar la cámara posterior
+            const rearCamera = videoDevices.find(device => 
+                /(back|rear|environment|behind)/i.test(device.label)
+            );
+            
+            const constraints = {
+                video: rearCamera
+                    ? { deviceId: { exact: rearCamera.deviceId } }
+                    : { facingMode: 'environment' }
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
             document.getElementById('cameraFeed').srcObject = stream;
             cameraOn = true;
-            speak("Cámara encendida");
-        })
-        .catch(err => {
+            speak("Cámara posterior encendida");
+        } catch (err) {
             console.error("Error al encender la cámara posterior: ", err);
-            // Fallback a cualquier cámara disponible si la posterior no está disponible
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    document.getElementById('cameraFeed').srcObject = stream;
-                    cameraOn = true;
-                    speak("Cámara encendida");
-                })
-                .catch(err => {
-                    console.error("Error al encender la cámara: ", err);
-                    speak("Error al encender la cámara");
-                });
-        });
+            // Fallback a cualquier cámara disponible
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('cameraFeed').srcObject = stream;
+                cameraOn = true;
+                speak("Cámara encendida");
+            } catch (fallbackErr) {
+                console.error("Error al encender cualquier cámara: ", fallbackErr);
+                speak("Error al encender la cámara");
+            }
+        }
     } else {
         let stream = document.getElementById('cameraFeed').srcObject;
         let tracks = stream.getTracks();
