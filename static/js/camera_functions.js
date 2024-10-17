@@ -10,16 +10,28 @@ let cropper;
 
 function toggleCamera() {
     if (!cameraOn) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                document.getElementById('cameraFeed').srcObject = stream;
-                cameraOn = true;
-                speak("Cámara encendida");
-            })
-            .catch(err => {
-                console.error("Error al encender la cámara: ", err);
-                speak("Error al encender la cámara");
-            });
+        navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: { exact: "environment" } } 
+        })
+        .then(stream => {
+            document.getElementById('cameraFeed').srcObject = stream;
+            cameraOn = true;
+            speak("Cámara encendida");
+        })
+        .catch(err => {
+            console.error("Error al encender la cámara posterior: ", err);
+            // Fallback a cualquier cámara disponible si la posterior no está disponible
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    document.getElementById('cameraFeed').srcObject = stream;
+                    cameraOn = true;
+                    speak("Cámara encendida");
+                })
+                .catch(err => {
+                    console.error("Error al encender la cámara: ", err);
+                    speak("Error al encender la cámara");
+                });
+        });
     } else {
         let stream = document.getElementById('cameraFeed').srcObject;
         let tracks = stream.getTracks();
@@ -353,7 +365,17 @@ document.addEventListener('DOMContentLoaded', function() {
         procesarBtn.addEventListener('click', function(event) {
             console.log("Botón 'Procesar' clickeado");
             event.preventDefault();
-            procesarImagenes();
+            
+            const userId = localStorage.getItem('authenticatedUserId');
+            if (userId) {
+                console.log("Usuario autenticado. ID:", userId);
+                procesarImagenes();
+            } else {
+                console.log("Usuario no autenticado");
+                alert('Por favor, inicie sesión antes de procesar las imágenes.');
+                showAuthModal(); // Asumiendo que esta función existe para mostrar el modal de login
+                event.stopImmediatePropagation();
+            }
         });
     } else {
         console.error("Botón 'Procesar' no encontrado");
