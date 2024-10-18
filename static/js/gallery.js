@@ -60,12 +60,13 @@ export function initializeGallery() {
     document.addEventListener('photoTaken', event => addPhotoToGallery(event.detail));
     document.addEventListener('imageSaved', event => handleSavedImage(event.detail));
     
-    document.addEventListener('addToGallery', event => addPhotoToGallery(event.detail.imageData, event.detail.isEdited));
+    /*document.addEventListener('addToGallery', event => addPhotoToGallery(event.detail.imageData, event.detail.isEdited));*/
     // Activar botones inicialmente
     activarBotones();
 }
 
 export async function addPhotoToGallery(imgSrc, isEdited = false) {
+    console.log("Función addPhotoToGallery iniciada");
     try {
         const { imageData: processedImageData, resized } = await processImage(imgSrc);
         const miniaturas = document.getElementById('miniaturas');
@@ -73,11 +74,8 @@ export async function addPhotoToGallery(imgSrc, isEdited = false) {
         miniaturas.appendChild(miniaturaContainer);
         activarBotones();
 
-        /*    
-        if (resized) {
-            alert("La imagen ha sido redimensionada para cumplir con el tamaño máximo permitido de 1024x1024 píxeles.");
-        }
-        */
+        console.log("Foto añadida a la galería");
+
         // Verificación adicional de las dimensiones
         const img = new Image();
         img.onload = function() {

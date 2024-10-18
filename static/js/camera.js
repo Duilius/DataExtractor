@@ -8,6 +8,15 @@ let cameraOn = false;
 let recognition;
 let isVoiceCaptureActive = false;
 
+
+/*
+if (tomarFotoBtn) {
+    tomarFotoBtn.removeEventListener('click', capturePhoto); // Elimina listeners previos
+    tomarFotoBtn.addEventListener('click', capturePhoto);
+}
+*/
+
+
 export function initializeCamera() {
     console.log('Inicializando cámara');
     const cameraToggle = document.getElementById('cameraToggle');
@@ -15,29 +24,38 @@ export function initializeCamera() {
     const voiceCaptureBtn = document.getElementById('voiceCaptureBtn');
     const switchCameraBtn = document.getElementById('switchCameraBtn');
 
-    if (cameraToggle) cameraToggle.addEventListener('click', toggleCamera);
-    if (tomarFotoBtn) tomarFotoBtn.addEventListener('click', capturePhoto);
-    if (voiceCaptureBtn) voiceCaptureBtn.addEventListener('click', toggleVoiceCapture);
-    if (switchCameraBtn) switchCameraBtn.addEventListener('click', switchCamera);
+    if (cameraToggle) {
+        cameraToggle.removeEventListener('click', toggleCamera);
+        cameraToggle.addEventListener('click', toggleCamera);
+        console.log('Evento click agregado a cameraToggle');
+    }
+    
+    if (tomarFotoBtn) {
+        tomarFotoBtn.removeEventListener('click', capturePhoto);
+        tomarFotoBtn.addEventListener('click', function(event) {
+            console.log('Botón tomarFoto clickeado');
+            event.preventDefault();
+            capturePhoto();
+        });
+        console.log('Evento click agregado a tomarFotoBtn');
+    }
+    
+    if (voiceCaptureBtn) {
+        voiceCaptureBtn.removeEventListener('click', toggleVoiceCapture);
+        voiceCaptureBtn.addEventListener('click', toggleVoiceCapture);
+        console.log('Evento click agregado a voiceCaptureBtn');
+    }
+    
+    if (switchCameraBtn) {
+        switchCameraBtn.removeEventListener('click', switchCamera);
+        switchCameraBtn.addEventListener('click', switchCamera);
+        console.log('Evento click agregado a switchCameraBtn');
+    }
 }
 
-
-/*
-function toggleVoiceCapture() {
-    if (!cameraOn) {
-        speak("Por favor, enciende la cámara primero.");
-        return;
-    }
-
-    if (isVoiceCaptureActive) {
-        stopVoiceCapture();
-    } else {
-        startVoiceCapture();
-    }
-}
-*/
 
 function startVoiceCapture() {
+    
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'es-ES';
     recognition.continuous = true;

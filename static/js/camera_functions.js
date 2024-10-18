@@ -1,3 +1,6 @@
+let isCapturing = false; // Añade esta variable al inicio del archivo
+let captureCount = 0; // Añade esta variable al inicio del archivo
+
 // camera_functions.js
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
 // En la parte superior de camera_functions.js
@@ -51,62 +54,59 @@ async function toggleCamera() {
     }
 }
 
+
 async function capturePhoto() {
+    captureCount++;
+    console.log(`Intento de captura #${captureCount}`);
+    console.log("Función capturePhoto iniciada");
+    console.log("Estado de isCapturing:", isCapturing);
+    
+    if (isCapturing) {
+        console.log("Ya se está capturando una foto. Por favor, espere.");
+        return;
+    }
+    
     if (!cameraOn) {
+        console.log("La cámara no está encendida");
         speak("Por favor, enciende la cámara primero.");
         return;
     }
 
-    const canvas = document.createElement('canvas');
-    const video = document.getElementById('cameraFeed');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
+    isCapturing = true;
+    console.log("isCapturing establecido a true");
 
     try {
+        console.log("Iniciando captura de imagen");
+        const canvas = document.createElement('canvas');
+        const video = document.getElementById('cameraFeed');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        console.log("Procesando imagen");
         const { imageData: processedImageData, resized } = await processImage(canvas.toDataURL('image/png'));
-        addPhotoToGallery(processedImageData);
-        const event = new CustomEvent('addToGallery', { detail: { imageData: processedImageData } });
-        document.dispatchEvent(event);
+        
+        console.log("Añadiendo foto a la galería");
+        await addPhotoToGallery(processedImageData);
+        
+        // Eliminamos la siguiente línea para evitar la doble captura
+        // const event = new CustomEvent('addToGallery', { detail: { imageData: processedImageData } });
+        // document.dispatchEvent(event);
+        
         speak("Foto capturada");
 
-        // Verificación adicional de las dimensiones
-        const img = new Image();
-        img.onload = function() {
-            if (this.width > 1024 || this.height > 1024) {
-                console.warn('Advertencia: La imagen capturada excede 1024x1024 píxeles.');
-            }
-        };
-        img.src = processedImageData;
-
+        console.log("Captura completada con éxito");
     } catch (error) {
         console.error("Error al procesar la imagen:", error);
         speak("Error al procesar la imagen");
         alert("Error al procesar la imagen capturada");
+    } finally {
+        isCapturing = false;
+        console.log("isCapturing restablecido a false");
     }
 }
 
-/*
-function addPhotoToGallery(imgSrc) {
-    const img = document.createElement('img');
-    img.src = imgSrc;
-    img.className = 'miniatura';
-    img.addEventListener('click', () => showLargeImage(img.src));
-    
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'fotoCheckbox';
 
-    const miniaturaContainer = document.createElement('div');
-    miniaturaContainer.appendChild(img);
-    miniaturaContainer.appendChild(checkbox);
-    document.getElementById('miniaturas').appendChild(miniaturaContainer);
-
-    window.fotosNoGuardadas = true;
-    activarBotones();
-    speak('Foto añadida a la galería');
-}
-*/
 async function showLargeImage(src) {
     const overlay = document.createElement('div');
     overlay.className = 'image-overlay';
@@ -234,6 +234,10 @@ function toggleVoiceCapture() {
 
 
 function startVoiceCapture() {
+    if (recognition) {
+        recognition.stop();
+    }
+    
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'es-ES';
     recognition.continuous = true;
