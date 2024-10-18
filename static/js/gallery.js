@@ -1,6 +1,9 @@
 // gallery.js
 console.log('Cargando gallery.js');
 
+// Al principio del archivo
+//export { addPhotoToGallery, initializeGallery, activarBotones };
+
 //import { procesarImagenes } from './camera_functions.js';
 import { showLargeImage, closeLargeImage } from './imageEditor.js';
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
@@ -62,7 +65,7 @@ export function initializeGallery() {
     activarBotones();
 }
 
-async function addPhotoToGallery(imgSrc, isEdited = false) {
+export async function addPhotoToGallery(imgSrc, isEdited = false) {
     try {
         const { imageData: processedImageData, resized } = await processImage(imgSrc);
         const miniaturas = document.getElementById('miniaturas');
