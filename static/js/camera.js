@@ -2,6 +2,7 @@
 console.log('Cargando camera.js');
 
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
+import { toggleCamera, capturePhoto, toggleVoiceCapture, switchCamera } from './camera_functions.js';
 
 let cameraOn = false;
 let recognition;
@@ -14,72 +15,14 @@ export function initializeCamera() {
     const voiceCaptureBtn = document.getElementById('voiceCaptureBtn');
     const switchCameraBtn = document.getElementById('switchCameraBtn');
 
-    cameraToggle.addEventListener('click', toggleCamera);
-    tomarFotoBtn.addEventListener('click', capturePhoto);
-    voiceCaptureBtn.addEventListener('click', toggleVoiceCapture);
-    switchCameraBtn.addEventListener('click', switchCamera);
+    if (cameraToggle) cameraToggle.addEventListener('click', toggleCamera);
+    if (tomarFotoBtn) tomarFotoBtn.addEventListener('click', capturePhoto);
+    if (voiceCaptureBtn) voiceCaptureBtn.addEventListener('click', toggleVoiceCapture);
+    if (switchCameraBtn) switchCameraBtn.addEventListener('click', switchCamera);
 }
 
-function toggleCamera() {
-    if (!cameraOn) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                document.getElementById('cameraFeed').srcObject = stream;
-                cameraOn = true;
-                speak("Cámara encendida");
-            })
-            .catch(err => {
-                console.error("Error al encender la cámara: ", err);
-                speak("Error al encender la cámara");
-            });
-    } else {
-        let stream = document.getElementById('cameraFeed').srcObject;
-        let tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
-        document.getElementById('cameraFeed').srcObject = null;
-        cameraOn = false;
-        speak("Cámara apagada");
-    }
-}
 
-async function capturePhoto() {
-    if (!cameraOn) {
-        speak("Por favor, enciende la cámara primero.");
-        return;
-    }
-
-    const canvas = document.createElement('canvas');
-    const video = document.getElementById('cameraFeed');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-
-    try {
-        const { imageData: processedImageData, resized } = await processImage(canvas.toDataURL('image/png'));
-        const event = new CustomEvent('addToGallery', { detail: { imageData: processedImageData } });
-        document.dispatchEvent(event);
-        speak("Foto capturada");
-        /*
-        if (resized) {
-            alert("La imagen capturada ha sido redimensionada para cumplir con el tamaño máximo permitido de 1024x1024 píxeles.");
-        }
-        */
-        // Verificación adicional de las dimensiones
-        const img = new Image();
-        img.onload = function() {
-            if (this.width > 1024 || this.height > 1024) {
-                console.warn('Advertencia: La imagen capturada excede 1024x1024 píxeles.');
-            }
-        };
-        img.src = processedImageData;
-
-    } catch (error) {
-        console.error("Error al procesar la imagen:", error);
-        speak("Error al procesar la imagen");
-        alert("Error al procesar la imagen capturada");
-    }
-}
-
+/*
 function toggleVoiceCapture() {
     if (!cameraOn) {
         speak("Por favor, enciende la cámara primero.");
@@ -92,6 +35,7 @@ function toggleVoiceCapture() {
         startVoiceCapture();
     }
 }
+*/
 
 function startVoiceCapture() {
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();

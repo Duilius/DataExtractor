@@ -1,7 +1,10 @@
 // camera_functions.js
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
+// En la parte superior de camera_functions.js
+import { addPhotoToGallery } from './gallery.js';
 
-export { procesarImagenes, toggleCamera, capturePhoto, toggleVoiceCapture };
+// Asegúrate de que esta línea esté al final del archivo
+export { procesarImagenes, toggleCamera, capturePhoto, toggleVoiceCapture, switchCamera};
 
 let cameraOn = false;
 let recognition;
@@ -11,6 +14,11 @@ let cropper;
 let currentCameraIndex = 0;
 let cameras = [];
 
+async function getCameras() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter(device => device.kind === 'videoinput');
+}
+
 async function toggleCamera() {
     if (cameras.length === 0) {
         cameras = await getCameras();
@@ -18,14 +26,19 @@ async function toggleCamera() {
 
     if (!cameraOn) {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: { exact: cameras[currentCameraIndex].deviceId } }
-            });
+            const rearCamera = cameras.find(camera => /(back|rear|environment|behind)/i.test(camera.label));
+            const constraints = {
+                video: rearCamera 
+                    ? { deviceId: { exact: rearCamera.deviceId } }
+                    : { facingMode: 'environment' }
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
             document.getElementById('cameraFeed').srcObject = stream;
             cameraOn = true;
-            speak("Cámara encendida");
+            speak("Cámara trasera encendida");
         } catch (err) {
-            console.error("Error al encender la cámara: ", err);
+            console.error("Error al encender la cámara trasera: ", err);
             speak("Error al encender la cámara");
         }
     } else {
@@ -51,14 +64,29 @@ async function capturePhoto() {
     canvas.getContext('2d').drawImage(video, 0, 0);
 
     try {
-        const processedImageData = await processImage(canvas.toDataURL('image/png'));
+        const { imageData: processedImageData, resized } = await processImage(canvas.toDataURL('image/png'));
         addPhotoToGallery(processedImageData);
+        const event = new CustomEvent('addToGallery', { detail: { imageData: processedImageData } });
+        document.dispatchEvent(event);
+        speak("Foto capturada");
+
+        // Verificación adicional de las dimensiones
+        const img = new Image();
+        img.onload = function() {
+            if (this.width > 1024 || this.height > 1024) {
+                console.warn('Advertencia: La imagen capturada excede 1024x1024 píxeles.');
+            }
+        };
+        img.src = processedImageData;
+
     } catch (error) {
         console.error("Error al procesar la imagen:", error);
         speak("Error al procesar la imagen");
+        alert("Error al procesar la imagen capturada");
     }
 }
 
+/*
 function addPhotoToGallery(imgSrc) {
     const img = document.createElement('img');
     img.src = imgSrc;
@@ -78,7 +106,7 @@ function addPhotoToGallery(imgSrc) {
     activarBotones();
     speak('Foto añadida a la galería');
 }
-
+*/
 async function showLargeImage(src) {
     const overlay = document.createElement('div');
     overlay.className = 'image-overlay';
@@ -190,6 +218,7 @@ async function saveEditedImage(img, originalSrc) {
     }
 }
 
+
 function toggleVoiceCapture() {
     if (!cameraOn) {
         speak("Por favor, enciende la cámara primero.");
@@ -202,6 +231,7 @@ function toggleVoiceCapture() {
         startVoiceCapture();
     }
 }
+
 
 function startVoiceCapture() {
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -387,12 +417,6 @@ if (typeof window !== 'undefined') {
 }
 
 
-async function getCameras() {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    return devices.filter(device => device.kind === 'videoinput');
-}
-
-
 async function switchCamera() {
     if (!cameraOn) {
         speak("Por favor, enciende la cámara primero.");
@@ -400,8 +424,8 @@ async function switchCamera() {
     }
 
     currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-    await toggleCamera();
-    await toggleCamera();
+    toggleCamera();
+    toggleCamera();
     speak("Cambiando a la siguiente cámara");
 }
 
