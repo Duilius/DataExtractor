@@ -1,14 +1,44 @@
+#claves.py
+claves.py
+c*.py
+c*.json
 #Archivos en la raíz(root)
-reemplazo.py
+a*.py
+b*.py
+d*.py
+goo*.py
 *ultima.py
-*old.py
-#imagenes
+*tesseract.py
+o*.py
+p*.py
+v*.py
+*.dll
+*.whl
+resultado*.py
+###imagenes
 *.jpg
 *.png
-#secrets
-#claves.py
+###Carpetas
+backup-local/
+openai-env/
+dinamic/
+config/
+
 scripts/py/claves.py
+scripts/py/a*.py
+scripts/py/b*.py
+scripts/py/d*.py
+scripts/py/i*.py
+scripts/py/r*.py
+scripts/py/s*.py
+scripts/py/t*.py
+scripts/py/*.csv
+
 rtf_ocr_claves.json
+
+
+#Scripts en BACKUP-JS
+static/BACKUP-JS
 #scripts en statis/js
 static/js/*copia*.js
 static/js/*-7-oct*.js
@@ -17,10 +47,3 @@ static/js/*-7-oct*.js
 __pycache__/
 #claves.py  
 claves_dataextractor.py
-
-openai-env/
-dinamic/
-config/
-
-#CARPETA BACKUP_LOCAL
-backup-local/

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Extractor - Informe</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #e0e0e0; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #3498db; color: #ffffff; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .footer { background-color: #2980b9; color: #ffffff; padding: 10px; text-align: center; font-size: 12px; }
+        .chart { width: 100%; height: 200px; background-color: #f9f9f9; border: 1px solid #ddd; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐝 Data Extractor</h1>
+        </div>
+        <div class="content">
+            <h2>¡Saludos, {{ data.name }}!</h2>
+            <p>Échale un vistazo a tu último informe de inventario:</p>
+            <div class="chart">
+                <!-- Aquí iría un gráfico generado dinámicamente -->
+                [Gráfico de inventario]
+            </div>
+            <p>Resumen rápido:</p>
+            <ul>
+                {% for item in data.summary %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+            <p>Para una visión más detallada, <a href="{{ data.link }}">visita tu dashboard</a>.</p>
+        </div>
+        <div class="footer">
+            <p>Data Extractor © 2024 | <a href="#" style="color: #ffffff;">Contacto</a> | <a href="#" style="color: #ffffff;">Redes Sociales</a></p>
+        </div>
+    </div>
+</body>
+</html>

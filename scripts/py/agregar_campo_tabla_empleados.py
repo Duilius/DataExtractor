@@ -62,18 +62,19 @@ def agregar_campo_estado_empleado():
     
     # Verificar si la columna ya existe
     if 'estado_empleado' not in empleados.c:
-        # Si la columna no existe, añadirla
         try:
             with engine.begin() as connection:
                 connection.execute(text("""
                     ALTER TABLE empleados 
-                    ADD COLUMN estado_empleado VARCHAR(50) DEFAULT 'activo'
+                    ADD COLUMN estado_empleado ENUM('activo', 'vacaciones', 'comision_servicio', 'capacitacion', 
+                    'licencia_maternidad', 'licencia_paternidad', 'licencia_enfermedad', 'licencia_sin_goce', 
+                    'licencia_estudios', 'suspension_temporal', 'suspension_disciplinaria', 'jubilado', 'cesado', 
+                    'renuncia', 'fallecido', 'transferido') DEFAULT 'activo'
                 """))
             print("Campo estado_empleado añadido a la tabla empleados.")
         except OperationalError as e:
             print(f"Error al añadir el campo: {str(e)}")
-    else:
-        print("El campo estado_empleado ya existe en la tabla empleados.")
+
 
 if __name__ == "__main__":
     agregar_campo_estado_empleado()

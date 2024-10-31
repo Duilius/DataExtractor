@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lector de Códigos de Barras</title>
+    
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{url_for('static', path='css/barcode.css')}}">
+
+    <!-- Agregar en el <head> después de las otras hojas de estilo -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header id="main-header">
+        <div id="header-content">
+            <div id="logo-title">
+                <a href='/'>
+                    <img width="30" height="30" src="{{url_for('static', path='dniextract/img/icons8-queen-bee-50.png')}}" alt="Inicio">
+                    <span id="logo_txt">Lector<span>Códigos</span></span>
+                </a>
+            </div>
+            <div id="user-controls">
+                <button id="darkModeBtn" class="btn icon-btn">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="camera-section">
+            <button id="cameraToggle" class="btn">Cámara On/Off</button>
+            <div id="camera-visor"> 
+                <video id="cameraFeed" autoplay playsinline></video>
+            </div>
+            <div class="camera-controls">
+                <button id="tomarFoto" class="btn">CAPTURAR CÓDIGO</button>
+                <button id="voiceCaptureBtn" class="btn">FOTO POR VOZ</button>
+            </div>
+        </section>
+
+        <section id="upload-section" class="upload-container">
+            <div id="dropZone" class="drop-zone">
+                <div class="drop-zone-content">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Arrastra y suelta imágenes aquí<br>o</p>
+                    <button id="uploadBtn" class="btn">Seleccionar Archivos</button>
+                </div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+        </section>
+
+        <section id="gallery-section" class="gallery-container">
+            <h3>Galería de Capturas</h3>
+            <div class="gallery-controls">
+                <button id="procesarSeleccionadas" class="btn" disabled>Procesar Seleccionadas</button>
+                <button id="eliminarSeleccionadas" class="btn" disabled>Eliminar Seleccionadas</button>
+            </div>
+            <div id="miniaturas" class="carousel">
+                <!-- Las miniaturas se agregarán aquí -->
+            </div>
+        </section>
+
+        <section id="resultados-section" class="results-container">
+            <h2>Resultados</h2>
+            <div id="preview-container">
+                <img id="preview-image" style="display: none;" alt="Preview">
+            </div>
+            <div id="resultados" class="results-panel">
+                <p class="info-text">Los resultados aparecerán aquí</p>
+            </div>
+        </section>
+
+        <!-- Modal para edición de imagen -->
+        <div id="editorModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div class="editor-container">
+                    <img id="image-to-edit">
+                    <div class="editor-controls">
+                        <button id="cropBtn" class="btn">Recortar</button>
+                        <button id="zoomInBtn" class="btn">Zoom +</button>
+                        <button id="zoomOutBtn" class="btn">Zoom -</button>
+                        <button id="rotateLeftBtn" class="btn">⟲</button>
+                        <button id="rotateRightBtn" class="btn">⟳</button>
+                        <button id="saveEditBtn" class="btn">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de mensajes -->
+        <div id="errorModal" class="modalError" style="display: none;">
+            <div class="modal-contentError">
+                <span id="closeModal" class="closeError">&times;</span>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </main>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script type="module" src="{{url_for('static', path='js/barcode/main.js')}}"></script>
+</body>
+</html>

@@ -3,7 +3,12 @@ from sqlalchemy.orm import declarative_base
 #Es necesario instalar el paquete mysqlclient
 
 import os
-import claves
+
+try:
+    import claves  # Solo se usará en el entorno local
+except ImportError:
+    pass
+
 
 ## Variables de conexión a Base de Datos en Railway
 db_user=os.getenv("DB_USER")

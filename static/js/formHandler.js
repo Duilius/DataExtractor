@@ -1,11 +1,19 @@
 // formHandler.js
+import { mostrarMensajeModal } from './utils.js';
+export { 
+    //limpiarFormulario, 
+    mostrarMensajeModal,
+    //initializeFormHandler, 
+    //mostrarFormulario, 
+    closeFormModal 
+};
 console.log('Cargando formHandler.js');
 
 let modalInstance = null;
 
 export function initializeFormHandler() {
     console.log('Inicializando manejador de formulario');
-    const descartarBtn = document.getElementById('descartar');
+    const descartarBtn = document.getElementById('descartarData');
     const registrarFotoBtn = document.getElementById('registrarFoto');
 
     if (descartarBtn) {
@@ -31,7 +39,7 @@ export function mostrarFormulario() {
         console.error('Sección de formulario no encontrada');
     }
 }
-
+/*
 function descartarFormulario() {
     console.log('Descartando formulario');
     const formSection = document.getElementById('form-section');
@@ -45,18 +53,70 @@ function descartarFormulario() {
         console.error('Sección de formulario no encontrada');
     }
 }
-
+*/
 function registrarFoto() {
     console.log('Registrando foto');
     // Aquí iría la lógica para registrar la foto
-    alert('Foto registrada con éxito');
-    descartarFormulario();
+    //alert('Foto registrada con éxito');
+    //descartarFormulario();
+    return true;
 }
 
-function limpiarFormulario() {
+// Modificar esta función para que solo limpie cuando se le indique
+// En formHandler.js
+
+export function limpiarFormulario() {
     console.log('Limpiando formulario');
-    const inputs = document.querySelectorAll('#form-section input');
-    inputs.forEach(input => input.value = '');
+    const formSection = document.getElementById('form-section');
+    if (!formSection) return;
+
+    // Limpiar todos los inputs excepto los hidden
+    const inputs = formSection.querySelectorAll('input:not([type="hidden"])');
+    inputs.forEach(input => {
+        input.value = '';
+        input.classList.remove('error', 'highlight');
+    });
+
+    // Limpiar selects
+    const estado = document.getElementById('estado');
+    if (estado) {
+        estado.selectedIndex = 0;
+        estado.classList.remove('error');
+    }
+
+    // Limpiar radio buttons de En Uso
+    const radioButtons = document.querySelectorAll('input[name="enUso"]');
+    radioButtons.forEach(radio => {
+        radio.checked = false;
+    });
+    const radioGroup = document.querySelector('.radio-group');
+    if (radioGroup) {
+        radioGroup.classList.remove('error');
+    }
+
+    // Limpiar galería de imágenes
+    const miniaturas = document.getElementById('miniaturas');
+    if (miniaturas) {
+        miniaturas.innerHTML = '';
+    }
+
+    // Desactivar botones relacionados con las fotos
+    ['eliminarFoto', 'guardarFoto', 'procesarFoto'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.disabled = true;
+        }
+    });
+
+    // Mantener el formulario visible
+    formSection.style.display = 'block';
+}
+
+// Modificar la función descartarFormulario para que no oculte el formulario
+function descartarFormulario() {
+    console.log('Descartando formulario');
+    limpiarFormulario();
+    mostrarMensajeModal('Formulario descartado', false);
 }
 
 function openFormModal() {
@@ -99,5 +159,3 @@ function closeFormModal() {
         document.body.style.overflow = 'auto';
     }
 }
-
-export { closeFormModal };

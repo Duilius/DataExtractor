@@ -159,13 +159,6 @@ async function saveEditedImage(originalSrc) {
         });
         document.dispatchEvent(event);
         
-        /*
-        if (resized) {
-            alert("La imagen ha sido redimensionada para cumplir con el tamaño máximo permitido de 1024x1024 píxeles.");
-        } else {
-            alert("La imagen ha sido guardada con éxito.");
-        }
-        */
         alert("La imagen ha sido guardada con éxito.");
 
         closeLargeImage();

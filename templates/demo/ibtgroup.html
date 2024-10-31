@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios de Extracción y Gestión de Datos - SAS</title>
+
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+	<script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+
+    <link rel="stylesheet" href="{{url_for( 'static', path='ibtgroup.css')}}">
+</head>
+<body>
+    <!-- Encabezado Principal -->
+    <header class="header">
+        <h1>Soluciones en IA para la Gestión Eficiente de Activos</h1>
+        <p>Optimice recursos en inventarios, documentación e identificación patrimonial con nuestro sistema de Inteligencia Artificial.</p>
+    </header>
+
+    <!-- Sección de Imagen Botón "Toca y Escucha" -->
+    <section class="audio-invitation">
+        <h2>Escucha nuestra invitación</h2>
+        <div onclick="playAudio()" class="image-button">
+            <img src="{{url_for( 'static', path='img/toca-y-escucha.webp')}}" alt="Toca y Escucha" />
+        </div>
+        <audio id="invitationAudio"></audio>
+    </section>
+    
+
+    <!-- Sección de Demostraciones -->
+    <section class="demo-section">
+        <h2>Pruebas en Línea</h2>
+        <ul>
+            <li>
+                <a href="/demo-inventario" class="demo-button" target="_new" hx-target="_new" hx-trigger="click" hx-get="/demo-inventario" onclick="window.open(this.href, '_blank'); return false;">
+                Demo de IA para Inventario</a></li>
+            <li>
+                <a href="/barcode" class="demo-button" target="_new" hx-target="_new" hx-trigger="click" hx-get="/barcode" onclick="window.open(this.href, '_blank'); return false;">Demo de Código de Barras</a></li>
+        </ul>
+    </section>
+
+    <!-- Carrusel de Beneficios de IA -->
+    <section class="carousel-section">
+        <div class="carousel-container">
+            <div class="carousel-slide">
+                <img src="{{url_for( 'static', path='img/inventario_almacen-1.webp')}}" width="70%" alt="Inventario de Equipos Médicos">
+                <p>La IA reemplaza hardware costoso como lectores RFID, reduciendo significativamente los costos operativos.</p>
+            </div>
+            <div class="carousel-slide">
+                <img src="{{url_for( 'static', path='img/inventario_almacen-2.webp')}}" alt="Inventario de Vehículos">
+                <p>Al utilizar únicamente dispositivos móviles para capturar datos de inventario, elimina la necesidad de infraestructura adicional y especializada.</p>
+            </div>
+            <div class="carousel-slide">
+                <img src="{{url_for( 'static', path='img/inventario_equipos-1.webp')}}" alt="Mobiliario de Oficina">
+                <p>La captura de datos es instantánea, permitiendo a los usuarios registrar información de etiquetas en segundos.</p>
+            </div>
+            <div class="carousel-slide">
+                <img src="{{url_for( 'static', path='img/inventario_equipos-2.webp')}}" alt="Mobiliario de Oficina">
+                <p>La IA procesa, organiza y actualiza la información en tiempo real, eliminando retrasos y acelerando la toma de decisiones.</p>
+            </div>
+            <!-- Añadir más slides según sea necesario -->
+        </div>
+        <div class="audio-button-container">
+            <button id="audioControlButton" onclick="toggleAudio()">Reproducir Audio</button>
+        </div>
+    </section>
+
+
+    <!-- Sección de Aplicaciones de IA -->
+    <section class="applications-section">
+        <h2>Aplicaciones de IA por Sector</h2>
+        <table>
+            <tr>
+                <th>Sector</th>
+                <th>Aplicaciones de IA</th>
+            </tr>
+            <tr>
+                <td>Salud</td>
+                <td>
+                    - Inventarios de equipos médicos<br>
+                    - Procesamiento de recetas médicas<br>
+                    - Identificación y control de activos críticos<br>
+                    - Automatización de historias clínicas a partir de consultas
+                </td>
+            </tr>
+            <tr>
+                <td>Transporte</td>
+                <td>
+                    - Identificación y control de vehículos<br>
+                    - Inventarios de repuestos y herramientas<br>
+                    - Análisis de imágenes para mantenimiento predictivo
+                </td>
+            </tr>
+            <tr>
+                <td>Agua y Saneamiento</td>
+                <td>
+                    - Inventarios de equipos y herramientas<br>
+                    - Monitoreo de infraestructuras a través de IA visual<br>
+                    - Control de activos en sistemas de saneamiento
+                </td>
+            </tr>
+            <tr>
+                <td>Energía</td>
+                <td>
+                    - Inventarios de suministros y equipos<br>
+                    - Análisis de imágenes para inspección de redes<br>
+                    - Automatización de mantenimientos con IA
+                </td>
+            </tr>
+            <tr>
+                <td>Educación</td>
+                <td>
+                    - Inventarios de activos educativos<br>
+                    - Procesamiento de documentos y registros<br>
+                    - Sistemas de control de acceso y seguridad
+                </td>
+            </tr>
+        </table>
+    </section>
+    
+    <!-- Sección de Posts Informativos -->
+    <section class="posts-section">
+        <h2>Posts Informativos</h2>
+        <div class="post-cards">
+            <div class="post-card">
+                <h3>Beneficios de la IA en Salud</h3>
+                <p>Explora cómo la IA está transformando la gestión en salud, optimizando inventarios y procesos clínicos.</p>
+            </div>
+            <div class="post-card">
+                <h3>IA en la Gestión de Transporte</h3>
+                <p>La IA permite un control preciso de activos en transporte, desde vehículos hasta piezas y herramientas.</p>
+            </div>
+            <div class="post-card">
+                <h3>Control de Activos en Energía con IA</h3>
+                <p>Conoce cómo se puede mejorar el monitoreo y la eficiencia de activos críticos en el sector energético.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Demostraciones -->
+    <section class="demo-section">
+        <h2>Pruebas en Línea</h2>
+        <p>Pon a prueba nuestra tecnología para inventarios.</p>
+        <ul>
+            <li><a href="/demo-inventario" target="_new" hx-target="_new" hx-trigger="click" hx-get="/demo-inventario" onclick="window.open(this.href, '_blank'); return false;">Demo de lectura de etiquetas de inventario (con IA)</a></li>
+
+            <li><a href="/barcode" target="_new" hx-target="_new" hx-trigger="click" hx-get="/barcode" onclick="window.open(this.href, '_blank'); return false;">Demo de lectura de código de barras</a></li>
+        </ul>
+    </section>
+
+    <!-- Sección de Audio de Invitación -->
+    <section class="audio-invitation">
+        <h2>Escucha nuestra invitación</h2>
+        <button onclick="playAudio()">Escuchar Invitación</button>
+        
+    </section>
+
+    <!-- Información de Contacto -->
+    <footer>
+        <div class="contact-info">
+            <p><strong>WhatsApp:</strong> +51 987654321</p>
+            <p><strong>Email:</strong> contacto@dataextractor.cloud</p>
+            <p><strong>Dirección:</strong> Av. Empresarial 1234, Lima, Perú</p>
+            <p><strong>Teléfono:</strong> +51 123456789</p>
+            <p>Web powered by DataExtractor</p>
+        </div>
+    </footer>
+    <script src="{{url_for('static', path='js/ibtgroup.js')}}" defer></script>
+</body>
+</html>

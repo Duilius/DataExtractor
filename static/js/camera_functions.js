@@ -1,25 +1,50 @@
+import { speak } from './utils.js';  // Asegúrate de importar speak
+let isCapturing = false; // Añade esta variable al inicio del archivo
+let captureCount = 0; // Añade esta variable al inicio del archivo
+
 // camera_functions.js
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
+// En la parte superior de camera_functions.js
+import { addPhotoToGallery, activarBotones } from './gallery.js';
 
-export { procesarImagenes, toggleCamera, capturePhoto, toggleVoiceCapture };
+// Asegúrate de que esta línea esté al final del archivo
+export { procesarImagenes, toggleCamera, capturePhoto, toggleVoiceCapture, switchCamera};
 
 let cameraOn = false;
 let recognition;
 let isVoiceCaptureActive = false;
 let cropper;
 
-function toggleCamera() {
+let currentCameraIndex = 0;
+let cameras = [];
+
+async function getCameras() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter(device => device.kind === 'videoinput');
+}
+
+async function toggleCamera() {
+    if (cameras.length === 0) {
+        cameras = await getCameras();
+    }
+
     if (!cameraOn) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                document.getElementById('cameraFeed').srcObject = stream;
-                cameraOn = true;
-                speak("Cámara encendida");
-            })
-            .catch(err => {
-                console.error("Error al encender la cámara: ", err);
-                speak("Error al encender la cámara");
-            });
+        try {
+            const rearCamera = cameras.find(camera => /(back|rear|environment|behind)/i.test(camera.label));
+            const constraints = {
+                video: rearCamera 
+                    ? { deviceId: { exact: rearCamera.deviceId } }
+                    : { facingMode: 'environment' }
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            document.getElementById('cameraFeed').srcObject = stream;
+            cameraOn = true;
+            speak("Cámara trasera encendida");
+        } catch (err) {
+            console.error("Error al encender la cámara trasera: ", err);
+            speak("Error al encender la cámara");
+        }
     } else {
         let stream = document.getElementById('cameraFeed').srcObject;
         let tracks = stream.getTracks();
@@ -30,46 +55,43 @@ function toggleCamera() {
     }
 }
 
+
 async function capturePhoto() {
+    captureCount++;
+    console.log(`Intento de captura #${captureCount}`);
+    
+    if (isCapturing) {
+        speak("Ya se está capturando una foto, por favor espere");
+        return;
+    }
+    
     if (!cameraOn) {
-        speak("Por favor, enciende la cámara primero.");
+        speak("Por favor, encienda la cámara primero");
         return;
     }
 
-    const canvas = document.createElement('canvas');
-    const video = document.getElementById('cameraFeed');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
+    isCapturing = true;
 
     try {
-        const processedImageData = await processImage(canvas.toDataURL('image/png'));
-        addPhotoToGallery(processedImageData);
+        const canvas = document.createElement('canvas');
+        const video = document.getElementById('cameraFeed');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const { imageData: processedImageData } = await processImage(canvas.toDataURL('image/png'));
+        await addPhotoToGallery(processedImageData);
+        speak("Foto capturada");  // Mensaje de voz
+
     } catch (error) {
         console.error("Error al procesar la imagen:", error);
         speak("Error al procesar la imagen");
+        alert("Error al procesar la imagen capturada");
+    } finally {
+        isCapturing = false;
     }
 }
 
-function addPhotoToGallery(imgSrc) {
-    const img = document.createElement('img');
-    img.src = imgSrc;
-    img.className = 'miniatura';
-    img.addEventListener('click', () => showLargeImage(img.src));
-    
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'fotoCheckbox';
-
-    const miniaturaContainer = document.createElement('div');
-    miniaturaContainer.appendChild(img);
-    miniaturaContainer.appendChild(checkbox);
-    document.getElementById('miniaturas').appendChild(miniaturaContainer);
-
-    window.fotosNoGuardadas = true;
-    activarBotones();
-    speak('Foto añadida a la galería');
-}
 
 async function showLargeImage(src) {
     const overlay = document.createElement('div');
@@ -103,7 +125,7 @@ async function showLargeImage(src) {
     
     const closeBtn = document.createElement('button');
     closeBtn.textContent = 'X';
-    closeBtn.className = 'close-btn';
+    closeBtn.className = 'close-btnGaleria';
     closeBtn.onclick = () => document.body.removeChild(overlay);
     
     editorContainer.appendChild(cropButton);
@@ -182,20 +204,28 @@ async function saveEditedImage(img, originalSrc) {
     }
 }
 
+
 function toggleVoiceCapture() {
     if (!cameraOn) {
-        speak("Por favor, enciende la cámara primero.");
+        speak("Por favor, enciende la cámara primero");
         return;
     }
 
     if (isVoiceCaptureActive) {
         stopVoiceCapture();
+        speak("Captura por voz desactivada");  // Mensaje de voz
     } else {
         startVoiceCapture();
+        speak("Captura por voz activada. Diga 'tomar foto' o 'capturar' para tomar una foto");  // Mensaje de voz
     }
 }
 
+
 function startVoiceCapture() {
+    if (recognition) {
+        recognition.stop();
+    }
+    
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'es-ES';
     recognition.continuous = true;
@@ -232,6 +262,7 @@ function stopVoiceCapture() {
     speak('Captura por voz desactivada');
 }
 
+/*
 function speak(text, rate = 1, pitch = 1) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'es-ES';
@@ -247,12 +278,12 @@ function speak(text, rate = 1, pitch = 1) {
     
     speechSynthesis.speak(utterance);
 }
-
+*/
 let isProcessing = false;
 
 async function procesarImagenes() {
     console.log("Función procesarImagenes() iniciada");
-    
+        
     if (isProcessing) {
         console.log("Ya se está procesando una solicitud. Por favor, espere.");
         return;
@@ -260,7 +291,7 @@ async function procesarImagenes() {
 
     const fotosSeleccionadas = document.querySelectorAll('.fotoCheckbox:checked');
     console.log("Fotos seleccionadas:", fotosSeleccionadas.length);
-    
+        
     if (fotosSeleccionadas.length === 0) {
         console.log("No hay fotos seleccionadas");
         alert("Por favor, seleccione al menos una foto para procesar.");
@@ -271,7 +302,7 @@ async function procesarImagenes() {
 
     try {
         const formData = new FormData();
-
+        console.log("Valor de registrador===>:", formData.get('registrador'));  // Asegúrate de que el valor es '9999'
         for (let i = 0; i < fotosSeleccionadas.length; i++) {
             const checkbox = fotosSeleccionadas[i];
             const img = checkbox.parentElement.querySelector('img');
@@ -288,7 +319,7 @@ async function procesarImagenes() {
                 throw error;
             }
         }
-
+        console.log("Valor de registrador:", formData.get('registrador'));  // Asegúrate de que el valor es '9999'
         console.log("FormData creado. Preparando para enviar al servidor...");
         console.log("Enviando FormData:", [...formData.entries()].map(([key, value]) => 
             value instanceof File ? `${key}: File(${value.name}, ${value.type}, ${value.size} bytes)` : `${key}: ${value}`
@@ -308,10 +339,12 @@ async function procesarImagenes() {
             document.getElementById('form-section').style.display = 'block';
             console.log('Imágenes procesadas con éxito');
 
-            // Limpiar fotos procesadas
+            // Desmarcar las casillas de verificación de las fotos procesadas
             fotosSeleccionadas.forEach(checkbox => {
-                checkbox.parentElement.remove();
+                checkbox.checked = false;
             });
+
+            activarBotones();
 
             alert('Imágenes procesadas con éxito');
         } else {
@@ -328,6 +361,8 @@ async function procesarImagenes() {
         isProcessing = false;
     }
 }
+
+
 
 function generateUUID() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -353,7 +388,17 @@ document.addEventListener('DOMContentLoaded', function() {
         procesarBtn.addEventListener('click', function(event) {
             console.log("Botón 'Procesar' clickeado");
             event.preventDefault();
-            procesarImagenes();
+            
+            const userId = localStorage.getItem('authenticatedUserId');
+            if (userId) {
+                console.log("Usuario autenticado. ID:", userId);
+                procesarImagenes();
+            } else {
+                console.log("Usuario no autenticado");
+                alert('Por favor, inicie sesión antes de procesar las imágenes.');
+                showAuthModal(); // Asumiendo que esta función existe para mostrar el modal de login
+                event.stopImmediatePropagation();
+            }
         });
     } else {
         console.error("Botón 'Procesar' no encontrado");
@@ -366,6 +411,19 @@ if (typeof window !== 'undefined') {
     window.capturePhoto = capturePhoto;
     window.toggleVoiceCapture = toggleVoiceCapture;
     window.procesarImagenes = procesarImagenes;
+}
+
+
+async function switchCamera() {
+    if (!cameraOn) {
+        speak("Por favor, enciende la cámara primero.");
+        return;
+    }
+
+    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+    toggleCamera();
+    toggleCamera();
+    speak("Cambiando a la siguiente cámara");
 }
 
 console.log("Script camera_functions.js cargado");

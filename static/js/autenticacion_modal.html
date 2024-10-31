@@ -1,0 +1,29 @@
+<div id="authModalContainer" class="modalLogin">
+    <div class="modal-contentLogin">
+      <div class="modal-header">
+        <img src="{{ url_for('static', path='img/icons8-queen-bee-50.png') }}" alt="Logo" class="logo">
+        <h2>DATA EXTRACTOR</h2>
+      </div>
+      <div class="modal-body">
+        <form id="authForm">
+          <div class="input-group">
+            <label for="userInput">Email o DNI</label>
+            <input type="text" id="userInput" name="userInput" required>
+          </div>
+          <div class="input-group">
+            <label for="password">Clave Acceso</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          <p class="attempts-left">Solo 3 intentos</p>
+          <div class="button-group">
+            <button type="button" id="forgotPassword">Olvidé Clave</button>
+            <button type="button" id="changePassword">Cambiar Clave</button>
+          </div>
+          <button type="submit" class="submit-btn">Ingresar</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <p>Data Extractor © 2024</p>
+      </div>
+    </div>
+  </div>

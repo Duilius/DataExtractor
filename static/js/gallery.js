@@ -1,6 +1,9 @@
 // gallery.js
 console.log('Cargando gallery.js');
 
+// Al principio del archivo
+//export { addPhotoToGallery, initializeGallery, activarBotones };
+
 //import { procesarImagenes } from './camera_functions.js';
 import { showLargeImage, closeLargeImage } from './imageEditor.js';
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
@@ -57,12 +60,16 @@ export function initializeGallery() {
     document.addEventListener('photoTaken', event => addPhotoToGallery(event.detail));
     document.addEventListener('imageSaved', event => handleSavedImage(event.detail));
     
+    
+    // Añade esto en la función initializeGallery en gallery.js
     document.addEventListener('addToGallery', event => addPhotoToGallery(event.detail.imageData, event.detail.isEdited));
+    
     // Activar botones inicialmente
     activarBotones();
 }
 
-async function addPhotoToGallery(imgSrc, isEdited = false) {
+export async function addPhotoToGallery(imgSrc, isEdited = false) {
+    console.log("Función addPhotoToGallery iniciada");
     try {
         const { imageData: processedImageData, resized } = await processImage(imgSrc);
         const miniaturas = document.getElementById('miniaturas');
@@ -70,11 +77,8 @@ async function addPhotoToGallery(imgSrc, isEdited = false) {
         miniaturas.appendChild(miniaturaContainer);
         activarBotones();
 
-        /*    
-        if (resized) {
-            alert("La imagen ha sido redimensionada para cumplir con el tamaño máximo permitido de 1024x1024 píxeles.");
-        }
-        */
+        console.log("Foto añadida a la galería");
+
         // Verificación adicional de las dimensiones
         const img = new Image();
         img.onload = function() {
@@ -112,13 +116,14 @@ function createMiniatureContainer(imgSrc, isEdited = false) {
 function eliminarFotosSeleccionadas() {
     const fotosSeleccionadas = document.querySelectorAll('.fotoCheckbox:checked');
     if (fotosSeleccionadas.length === 0) {
-        alert("Por favor, seleccione al menos una foto para eliminar.");
+        speak("Por favor, seleccione al menos una foto para eliminar");
         return;
     }
     
     if (confirm(`¿Está seguro de que desea eliminar ${fotosSeleccionadas.length} foto(s)?`)) {
         fotosSeleccionadas.forEach(checkbox => checkbox.parentElement.remove());
         activarBotones();
+        speak(`${fotosSeleccionadas.length} fotos eliminadas`);  // Mensaje de voz
     }
 }
 

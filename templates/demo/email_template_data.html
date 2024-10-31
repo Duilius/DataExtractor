@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Extractor - Reporte</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #2c3e50; color: #ffffff; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .footer { background-color: #34495e; color: #ffffff; padding: 10px; text-align: center; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐝 Data Extractor</h1>
+        </div>
+        <div class="content">
+            <h2>Hola {{ data.name }},</h2>
+            <p>Aquí tienes tu reporte de inventario reciente:</p>
+            <table>
+                <tr>
+                    <th>Item</th>
+                    <th>Cantidad</th>
+                    <th>Estado</th>
+                </tr>
+                {% for item in data.items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.status }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <p>Para más detalles, <a href="{{ data.link }}">haz clic aquí</a>.</p>
+        </div>
+        <div class="footer">
+            <p>Data Extractor © 2024 | <a href="#" style="color: #ffffff;">Contacto</a> | <a href="#" style="color: #ffffff;">Privacidad</a></p>
+        </div>
+    </div>
+</body>
+</html>
