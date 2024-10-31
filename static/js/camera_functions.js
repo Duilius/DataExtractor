@@ -1,23 +1,21 @@
-import { speak } from './utils.js';  // Asegúrate de importar speak
-let isCapturing = false; // Añade esta variable al inicio del archivo
-let captureCount = 0; // Añade esta variable al inicio del archivo
-
 // camera_functions.js
+
+// Importaciones
+import { speak } from './utils.js';
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
-// En la parte superior de camera_functions.js
 import { addPhotoToGallery, activarBotones } from './gallery.js';
 
-// Asegúrate de que esta línea esté al final del archivo
-export { procesarImagenes, toggleCamera, capturePhoto, toggleVoiceCapture, switchCamera};
-
+// Variables globales
+let isCapturing = false;
+let captureCount = 0;
 let cameraOn = false;
-let recognition;
-let isVoiceCaptureActive = false;
-let cropper;
-
+let recognition = null;
+let isVoiceCaptiveActive = false;
+let isProcessing = false;
 let currentCameraIndex = 0;
 let cameras = [];
 
+// Funciones principales
 async function getCameras() {
     const devices = await navigator.mediaDevices.enumerateDevices();
     return devices.filter(device => device.kind === 'videoinput');
@@ -47,14 +45,14 @@ async function toggleCamera() {
         }
     } else {
         let stream = document.getElementById('cameraFeed').srcObject;
-        let tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
-        document.getElementById('cameraFeed').srcObject = null;
-        cameraOn = false;
-        speak("Cámara apagada");
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            document.getElementById('cameraFeed').srcObject = null;
+            cameraOn = false;
+            speak("Cámara apagada");
+        }
     }
 }
-
 
 async function capturePhoto() {
     captureCount++;
@@ -81,145 +79,43 @@ async function capturePhoto() {
 
         const { imageData: processedImageData } = await processImage(canvas.toDataURL('image/png'));
         await addPhotoToGallery(processedImageData);
-        speak("Foto capturada");  // Mensaje de voz
+        // Procesar inmediatamente después de capturar
+        await procesarCodigoBarras(processedImageData);
+        speak("Foto capturada y procesada");
 
     } catch (error) {
         console.error("Error al procesar la imagen:", error);
         speak("Error al procesar la imagen");
-        alert("Error al procesar la imagen capturada");
     } finally {
         isCapturing = false;
     }
 }
 
+async function switchCamera() {
+    if (!cameraOn) {
+        speak("Por favor, enciende la cámara primero.");
+        return;
+    }
 
-async function showLargeImage(src) {
-    const overlay = document.createElement('div');
-    overlay.className = 'image-overlay';
-    
-    const imageContainer = document.createElement('div');
-    imageContainer.className = 'image-container';
-    
-    const largeImg = document.createElement('img');
-    largeImg.src = src;
-    largeImg.className = 'large-image';
-    
-    const editorContainer = document.createElement('div');
-    editorContainer.className = 'editor-container';
-    
-    const cropButton = document.createElement('button');
-    cropButton.textContent = 'Recortar';
-    cropButton.onclick = () => initCrop(largeImg);
-    
-    const rotateLeftButton = document.createElement('button');
-    rotateLeftButton.textContent = 'Rotar Izquierda';
-    rotateLeftButton.onclick = () => rotateImage(largeImg, -90);
-    
-    const rotateRightButton = document.createElement('button');
-    rotateRightButton.textContent = 'Rotar Derecha';
-    rotateRightButton.onclick = () => rotateImage(largeImg, 90);
-    
-    const saveButton = document.createElement('button');
-    saveButton.textContent = 'Guardar Cambios';
-    saveButton.onclick = () => saveEditedImage(largeImg, src);
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'X';
-    closeBtn.className = 'close-btnGaleria';
-    closeBtn.onclick = () => document.body.removeChild(overlay);
-    
-    editorContainer.appendChild(cropButton);
-    editorContainer.appendChild(rotateLeftButton);
-    editorContainer.appendChild(rotateRightButton);
-    editorContainer.appendChild(saveButton);
-    
-    imageContainer.appendChild(largeImg);
-    imageContainer.appendChild(editorContainer);
-    
-    overlay.appendChild(imageContainer);
-    overlay.appendChild(closeBtn);
-    document.body.appendChild(overlay);
+    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+    await toggleCamera();
+    await toggleCamera();
+    speak("Cambiando a la siguiente cámara");
 }
 
-function initCrop(img) {
-    if (cropper) {
-        cropper.destroy();
-    }
-    cropper = new Cropper(img, {
-        aspectRatio: NaN,
-        viewMode: 1,
-        minCropBoxWidth: 200,
-        minCropBoxHeight: 200,
-    });
-}
-
-function rotateImage(img, degrees) {
-    if (cropper) {
-        cropper.rotate(degrees);
-    } else {
-        img.style.transform = `rotate(${(parseInt(img.dataset.rotation || 0) + degrees) % 360}deg)`;
-        img.dataset.rotation = (parseInt(img.dataset.rotation || 0) + degrees) % 360;
-    }
-}
-
-async function saveEditedImage(img, originalSrc) {
-    let editedImageData;
-    if (cropper) {
-        editedImageData = cropper.getCroppedCanvas().toDataURL();
-        cropper.destroy();
-        cropper = null;
-    } else {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        
-        const rotation = parseInt(img.dataset.rotation || 0);
-        if (rotation) {
-            ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(rotation * Math.PI / 180);
-            ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
-            ctx.restore();
-        } else {
-            ctx.drawImage(img, 0, 0);
-        }
-        
-        editedImageData = canvas.toDataURL();
-    }
-    
-    try {
-        const processedImageData = await processImage(editedImageData);
-        addPhotoToGallery(processedImageData);
-        
-        const originalThumbnail = document.querySelector(`img[src="${originalSrc}"]`);
-        if (originalThumbnail) {
-            originalThumbnail.classList.add('edited');
-        }
-        
-        document.body.removeChild(img.closest('.image-overlay'));
-    } catch (error) {
-        console.error("Error al procesar la imagen editada:", error);
-        speak("Error al procesar la imagen editada");
-    }
-}
-
-
+// Funciones de captura por voz
 function toggleVoiceCapture() {
     if (!cameraOn) {
         speak("Por favor, enciende la cámara primero");
         return;
     }
 
-    if (isVoiceCaptureActive) {
+    if (isVoiceCaptiveActive) {
         stopVoiceCapture();
-        speak("Captura por voz desactivada");  // Mensaje de voz
     } else {
         startVoiceCapture();
-        speak("Captura por voz activada. Diga 'tomar foto' o 'capturar' para tomar una foto");  // Mensaje de voz
     }
 }
-
 
 function startVoiceCapture() {
     if (recognition) {
@@ -240,13 +136,13 @@ function startVoiceCapture() {
     };
 
     recognition.onend = () => {
-        if (isVoiceCaptureActive) {
+        if (isVoiceCaptiveActive) {
             recognition.start();
         }
     };
 
     recognition.start();
-    isVoiceCaptureActive = true;
+    isVoiceCaptiveActive = true;
     document.getElementById('voiceCaptureBtn').textContent = 'Detener Captura por Voz';
     speak('Captura por voz activada. Diga "tomar foto" o "capturar" en cualquier momento para tomar una foto.');
 }
@@ -257,113 +153,12 @@ function stopVoiceCapture() {
         recognition.onend = null;
         recognition = null;
     }
-    isVoiceCaptureActive = false;
+    isVoiceCaptiveActive = false;
     document.getElementById('voiceCaptureBtn').textContent = 'Foto por Voz';
     speak('Captura por voz desactivada');
 }
 
-/*
-function speak(text, rate = 1, pitch = 1) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'es-ES';
-    utterance.rate = rate;
-    utterance.pitch = pitch;
-    
-    let voices = speechSynthesis.getVoices();
-    let spanishVoice = voices.find(voice => voice.lang.startsWith('es'));
-    
-    if (spanishVoice) {
-        utterance.voice = spanishVoice;
-    }
-    
-    speechSynthesis.speak(utterance);
-}
-*/
-let isProcessing = false;
-
-async function procesarImagenes() {
-    console.log("Función procesarImagenes() iniciada");
-        
-    if (isProcessing) {
-        console.log("Ya se está procesando una solicitud. Por favor, espere.");
-        return;
-    }
-
-    const fotosSeleccionadas = document.querySelectorAll('.fotoCheckbox:checked');
-    console.log("Fotos seleccionadas:", fotosSeleccionadas.length);
-        
-    if (fotosSeleccionadas.length === 0) {
-        console.log("No hay fotos seleccionadas");
-        alert("Por favor, seleccione al menos una foto para procesar.");
-        return;
-    }
-
-    isProcessing = true;
-
-    try {
-        const formData = new FormData();
-        console.log("Valor de registrador===>:", formData.get('registrador'));  // Asegúrate de que el valor es '9999'
-        for (let i = 0; i < fotosSeleccionadas.length; i++) {
-            const checkbox = fotosSeleccionadas[i];
-            const img = checkbox.parentElement.querySelector('img');
-            console.log(`Procesando imagen ${i + 1}:`, img.src.substring(0, 50) + "...");
-
-            try {
-                const processedImageData = await processImage(img.src);
-                const blob = dataURItoBlob(processedImageData.imageData);
-                const nombreUUID = generateUUID();
-                formData.append('fotos', blob, `${nombreUUID}.png`);
-                formData.append('uuid', nombreUUID);
-            } catch (error) {
-                console.error(`Error al procesar la imagen ${i + 1}:`, error);
-                throw error;
-            }
-        }
-        console.log("Valor de registrador:", formData.get('registrador'));  // Asegúrate de que el valor es '9999'
-        console.log("FormData creado. Preparando para enviar al servidor...");
-        console.log("Enviando FormData:", [...formData.entries()].map(([key, value]) => 
-            value instanceof File ? `${key}: File(${value.name}, ${value.type}, ${value.size} bytes)` : `${key}: ${value}`
-        ));
-
-        const response = await fetch('/upload_fotos', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'HX-Request': 'true'
-            }
-        });
-
-        if (response.ok) {
-            const htmlContent = await response.text();
-            document.getElementById('form-section').innerHTML = htmlContent;
-            document.getElementById('form-section').style.display = 'block';
-            console.log('Imágenes procesadas con éxito');
-
-            // Desmarcar las casillas de verificación de las fotos procesadas
-            fotosSeleccionadas.forEach(checkbox => {
-                checkbox.checked = false;
-            });
-
-            activarBotones();
-
-            alert('Imágenes procesadas con éxito');
-        } else {
-            console.error('Error en la solicitud:', response.status);
-            const errorContent = await response.text();
-            document.getElementById('form-section').innerHTML = errorContent;
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-    } catch (error) {
-        console.error('Error al procesar las imágenes:', error);
-        alert(`Error al procesar las imágenes: ${error.message}`);
-    } finally {
-        isProcessing = false;
-    }
-}
-
-
-
+// Funciones de utilidad
 function generateUUID() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -381,49 +176,17 @@ function dataURItoBlob(dataURI) {
     return new Blob([ab], {type: mimeString});
 }
 
-// Event listener para el botón de procesar
-document.addEventListener('DOMContentLoaded', function() {
-    const procesarBtn = document.getElementById('procesarFoto');
-    if (procesarBtn) {
-        procesarBtn.addEventListener('click', function(event) {
-            console.log("Botón 'Procesar' clickeado");
-            event.preventDefault();
-            
-            const userId = localStorage.getItem('authenticatedUserId');
-            if (userId) {
-                console.log("Usuario autenticado. ID:", userId);
-                procesarImagenes();
-            } else {
-                console.log("Usuario no autenticado");
-                alert('Por favor, inicie sesión antes de procesar las imágenes.');
-                showAuthModal(); // Asumiendo que esta función existe para mostrar el modal de login
-                event.stopImmediatePropagation();
-            }
-        });
-    } else {
-        console.error("Botón 'Procesar' no encontrado");
-    }
-});
+// Exportaciones
+export { 
+    toggleCamera, 
+    capturePhoto, 
+    toggleVoiceCapture, 
+    switchCamera 
+};
 
-// Asignar funciones al objeto global solo si no estamos en un módulo
+// Event listeners globales
 if (typeof window !== 'undefined') {
     window.toggleCamera = toggleCamera;
     window.capturePhoto = capturePhoto;
     window.toggleVoiceCapture = toggleVoiceCapture;
-    window.procesarImagenes = procesarImagenes;
 }
-
-
-async function switchCamera() {
-    if (!cameraOn) {
-        speak("Por favor, enciende la cámara primero.");
-        return;
-    }
-
-    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-    toggleCamera();
-    toggleCamera();
-    speak("Cambiando a la siguiente cámara");
-}
-
-console.log("Script camera_functions.js cargado");

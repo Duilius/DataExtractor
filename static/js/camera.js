@@ -2,22 +2,12 @@
 console.log('Cargando camera.js');
 
 import { speak } from './utils.js';
-
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
 import { toggleCamera, capturePhoto, toggleVoiceCapture, switchCamera } from './camera_functions.js';
 
 let cameraOn = false;
 let recognition;
 let isVoiceCaptureActive = false;
-
-
-/*
-if (tomarFotoBtn) {
-    tomarFotoBtn.removeEventListener('click', capturePhoto); // Elimina listeners previos
-    tomarFotoBtn.addEventListener('click', capturePhoto);
-}
-*/
-
 
 export function initializeCamera() {
     console.log('Inicializando cámara');
@@ -55,9 +45,7 @@ export function initializeCamera() {
     }
 }
 
-
 function startVoiceCapture() {
-    
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'es-ES';
     recognition.continuous = true;

@@ -1,13 +1,9 @@
 // gallery.js
 console.log('Cargando gallery.js');
 
-// Al principio del archivo
-//export { addPhotoToGallery, initializeGallery, activarBotones };
-
-//import { procesarImagenes } from './camera_functions.js';
 import { showLargeImage, closeLargeImage } from './imageEditor.js';
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
-import { procesarImagenes } from './camera_functions.js';
+import { speak } from './utils.js';
 
 export function initializeGallery() {
     console.log('Inicializando galería');
@@ -36,6 +32,7 @@ export function initializeGallery() {
                 window.procesarImagenes();
             } else {
                 console.error('La función procesarImagenes no está definida globalmente');
+                speak('Error: función de procesamiento no disponible');
             }
         });
     } else {
@@ -59,12 +56,8 @@ export function initializeGallery() {
 
     document.addEventListener('photoTaken', event => addPhotoToGallery(event.detail));
     document.addEventListener('imageSaved', event => handleSavedImage(event.detail));
-    
-    
-    // Añade esto en la función initializeGallery en gallery.js
     document.addEventListener('addToGallery', event => addPhotoToGallery(event.detail.imageData, event.detail.isEdited));
     
-    // Activar botones inicialmente
     activarBotones();
 }
 
@@ -78,8 +71,8 @@ export async function addPhotoToGallery(imgSrc, isEdited = false) {
         activarBotones();
 
         console.log("Foto añadida a la galería");
+        speak("Imagen añadida a la galería");
 
-        // Verificación adicional de las dimensiones
         const img = new Image();
         img.onload = function() {
             if (this.width > 1024 || this.height > 1024) {
@@ -90,7 +83,7 @@ export async function addPhotoToGallery(imgSrc, isEdited = false) {
 
     } catch (error) {
         console.error("Error al procesar la imagen para la galería:", error);
-        alert("Error al añadir la foto a la galería");
+        speak("Error al añadir la imagen a la galería");
     }
 }
 
@@ -123,7 +116,7 @@ function eliminarFotosSeleccionadas() {
     if (confirm(`¿Está seguro de que desea eliminar ${fotosSeleccionadas.length} foto(s)?`)) {
         fotosSeleccionadas.forEach(checkbox => checkbox.parentElement.remove());
         activarBotones();
-        speak(`${fotosSeleccionadas.length} fotos eliminadas`);  // Mensaje de voz
+        speak(`${fotosSeleccionadas.length} fotos eliminadas`);
     }
 }
 
@@ -135,20 +128,20 @@ function mostrarOpcionesGuardado() {
         case "1": guardarEnDrive(); break;
         case "2": guardarEnServidor(); break;
         case "3": guardarEnLocal(); break;
-        default: alert("Opción no válida o cancelada.");
+        default: speak("Opción no válida o cancelada");
     }
 }
 
 function guardarEnDrive() {
-    alert("Función guardarEnDrive no implementada");
+    speak("Función guardar en Drive no implementada");
 }
 
 function guardarEnServidor() {
-    alert("Función guardarEnServidor no implementada");
+    speak("Función guardar en servidor no implementada");
 }
 
 function guardarEnLocal() {
-    alert("Función guardarEnLocal no implementada");
+    speak("Función guardar en local no implementada");
 }
 
 async function handleFileSelect(e) {
@@ -182,18 +175,10 @@ async function handleFiles(files) {
                     reader.readAsDataURL(file);
                 });
 
-                const withinLimits = await isImageWithinSizeLimits(imageData);
-               
-                /*
-                if (!withinLimits) {
-                    alert(`La imagen "${file.name}" excede las dimensiones máximas permitidas de 1024x1024. Será redimensionada automáticamente.`);
-                }
-                */
-
                 await addPhotoToGallery(imageData);
             } catch (error) {
                 console.error("Error al procesar el archivo:", error);
-                alert(`Error al procesar el archivo ${file.name}`);
+                speak(`Error al procesar el archivo ${file.name}`);
             }
         }
     }
@@ -226,7 +211,7 @@ async function handleSavedImage({ originalSrc, editedImageData }) {
         activarBotones();
     } catch (error) {
         console.error("Error al procesar la imagen editada:", error);
-        alert("Error al guardar la imagen editada");
+        speak("Error al guardar la imagen editada");
     }
 }
 
