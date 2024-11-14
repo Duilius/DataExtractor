@@ -45,5 +45,6 @@ static/js/*-7-oct*.js
 
 #pycache
 __pycache__/
+*.pyc
 #claves.py  
 claves_dataextractor.py
