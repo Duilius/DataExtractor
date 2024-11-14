@@ -1,27 +1,23 @@
+// main.js
 import { speak } from './utils.js';
-
-console.log('Cargando main.js');
 import { limpiarFormulario } from './formHandler.js';
 import { mostrarMensajeModal } from './utils.js';
-
-import { procesarImagenes, toggleCamera, capturePhoto, toggleVoiceCapture } from './camera_functions.js';
+import { procesarImagenes } from './camera_functions.js';
 import { initializeCamera } from './camera.js';
-import { initializeGallery, activarBotones } from './gallery.js';
+import { initializeGallery } from './gallery.js';
 import { initializeImageEditor } from './imageEditor.js';
-import { initializeFormHandler, mostrarFormulario } from './formHandler.js';
-import { initializeUtils, initializeAuthModal, checkAuthBeforeProcessing, showAuthModal, checkAuthStatus } from './utils.js';
+import { initializeFormHandler } from './formHandler.js';
+import { initializeUtils, initializeAuthModal, checkAuthBeforeProcessing, showAuthModal } from './utils.js';
 import { initializeSearch } from './search.js';
 import { initializeWorkerInfo } from './worker_info.js';
 import './imageProcessor.js';
 
+// Contador de registros exitosos
+let registrosExitosos = parseInt(localStorage.getItem('registrosExitosos') || '0');
+
 window.addEventListener('DOMContentLoaded', (event) => {
     console.log('DOM completamente cargado en main.js');
     
-    /*
-    if (!checkAuthStatus()) {
-        showAuthModal();
-    }
-    */
     initializeCamera();
     initializeGallery();
     initializeImageEditor();
@@ -38,25 +34,21 @@ window.addEventListener('DOMContentLoaded', (event) => {
         console.warn('Botón de login no encontrado');
     }
 
-     // Manejar el cierre del modal principal
-     const modal = document.getElementById('modal');
-     const closeBtn = document.querySelector('.close');
- 
-     if (closeBtn) {
-         closeBtn.onclick = function() {
-             modal.style.display = "none";
-         }
-     }
- 
-     window.onclick = function(event) {
-         if (event.target == modal) {
-             modal.style.display = "none";
-         }
-     }
+    // Manejar el cierre del modal principal
+    const modal = document.getElementById('modal');
+    const closeBtn = document.querySelector('.close');
 
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+    }
 
-    // Hacer procesarImagenes disponible globalmente
-    window.procesarImagenes = procesarImagenes;
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
 
     // Cargar el contenido del modal de autenticación
     fetch('templates/demo/autenticacion_modal2.html')
@@ -72,60 +64,23 @@ window.addEventListener('DOMContentLoaded', (event) => {
     })
     .catch(error => console.error('Error al cargar el modal de autenticación:', error));
 
-    // Modificar el comportamiento del botón "Procesar"
-    const procesarBtn = document.getElementById('procesarFoto');
-    if (procesarBtn) {
-        procesarBtn.addEventListener('click', () => {
-            if (checkAuthBeforeProcessing()) {
-                procesarImagenes();
-            }
-        });
-    } else {
-        console.warn('Botón de procesar no encontrado');
-    }
+    // Event listeners para campos obligatorios
+    camposObligatorios.forEach(campo => {
+        const input = document.querySelector(`#${campo.id}`);
+        if (input) {
+            input.addEventListener('input', function() {
+                if (this.value.trim() && this.value !== "No disponible") {
+                    this.classList.remove('error');
+                }
+            });
+        }
+    });
 });
 
 // Función global para cerrar el modal principal
 window.closeModal = function() {
     document.getElementById('modal').style.display = "none";
 }
-
-
-
-    // Cargar el contenido del modal de autenticación
-    /*
-    fetch('templates/demo/autenticacion_modal.html')
-    .then(response => response.text())
-    .then(html => {
-        const modalContainer = document.getElementById('authModalContainer');
-        if (modalContainer) {
-            modalContainer.innerHTML = html;
-            initializeAuthModal();
-        } else {
-            console.warn('Contenedor del modal de autenticación no encontrado');
-        }
-    })
-    .catch(error => console.error('Error al cargar el modal de autenticación:', error));
-
-    */
-
-    // Modificar el comportamiento del botón "Procesar"
-    const procesarBtn = document.getElementById('procesarFoto');
-    if (procesarBtn) {
-        procesarBtn.addEventListener('click', () => {
-            if (checkAuthBeforeProcessing()) {
-                procesarImagenes();
-            }
-        });
-    } else {
-        console.warn('Botón de procesar no encontrado');
-    }
-
-
-/*FUNCIONALIDADES VALIDAR FORMULARIO DE REGISTRO/INSERCIÓN*/
-
-// Contador de registros exitosos
-let registrosExitosos = parseInt(localStorage.getItem('registrosExitosos') || '0');
 
 // Mostrar barra de progreso
 function mostrarBarraProgreso() {
@@ -151,8 +106,6 @@ function mostrarBarraProgreso() {
     }, 1000);
 }
 
-
-
 // Definir campos obligatorios globalmente
 const camposObligatorios = [
     { id: 'institucion', tipo: 'input' },
@@ -162,14 +115,14 @@ const camposObligatorios = [
     { id: 'color', tipo: 'input' },
     { id: 'descripcion', tipo: 'input' },
     { id: 'estado', tipo: 'select' }
- ];
- 
- // Función para validar el formulario
- function validarFormulario() {
+];
+
+// Función para validar el formulario
+function validarFormulario() {
     console.log("Iniciando validación");
     let valido = true;
     let errores = [];
- 
+
     // Validar campos de texto, select y párrafo
     camposObligatorios.forEach(campo => {
         const elemento = document.querySelector(`#${campo.id}`);
@@ -179,17 +132,11 @@ const camposObligatorios = [
             errores.push(`Campo ${campo.id} no encontrado`);
             return;
         }
- 
+
         let valor = campo.tipo === 'input' || campo.tipo === 'select' ? 
                    elemento.value : 
                    elemento.textContent;
- 
-        console.log(`Verificando campo ${campo.id}:`, {
-            tipo: campo.tipo,
-            valor: valor,
-            elemento: elemento
-        });
- 
+
         if (!valor || 
             valor.trim() === '' || 
             valor === 'No disponible' || 
@@ -202,7 +149,7 @@ const camposObligatorios = [
             elemento.classList.remove('error');
         }
     });
- 
+
     // Validar radio button de En Uso
     const enUsoChecked = document.querySelector('input[name="enUso"]:checked');
     if (!enUsoChecked) {
@@ -214,22 +161,22 @@ const camposObligatorios = [
         }
         errores.push("Debe indicar si el bien está en uso");
     }
- 
+
     if (!valido) {
         document.getElementById('form-section').style.display = 'block';
-        alert(errores[0]); // Mostrar solo el primer error encontrado
+        mostrarMensajeModal(errores[0], true);
         return false;
     }
- 
+
     // Validación de formato de código de inventario
     const cod2024 = document.querySelector('#cod-2024').value;
     if (!/^\d+(-\d+)?$/.test(cod2024)) {
         document.querySelector('#cod-2024').classList.add('error');
         document.getElementById('form-section').style.display = 'block';
-        alert("El código de inventario debe ser numérico y puede contener un guion");
+        mostrarMensajeModal("El código de inventario debe ser numérico y puede contener un guion", true);
         return false;
     }
- 
+
     // Validación condicional para muebles
     const descripcion = document.querySelector('#descripcion').value.toLowerCase();
     const muebles = ['escritorio', 'mueble', 'mesa', 'repostero', 'estante', 
@@ -259,36 +206,12 @@ const camposObligatorios = [
             });
         }
     }
- 
+
     return valido;
- }
- 
- // Event listeners
- document.addEventListener('DOMContentLoaded', function() {
-    // Event listeners para campos
-    camposObligatorios.forEach(campo => {
-        const input = document.querySelector(`#${campo.id}`);
-        if (input) {
-            input.addEventListener('input', function() {
-                if (this.value.trim() && this.value !== "No disponible") {
-                    this.classList.remove('error');
-                }
-            });
-        }
-    });
- 
-    // Event listener para el botón registrar
-    const registrarBtn = document.getElementById('registrarFoto');
-    if (registrarBtn) {
-        registrarBtn.addEventListener('click', function() {
-            console.log("Botón registrar clickeado");
-            registrarBien();
-        });
-    }
- });
- 
- // Función para registrar el bien
- async function registrarBien() {
+}
+
+// Función para registrar el bien
+async function registrarBien() {
     console.log("Iniciando proceso de registro");
     
     if (!validarFormulario()) {
@@ -344,37 +267,47 @@ const camposObligatorios = [
 
         const contentType = response.headers.get("content-type");
 
-        // Procesar respuesta JSON o HTML según el tipo de contenido
         if (contentType && contentType.includes("application/json")) {
             const data = await response.json();
             if (response.ok && data.exito) {
-                //alert('Registro completado con éxito');
                 mostrarMensajeModal('Registro completado con éxito', false);
                 limpiarFormulario();
+                registrosExitosos++;
+                localStorage.setItem('registrosExitosos', registrosExitosos);
+                if (registrosExitosos % 5 === 0) {
+                    solicitarEnvioReporte();
+                }
             } else {
-                //mostrarErrorModal(data.error || 'Error en el registro');
                 mostrarMensajeModal(data.error || 'Error en el registro', true);
             }
         } else {
             const errorHtml = await response.text();
-            //mostrarErrorModal("Ocurrió un error: revise los campos e intente nuevamente.");
             mostrarMensajeModal("Ocurrió un error: revise los campos e intente nuevamente.", true);
         }
 
     } catch (error) {
         console.error('Error:', error);
-        //mostrarErrorModal('Error al procesar el registro: ' + error.message);
         mostrarMensajeModal('Error al procesar el registro: ' + error.message, true);
     }
 }
 
-// Actualizar el event listener para el botón descartar
+// Event listeners principales
 document.addEventListener('DOMContentLoaded', function() {
+    // Botones principales
+    const registrarBtn = document.getElementById('registrarFoto');
     const descartarBtn = document.getElementById('descartarData');
+    const procesarBtn = document.getElementById('procesarFoto');
+
+    if (registrarBtn) {
+        registrarBtn.addEventListener('click', function() {
+            console.log("Botón registrar clickeado");
+            registrarBien();
+        });
+    }
+
     if (descartarBtn) {
         descartarBtn.addEventListener('click', function() {
             limpiarFormulario();
-            // Asegurar que el formulario permanezca visible
             const formSection = document.getElementById('form-section');
             if (formSection) {
                 formSection.style.display = 'block';
@@ -383,76 +316,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-// Función para mostrar el modal de error
-function mostrarErrorModal(mensaje) {
-    const modal = document.getElementById("errorModal");
-    const modalContent = document.getElementById("errorMessage");
-    modalContent.textContent = mensaje;
-    modal.style.display = "flex";
-}
+    if (procesarBtn) {
+        procesarBtn.addEventListener('click', () => {
+            if (checkAuthBeforeProcessing()) {
+                procesarImagenes();
+            }
+        });
+    }
+});
 
-// Cerrar el modal al hacer clic en el botón de cerrar
-document.getElementById("closeModal").onclick = function () {
-    document.getElementById("errorModal").style.display = "none";
-};
-
- 
- function solicitarEnvioReporte() {
+function solicitarEnvioReporte() {
     if (confirm('¿Desea recibir un reporte de los bienes registrados?')) {
         fetch('/enviar_reporte', { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.enviado) {
-                    alert('El reporte ha sido enviado a su correo');
+                    mostrarMensajeModal('El reporte ha sido enviado a su correo', false);
                 } else {
-                    alert('Hubo un error al enviar el reporte');
+                    mostrarMensajeModal('Hubo un error al enviar el reporte', true);
                 }
             })
             .catch(error => console.error('Error:', error));
     }
- }
-
-// Función para hablar mensajes
-function hablarMensaje(mensaje) {
-    const voces = speechSynthesis.getVoices().filter(voz => voz.lang.startsWith('es'));
-    const vozAleatoria = voces[Math.floor(Math.random() * voces.length)];
-    const utterance = new SpeechSynthesisUtterance(mensaje);
-    utterance.voice = vozAleatoria;
-    speechSynthesis.speak(utterance);
 }
 
-});
-// Manejar el modal de autenticación
-/*
-function manejarModalAutenticacion() {
-    const modal = document.getElementById('authModalContainer');
-    const form = document.getElementById('authForm');
-    const closeBtn = document.getElementById('closeAuthModal');
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const userEmail = document.getElementById('userEmail').value;
-        const colleagueEmail1 = document.getElementById('colleagueEmail1').value;
-        const colleagueEmail2 = document.getElementById('colleagueEmail2').value;
-
-        if (userEmail) localStorage.setItem('userEmail', userEmail);
-        if (colleagueEmail1) localStorage.setItem('colleagueEmail1', colleagueEmail1);
-        if (colleagueEmail2) localStorage.setItem('colleagueEmail2', colleagueEmail2);
-
-        modal.style.display = 'none';
-        registrarBien();
-    });
-
-    closeBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-        registrarBien();
-    });
-
-    window.addEventListener('click', function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-            registrarBien();
-        }
-    });
-}
-*/
+// Hacer funciones globales disponibles
+window.registrarBien = registrarBien;
+window.validarFormulario = validarFormulario;
+window.mostrarBarraProgreso = mostrarBarraProgreso;
+window.solicitarEnvioReporte = solicitarEnvioReporte;

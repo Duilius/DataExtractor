@@ -2,12 +2,7 @@
 console.log('Cargando camera.js');
 
 import { speak } from './utils.js';
-import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
 import { toggleCamera, capturePhoto, toggleVoiceCapture, switchCamera } from './camera_functions.js';
-
-let cameraOn = false;
-let recognition;
-let isVoiceCaptureActive = false;
 
 export function initializeCamera() {
     console.log('Inicializando cámara');
@@ -43,40 +38,4 @@ export function initializeCamera() {
         switchCameraBtn.addEventListener('click', switchCamera);
         console.log('Evento click agregado a switchCameraBtn');
     }
-}
-
-function startVoiceCapture() {
-    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'es-ES';
-    recognition.continuous = true;
-    recognition.interimResults = false;
-
-    recognition.onresult = (event) => {
-        const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
-        if (command.includes('tomar foto') || command.includes('capturar')) {
-            capturePhoto();
-        }
-    };
-
-    recognition.onend = () => {
-        if (isVoiceCaptureActive) {
-            recognition.start();
-        }
-    };
-
-    recognition.start();
-    isVoiceCaptureActive = true;
-    document.getElementById('voiceCaptureBtn').textContent = 'Detener Captura por Voz';
-    speak('Captura por voz activada. Diga "tomar foto" o "capturar" en cualquier momento para tomar una foto.');
-}
-
-function stopVoiceCapture() {
-    if (recognition) {
-        recognition.stop();
-        recognition.onend = null;
-        recognition = null;
-    }
-    isVoiceCaptureActive = false;
-    document.getElementById('voiceCaptureBtn').textContent = 'Foto por Voz';
-    speak('Captura por voz desactivada');
 }

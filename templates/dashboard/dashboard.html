@@ -1,0 +1,22 @@
+{# templates/dashboard.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Inventario</title>
+    <!-- Agregar esta línea en el <head> de dashboard.html para usar Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/kpi_cards.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    {% block content %}{% endblock %}
+    <!-- En dashboard.html -->
+    {% include "dashboard/kpi_cards.html" %}
+
+    <script src="{{ url_for('static', path='/js/kpi_cards.js') }}"></script>
+    
+</body>
+</html>

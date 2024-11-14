@@ -1,4 +1,5 @@
 # Importaciones necesarias
+import secrets
 from io import BytesIO
 from pyzbar.pyzbar import decode
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
@@ -13,22 +14,20 @@ from openai import OpenAI
 from openai import OpenAIError
 import json
 import os
-from typing import List
-from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends
+from typing import List, Dict
+from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends, Body, APIRouter
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, func
+from sqlalchemy import text, func, case, create_engine, desc
+from sqlalchemy import Column, Integer, String, Float, Numeric
 from sqlalchemy.orm import sessionmaker
+from decimal import Decimal
 from datetime import datetime
 from utils.dispositivo import determinar_tipo_dispositivo
 from database import SessionLocal
-from scripts.py.create_tables_BD_INVENTARIO import (
-    Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, 
-    HistorialCodigoInventario, AsignacionBien, InventarioBien, 
-    TipoBien, TipoMovimiento
-)
+from scripts.py.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, HistorialCodigoInventario, AsignacionBien, InventarioBien, TipoBien, TipoMovimiento, ProcesoInventario, Empleado, Oficina)
 from scripts.py.buscar_por_trabajador_inventario import consulta_registro
 
 try:
@@ -39,6 +38,15 @@ except ImportError:
 
 # Configuración de FastAPI, OpenAI, y S3
 app = FastAPI()
+# Después de crear la app FastAPI y antes de cualquier ruta
+from starlette.middleware.sessions import SessionMiddleware
+# Después de crear la app FastAPI (app = FastAPI())
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=secrets.token_urlsafe(32),  # Genera una clave secreta aleatoria
+    session_cookie="inventario_session"
+)
+
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 s3_client = boto3.client(
@@ -227,19 +235,153 @@ async def serve_template(request: Request, path: str):
 # --------------------------------------------------------------
 # Endpoint de procesamiento de imágenes y extracción con OpenAI
 # --------------------------------------------------------------
+# Agregar nuevas funciones para manejo de imágenes optimizadas
+def optimize_image(image_data: bytes, format: str = 'webp') -> bytes:
+    """
+    Optimiza la imagen para web: redimensiona y convierte a WebP
+    """
+    try:
+        with Image.open(io.BytesIO(image_data)) as img:
+            # Convertir a RGB si es necesario
+            if img.mode in ('RGBA', 'LA'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.getchannel('A'))
+                img = background
+
+            # Redimensionar si excede límites
+            if img.size[0] > 1024 or img.size[1] > 1024:
+                img.thumbnail((1024, 1024))
+
+            # Optimizar y guardar
+            buffer = io.BytesIO()
+            if format == 'webp':
+                img.save(buffer, format='WebP', quality=80, method=6)
+            else:
+                img.save(buffer, format='JPEG', quality=85, optimize=True)
+            
+            return buffer.getvalue()
+    except Exception as e:
+        print(f"Error optimizando imagen: {str(e)}")
+        raise
+
+# Modificar la función determinar_tipo_imagen y agregar procesamiento individual
+async def procesar_imagen_individual(base64_image: str) -> dict:
+    """
+    Procesa una imagen individual con OpenAI para determinar su tipo
+    """
+    prompt_individual = """
+        Analiza esta imagen específica y ÚNICAMENTE extrae:
+
+        Si ves códigos de inventario:
+        - Extráelos usando las claves 'INV_2021', 'INV_2023', etc.
+        
+        Si ves un número de serie:
+        - Extráelo usando la clave 'N_Serie'
+        
+        SOLO si ves el objeto completo (no solo etiquetas o detalles):
+        - Describe qué es (usar clave 'descripcion')
+        - Indica su color principal (usar clave 'color')
+        - Indica su material principal (usar clave 'material')
+        
+        IMPORTANTE: 
+        - NO describas etiquetas o superficies donde están pegadas
+        - NO incluyas descripción, color o material si solo ves etiquetas o números de serie
+        - Incluye SOLO las claves para los datos que necesitas según las reglas anteriores
+        - La respuesta debe ser un JSON válido con comillas dobles
+        
+        Ejemplo si ves solo etiquetas:
+        {
+            "INV_2021": "01-11321",
+            "INV_2023": "01-21763"
+        }
+
+        Ejemplo si ves el objeto completo:
+        {
+            "descripcion": "Silla de oficina giratoria",
+            "color": "azul",
+            "material": "tela"
+        }
+        """
+
+    messages = [
+        {"role": "system", "content": "Eres un asistente experto en toma de inventario de bienes."},
+        {"role": "user", "content": [
+            {"type": "text", "text": prompt_individual},
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
+        ]}
+    ]
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=messages,
+            max_tokens=150,
+            temperature=0
+        )
+        
+        response_text = response.choices[0].message.content.strip()
+        print(f"Respuesta de OpenAI: {response_text}")
+        
+        # Buscar el JSON en la respuesta
+        json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
+        if not json_match:
+            print("No se encontró JSON en la respuesta")
+            return {}
+            
+        try:
+            datos_imagen = json.loads(json_match.group(0))
+            print(f"Datos extraídos de imagen individual: {datos_imagen}")
+            return datos_imagen
+        except json.JSONDecodeError as e:
+            print(f"Error decodificando JSON: {e}")
+            print(f"JSON intentado parsear: {json_match.group(0)}")
+            return {}
+            
+    except Exception as e:
+        print(f"Error procesando imagen individual: {str(e)}")
+        print(f"Respuesta completa: {response.choices[0].message.content if response else 'No response'}")
+        return {}
+
+def determinar_tipo_imagen(datos_extraidos: dict) -> str:
+    """
+    Determina el tipo de imagen basado en los datos extraídos.
+    Prioridad: SERIE > PANOR > CODIG
+    """
+    print(f"Determinando tipo de imagen para datos: {datos_extraidos}")
+    
+    # Si tiene número de serie, es SERIE
+    if 'N_Serie' in datos_extraidos and datos_extraidos['N_Serie'] != "No disponible":
+        return 'SERIE'
+    
+    # Si tiene descripción, es PANOR
+    if 'descripcion' in datos_extraidos and datos_extraidos['descripcion'] != "No disponible":
+        return 'PANOR'
+    
+    # Si tiene algún código de inventario, es CODIG
+    inv_prefixes = ['INV_', 'codigo_inv_']
+    for key in datos_extraidos:
+        if any(key.startswith(prefix) for prefix in inv_prefixes):
+            if datos_extraidos[key] != "No disponible":
+                return 'CODIG'
+    
+    return 'OTRO'
+
+def generar_nombre_imagen(cod_usuario: str, cod_empleado: str, tipo: str, inv_2024: str, num_imagen: int = None) -> str:
+    """
+    Genera el nombre final de la imagen según su tipo
+    """
+    if tipo == 'CODIG' and num_imagen is not None:
+        return f"CORPAC-{cod_usuario}-{cod_empleado}-{tipo}-{inv_2024}-{num_imagen}.webp"
+    return f"CORPAC-{cod_usuario}-{cod_empleado}-{tipo}-{inv_2024}.webp"
+
+# Inicialización del estado de la aplicación para almacenar imágenes en memoria
+app.state.imagenes_procesadas = {}
+
+# Modificar el endpoint upload_fotos existente
 @app.post("/upload_fotos")
 async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uuid: List[str] = Form(...), db: Session = Depends(get_db)):
-    form = await request.form()
+    session_id = request.session.get('id', 'default')
     
-    # Aquí recibimos COD_USUARIO y COD_EMPLEADO desde el formulario
-    cod_usuario = form.get('cod_usuario')
-    cod_empleado = form.get('cod_empleado')
-
-    #proceso_inventario_id = int(form.get('proceso_inventario_id'))  # Obtener el proceso de inventario
-    proceso_inventario_id = 9999  # Obtener el proceso de inventario
-
-    fotos = form.getlist("fotos")
-    uuid = form.getlist("uuid")
     datos_combinados = {
         "INV_Patrim": "No disponible",
         "INV_2024": "No disponible",
@@ -249,124 +391,156 @@ async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uu
         "Marca": "No disponible",
         "Modelo": "No disponible",
         "N_Serie": "No disponible",
-        "Color": "No disponible",
-        "Material": "No disponible",
-        "Descripcion": "No disponible"
+        "descripcion": "No disponible",
+        "color": "No disponible",
+        "material": "No disponible"
     }
 
-    
-
-    image_contents = []
-    for foto in fotos:
-        file_content = await foto.read()
-        if len(file_content) == 0:
-            raise ValueError(f"El archivo {foto.filename} está vacío")
-
-        resized_image = resize_image(file_content)
-        base64_image = base64.b64encode(resized_image).decode("utf-8")
-        image_contents.append(base64_image)
-
-        tipo_imagen = "PANOR" if "Descripcion" in datos_combinados else "OTROS"
-        filename = generate_image_filename(cod_usuario, cod_empleado, tipo_imagen, "INV_2024")
-        
-        s3_url = upload_image_to_s3(resized_image, filename)
-        print(f"URL de S3 generada: {s3_url}")  # Confirmación de URL generada
-
-        # Depuración antes de invocar `registrar_imagen_en_db`
-        print(f"Llamando a `registrar_imagen_en_db` con bien_id={cod_usuario}, proceso_inventario_id={proceso_inventario_id}, s3_url={s3_url}, descripcion={tipo_imagen}")
-        registrar_imagen_en_db(db=db, bien_id=cod_usuario, proceso_inventario_id=proceso_inventario_id, s3_url=s3_url, descripcion=tipo_imagen)
-
     try:
-        prompt = """
-            Analiza las siguientes imágenes y combina la información en un solo diccionario:
-            No necesariamente tendrás dos o más imágenes y no necesariamente estarán todos los datos.
+        imagenes_procesadas = {}
+        datos_todas_imagenes = []
+        contador_codig = 1  # Contador solo para imágenes tipo CODIG
 
-            Imagen 1 (Etiquetas): Busca INV. 2021, INV. 2023 y código de 7 dígitos sin guion para el INV_Patrim.
-            Imagen 2 (Objeto completo): Proporciona una descripción breve del objeto, su color principal y material.
-            Imagen 3 (Detalles): Extrae marca, modelo y número de serie si están presentes.
+        # Procesar cada imagen individualmente
+        for i, (foto, id_uuid) in enumerate(zip(fotos, uuid)):
+            file_content = await foto.read()
+            if len(file_content) == 0:
+                raise ValueError(f"El archivo {foto.filename} está vacío")
 
-            Responde SIEMPRE con un diccionario JSON válido en este formato exacto, usando "No disponible" para datos faltantes:
-            {
-                "INV_Patrim": "valor o No disponible",
-                "INV_2024": "valor o No disponible",
-                "INV_2023": "valor o No disponible",
-                "INV_2021": "valor o No disponible",
-                "INV_2019": "valor o No disponible",
-                "Marca": "valor o No disponible",
-                "Modelo": "valor o No disponible",
-                "N_Serie": "valor o No disponible",
-                "Color": "valor o No disponible",
-                "Material": "valor o No disponible",
-                "Descripcion": "Breve descripción del objeto principal"
+            optimized_image = optimize_image(file_content)
+            base64_image = base64.b64encode(optimized_image).decode("utf-8")
+
+            datos_imagen = await procesar_imagen_individual(base64_image)
+            tipo = determinar_tipo_imagen(datos_imagen)
+            
+            # Almacenar información de la imagen
+            imagenes_procesadas[id_uuid] = {
+                'contenido': optimized_image,
+                'tipo': tipo,
+                'num_imagen': contador_codig if tipo == 'CODIG' else None
             }
+            
+            if tipo == 'CODIG':
+                contador_codig += 1
 
-            Asegúrate de que el JSON sea válido, sin comas al final de la última propiedad y utilizando comillas dobles para las claves y valores.
-            Necesariamente debes entregar un solo diccionario, combinando los datos de los demás.
-            No incluyas texto ni explicación adicional, solo entrega el diccionario combinado.
-            El diccionario combinado solo debe tener una única clave, no puedes repetir claves.
-            Un mismo valor no puede repetirse en diferentes claves; ante la duda asigna como valor No disponible.
-            """
-        messages = [
-            {"role": "system", "content": "Eres un asistente experto en toma de inventario de bienes."},
-            {"role": "user", "content": [
-                {"type": "text", "text": prompt},
-            ]}
-        ]
+            print(f"Imagen {i+1}: UUID={id_uuid}, Tipo={tipo}, Datos={datos_imagen}")
+            datos_todas_imagenes.append(datos_imagen)
+
+            # Actualizar datos combinados
+            for key, value in datos_imagen.items():
+                if key in datos_combinados and value != "No disponible":
+                    # Para descripción, color y material, solo tomar de imágenes PANOR
+                    if key in ['descripcion', 'color', 'material']:
+                        if tipo == 'PANOR':
+                            datos_combinados[key] = value
+                    # Para otros datos, tomar el primer valor válido encontrado
+                    elif datos_combinados[key] == "No disponible":
+                        datos_combinados[key] = value
+
+        # Almacenar en el estado de la aplicación
+        app.state.imagenes_procesadas[session_id] = imagenes_procesadas
         
+        # Almacenar información en la sesión
+        request.session['imagenes_info'] = {
+            uuid: {
+                'tipo': info['tipo'],
+                'num_imagen': info['num_imagen']
+            } for uuid, info in imagenes_procesadas.items()
+        }
 
-        for base64_image in image_contents:
-            messages[1]["content"].append({"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}})
-
-        response = client.chat.completions.create(  
-            model="gpt-4-turbo",
-            messages=messages,
-            max_tokens=300,
-            temperature=0,
-            top_p=1,
-            n=1
-        )
-
-        response_text = response.choices[0].message.content.strip()
-
-        if not response_text:
-            raise ValueError("La respuesta de GPT-4 está vacía")
-
-        json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
+        print(f"Procesamiento completado. Tipos de imágenes: {[(uuid, info['tipo']) for uuid, info in imagenes_procesadas.items()]}")
+        print(f"Datos combinados finales: {datos_combinados}")
         
-        if json_match:
-            try:
-                response_dict = json.loads(json_match.group(0))
-                datos_combinados.update(response_dict)
-            except json.JSONDecodeError as e:
-                print(f"Error al decodificar JSON extraído: {e}")
-                raise ValueError("No se pudo extraer un JSON válido de la respuesta")
-        else:
-            raise ValueError("La respuesta no contiene un JSON válido")
-
-        print(f"diccionario= {datos_combinados}")
+        # Convertir claves a mayúsculas para el template
+        datos_template = datos_combinados.copy()
+        if 'descripcion' in datos_template:
+            datos_template['Descripcion'] = datos_template.pop('descripcion')
+        if 'color' in datos_template:
+            datos_template['Color'] = datos_template.pop('color')
+        if 'material' in datos_template:
+            datos_template['Material'] = datos_template.pop('material')
+        
         return templates.TemplateResponse(
             "demo/datos_inventario_ok.html",
-            {"request": request, "datos": datos_combinados}
+            {"request": request, "datos": datos_template}
         )
 
-    except ValueError as e:
-        print(f"Error de valor: {str(e)}")
+    except Exception as e:
+        print(f"Error inesperado: {str(e)}")
         traceback.print_exc()
+        app.state.imagenes_procesadas.pop(session_id, None)
         return templates.TemplateResponse(
             "demo/datos_inventario_error.html",
             {"request": request, "error": str(e)}
         )
-    except Exception as e:
-        print(f"Error inesperado: {str(e)}")
-        traceback.print_exc()
-        return templates.TemplateResponse(
-            "demo/datos_inventario_error.html",
-            {"request": request, "error": f"Error inesperado: {str(e)}"}
-        )
 
-# --------------------------------------------------------------
-# Endpoint para Registrar un Nuevo Bien y Poblar Tablas Relacionadas
-# --------------------------------------------------------------
+async def upload_to_s3_with_type(image_data: bytes, filename: str) -> str:
+    """
+    Sube una imagen a S3 y retorna la URL
+    """
+    try:
+        s3_client.put_object(
+            Body=image_data,
+            Bucket=BUCKET_NAME,
+            Key=filename,
+            ContentType='image/webp'  # Especificamos el tipo de contenido correcto
+        )
+        return f"https://{BUCKET_NAME}.s3.amazonaws.com/{filename}"
+    except Exception as e:
+        print(f"Error al subir a S3: {str(e)}")
+        raise
+
+async def process_and_store_images(imagenes: dict, datos: dict, db: Session) -> List[dict]:
+    """
+    Procesa las imágenes finales, las sube a S3 y registra en la BD
+    """
+    resultados = []
+    contador_codig = 1
+
+    try:
+        for uuid, imagen_info in imagenes.items():
+            tipo = imagen_info['tipo']
+            contenido = imagen_info['contenido']
+
+            # Generar nombre final según tipo
+            nombre_final = generar_nombre_imagen(
+                cod_usuario=datos['registrador'],
+                cod_empleado=datos['worker'],
+                tipo=tipo,
+                inv_2024=datos['cod_2024'],
+                num_imagen=contador_codig if tipo == 'CODIG' else None
+            )
+
+            if tipo == 'CODIG':
+                contador_codig += 1
+
+            # Subir a S3
+            s3_url = await upload_to_s3_with_type(contenido, nombre_final)
+
+            # Registrar en la base de datos
+            nueva_imagen = ImagenBien(
+                bien_id=datos['bien_id'],  # ID del bien recién registrado
+                proceso_inventario_id=datos['proceso_inventario_id'],
+                url=s3_url,
+                tipo=tipo
+            )
+            db.add(nueva_imagen)
+            
+            resultados.append({
+                'uuid': uuid,
+                'tipo': tipo,
+                'url': s3_url
+            })
+
+        db.commit()
+        return resultados
+
+    except Exception as e:
+        db.rollback()
+        print(f"Error en process_and_store_images: {str(e)}")
+        raise
+
+# Modificar el endpoint registrar_bien existente
 @app.post("/registrar_bien")
 async def registrar_bien(
     request: Request,
@@ -392,9 +566,17 @@ async def registrar_bien(
     enUso: str = Form(...),
     estado: str = Form(...)
 ):
+    session_id = request.session.get('id', 'default')
+    imagenes = app.state.imagenes_procesadas.get(session_id, {})
+
+    if not imagenes:
+        return JSONResponse(
+            content={"exito": False, "error": "No hay imágenes para procesar"},
+            status_code=400
+        )
+
     try:
-        # Registro de los datos recibidos para la verificación
-        print("Datos recibidos para registrar bien:")
+        # Registro de los datos recibidos para verificación
         datos_recibidos = {
             "institucion": institucion,
             "worker": worker,
@@ -417,10 +599,11 @@ async def registrar_bien(
             "enUso": enUso,
             "estado": estado
         }
-        print(json.dumps(datos_recibidos, indent=4))
 
-        # Verificación de existencia para evitar duplicados
-        bien_existente_patrim = db.query(Bien).filter(Bien.codigo_patrimonial == cod_patr).first()
+        # Verificación de duplicados
+        bien_existente_patrim = None
+        if cod_patr:
+            bien_existente_patrim = db.query(Bien).filter(Bien.codigo_patrimonial == cod_patr).first()
         if bien_existente_patrim:
             raise ValueError("Código patrimonial duplicado")
 
@@ -428,7 +611,7 @@ async def registrar_bien(
         if bien_existente_2024:
             raise ValueError("Código de inventario 2024 duplicado")
 
-        # Registro del bien en caso de no existir duplicados
+        # Registrar el bien
         nuevo_bien = Bien(
             institucion_id=institucion,
             codigo_patrimonial=cod_patr,
@@ -451,7 +634,18 @@ async def registrar_bien(
             observaciones=observaciones
         )
         db.add(nuevo_bien)
-        db.commit()
+        db.flush()  # Para obtener el ID del bien
+
+        # Procesar y guardar imágenes
+        datos_imagenes = {
+            'bien_id': nuevo_bien.id,
+            'proceso_inventario_id': int(registrador),  # O el ID que corresponda
+            'registrador': registrador,
+            'worker': worker,
+            'cod_2024': cod_2024
+        }
+
+        resultados_imagenes = await process_and_store_images(imagenes, datos_imagenes, db)
 
         # Registro de asignación
         asignacion = AsignacionBien(
@@ -464,14 +658,20 @@ async def registrar_bien(
         db.add(asignacion)
         db.commit()
 
-        return JSONResponse(content={"exito": True, "mensaje": "Bien registrado y asignado correctamente"})
+        # Limpiar imágenes de memoria
+        app.state.imagenes_procesadas.pop(session_id, None)
+
+        return JSONResponse(content={
+            "exito": True,
+            "mensaje": "Bien registrado y asignado correctamente",
+            "imagenes": resultados_imagenes
+        })
 
     except ValueError as e:
         db.rollback()
-        error_message = "El código patrimonial ya existe en el sistema." if "patrimonial" in str(e) else "El código de inventario 2024 ya existe en el sistema."
+        error_message = str(e)
         print(f"Error de validación: {error_message}")
         
-        # Registro en la tabla de fallos
         registro_fallido = RegistroFallido(
             datos_bien=json.dumps(datos_recibidos),
             error=error_message,
@@ -482,14 +682,16 @@ async def registrar_bien(
         db.add(registro_fallido)
         db.commit()
 
-        return JSONResponse(content={"exito": False, "error": error_message}, status_code=400)
+        return JSONResponse(
+            content={"exito": False, "error": error_message},
+            status_code=400
+        )
 
     except Exception as e:
         db.rollback()
-        error_message = "Error al registrar bien en el sistema. Inténtalo de nuevo o contacta al soporte."
+        error_message = "Error al registrar bien en el sistema"
         print(f"Error inesperado: {str(e)}")
         
-        # Registro en la tabla de fallos
         registro_fallido = RegistroFallido(
             datos_bien=json.dumps(datos_recibidos),
             error=str(e),
@@ -500,7 +702,10 @@ async def registrar_bien(
         db.add(registro_fallido)
         db.commit()
 
-        return JSONResponse(content={"exito": False, "error": error_message}, status_code=500)
+        return JSONResponse(
+            content={"exito": False, "error": error_message},
+            status_code=500
+        )
 
 
 # --------------------------------------------------------------
@@ -581,3 +786,194 @@ def post_procesar_codigo(tipo, datos):
 @app.get("/ibtgroup")
 async def ibtgroup(request: Request):
     return templates.TemplateResponse("demo/ibtgroup.html", {"request": request})
+
+
+
+
+
+#**************** D A S H B O A R D ******************************
+# En ini_dataextractor.py, agregar:
+
+# Definir los modelos de datos
+#class Bien(Base):
+#    __tablename__ = 'bienes'
+
+#class Oficina(Base):
+#    __tablename__ = 'oficinas'
+
+#class Empleado(Base):
+#    __tablename__ = 'empleados'
+
+#class RegistroFallido(Base):
+#    __tablename__ = 'registros_fallidos'
+
+# Crear la función para obtener la sesión de la base de datos
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Crear la API con FastAPI
+#app = FastAPI()
+
+router = APIRouter()
+@app.get("/dashboard")
+async def dashboard_view(request: Request):
+    return templates.TemplateResponse("/dashboard/dashboard.html", {
+        "request": request
+    })
+
+
+@app.get("/dashboard/kpis")
+async def get_dashboard_kpis(db: Session = Depends(get_db)):
+    # Obtener año actual para filtrar último inventario
+    current_year = datetime.now().year
+    
+    # 1. Total de bienes activos
+    total_bienes = db.query(func.count(Bien.id))\
+        .filter(Bien.en_uso == True)\
+        .scalar()
+    
+    # 2. Distribución por estado
+    distribucion_estado = db.query(
+        Bien.estado,
+        func.count(Bien.id).label('cantidad')
+    )\
+    .filter(Bien.en_uso == True)\
+    .group_by(Bien.estado)\
+    .all()
+    
+    # 3. Total por tipo
+    distribucion_tipo = db.query(
+        Bien.tipo,
+        func.count(Bien.id).label('cantidad')
+    )\
+    .filter(Bien.en_uso == True)\
+    .group_by(Bien.tipo)\
+    .all()
+    
+    # 4. Bienes faltantes en último inventario
+    faltantes = db.query(func.count(InventarioBien.id))\
+        .join(ProcesoInventario)\
+        .filter(
+            ProcesoInventario.anio == current_year,
+            InventarioBien.es_faltante == True
+        )\
+        .scalar() or 0
+    
+    # 5. Asignaciones pendientes
+    asignaciones_pendientes = db.query(func.count(AsignacionBien.id))\
+        .filter(AsignacionBien.estado_confirmacion == 'Pendiente')\
+        .scalar()
+    
+    return {
+        "total_bienes": total_bienes,
+        "distribucion_estado": [
+            {"estado": estado.name, "cantidad": cantidad}
+            for estado, cantidad in distribucion_estado
+        ],
+        "distribucion_tipo": [
+            {"tipo": tipo.name, "cantidad": cantidad}
+            for tipo, cantidad in distribucion_tipo
+        ],
+        "faltantes": faltantes,
+        "asignaciones_pendientes": asignaciones_pendientes
+    }
+
+
+
+### IMAGEN DE ÚLTIMO BIEN INVENTARIADO ###   **********  ### IMAGEN DE ÚLTIMO BIEN INVENTARIADO ###
+
+def get_s3_url(key):
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+        region_name=os.getenv('AWS_REGION')
+    )
+    bucket_name = os.getenv('AWS_S3_BUCKET_NAME')
+    return s3.generate_presigned_url('get_object', Params={'Bucket': bucket_name, 'Key': key}, ExpiresIn=3600)
+
+@app.get("/dashboard/latest-item")
+async def get_latest_inventoried_item(db: Session = Depends(get_db)):
+    try:
+        # Obtener el último bien inventariado
+        latest_item = db.query(Bien).order_by(Bien.id.desc()).first()
+        if not latest_item:
+            raise HTTPException(status_code=404, detail="No se encontró el último bien inventariado.")
+
+        # Obtener asignación de custodio para el bien
+        asignacion = db.query(AsignacionBien).filter(
+            AsignacionBien.bien_id == latest_item.id,
+            AsignacionBien.estado_confirmacion == "PENDIENTE"
+        ).order_by(AsignacionBien.fecha_asignacion.desc()).first()
+        
+        empleado = db.query(Empleado).filter(
+            Empleado.id == asignacion.empleado_id
+        ).first() if asignacion else None
+
+        # Obtener la oficina del empleado/custodio
+        oficina = db.query(Oficina).filter(
+            Oficina.id == empleado.oficina_id
+        ).first() if empleado else None
+
+        # Obtener las imágenes del bien, ordenando para que la de tipo "PANOR" sea la primera
+        image_priority = ["PANOR", "SERIE", "CODIG"]
+        images = db.query(ImagenBien).filter(
+            ImagenBien.bien_id == latest_item.id,
+            ImagenBien.tipo.in_(image_priority)
+        ).order_by(
+            case((ImagenBien.tipo == "PANOR", 1), (ImagenBien.tipo == "SERIE", 2), (ImagenBien.tipo == "CODIG", 3))
+        ).all()
+
+       # Obtener las imágenes del bien, con URLs presignadas si existen
+        image_urls = []
+        main_image_url = None
+        for img in images:
+            if img.url:
+                # Extraer solo el nombre del objeto (Key) de la URL completa
+                s3_key = img.url.replace('https://d-ex.s3.amazonaws.com/', '')
+                
+                # Generar la URL presignada con el Key correcto
+                presigned_url = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={
+                        'Bucket': BUCKET_NAME,
+                        'Key': s3_key
+                    },
+                    ExpiresIn=3600
+                )
+                
+                image_urls.append({"url": presigned_url, "tipo": img.tipo})
+                if img.tipo == "PANOR":
+                    main_image_url = presigned_url
+
+
+        # Formatear la respuesta con los datos necesarios
+        result = {
+            "main_image": main_image_url or (image_urls[0]["url"] if image_urls else None),
+            "images": image_urls,
+            "item": {
+                "descripcion": latest_item.descripcion,
+                "marca": latest_item.marca,
+                "modelo": latest_item.modelo,
+                "estado": latest_item.estado,
+                "codigo_patrimonial": latest_item.codigo_patrimonial,
+                "area": oficina.nombre if oficina else "No asignada"
+            },
+            "custodian": {
+                "nombre": empleado.nombre if empleado else None,
+                "foto": empleado.foto_perfil if empleado and empleado.foto_perfil else "ruta/a/imagen_default.png"
+            }
+        }
+
+        return result
+
+    except Exception as e:
+        print(f"Error al obtener el último bien inventariado: {e}")
+        raise HTTPException(status_code=500, detail="Error al obtener el último bien inventariado.")
+
+
+

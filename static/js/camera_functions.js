@@ -1,21 +1,18 @@
 // camera_functions.js
-
-// Importaciones
 import { speak } from './utils.js';
 import { processImage, isImageWithinSizeLimits } from './imageProcessor.js';
 import { addPhotoToGallery, activarBotones } from './gallery.js';
 
-// Variables globales
 let isCapturing = false;
 let captureCount = 0;
 let cameraOn = false;
-let recognition = null;
-let isVoiceCaptiveActive = false;
+let recognition;
+let isVoiceCaptureActive = false;
+let cropper;
 let isProcessing = false;
 let currentCameraIndex = 0;
 let cameras = [];
 
-// Funciones principales
 async function getCameras() {
     const devices = await navigator.mediaDevices.enumerateDevices();
     return devices.filter(device => device.kind === 'videoinput');
@@ -45,72 +42,178 @@ async function toggleCamera() {
         }
     } else {
         let stream = document.getElementById('cameraFeed').srcObject;
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            document.getElementById('cameraFeed').srcObject = null;
-            cameraOn = false;
-            speak("Cámara apagada");
-        }
+        let tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+        document.getElementById('cameraFeed').srcObject = null;
+        cameraOn = false;
+        speak("Cámara apagada");
     }
 }
 
 async function capturePhoto() {
     captureCount++;
     console.log(`Intento de captura #${captureCount}`);
+    console.log("Función capturePhoto iniciada");
+    console.log("Estado de isCapturing:", isCapturing);
     
     if (isCapturing) {
-        speak("Ya se está capturando una foto, por favor espere");
+        console.log("Ya se está capturando una foto. Por favor, espere.");
         return;
     }
     
     if (!cameraOn) {
-        speak("Por favor, encienda la cámara primero");
+        console.log("La cámara no está encendida");
+        speak("Por favor, enciende la cámara primero.");
         return;
     }
 
     isCapturing = true;
+    console.log("isCapturing establecido a true");
 
     try {
+        console.log("Iniciando captura de imagen");
         const canvas = document.createElement('canvas');
         const video = document.getElementById('cameraFeed');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
 
-        const { imageData: processedImageData } = await processImage(canvas.toDataURL('image/png'));
+        console.log("Procesando imagen");
+        const { imageData: processedImageData, resized } = await processImage(canvas.toDataURL('image/png'));
+        
+        console.log("Añadiendo foto a la galería");
         await addPhotoToGallery(processedImageData);
-        // Procesar inmediatamente después de capturar
-        await procesarCodigoBarras(processedImageData);
-        speak("Foto capturada y procesada");
-
+        
+        speak("Foto capturada");
+        console.log("Captura completada con éxito");
     } catch (error) {
         console.error("Error al procesar la imagen:", error);
         speak("Error al procesar la imagen");
+        alert("Error al procesar la imagen capturada");
     } finally {
         isCapturing = false;
+        console.log("isCapturing restablecido a false");
     }
 }
 
-async function switchCamera() {
+async function showLargeImage(src) {
+    const overlay = document.createElement('div');
+    overlay.className = 'image-overlay';
+    
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'image-container';
+    
+    const largeImg = document.createElement('img');
+    largeImg.src = src;
+    largeImg.className = 'large-image';
+    
+    const editorContainer = document.createElement('div');
+    editorContainer.className = 'editor-container';
+    
+    const cropButton = document.createElement('button');
+    cropButton.textContent = 'Recortar';
+    cropButton.onclick = () => initCrop(largeImg);
+    
+    const rotateLeftButton = document.createElement('button');
+    rotateLeftButton.textContent = 'Rotar Izquierda';
+    rotateLeftButton.onclick = () => rotateImage(largeImg, -90);
+    
+    const rotateRightButton = document.createElement('button');
+    rotateRightButton.textContent = 'Rotar Derecha';
+    rotateRightButton.onclick = () => rotateImage(largeImg, 90);
+    
+    const saveButton = document.createElement('button');
+    saveButton.textContent = 'Guardar Cambios';
+    saveButton.onclick = () => saveEditedImage(largeImg, src);
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'X';
+    closeBtn.className = 'close-btnGaleria';
+    closeBtn.onclick = () => document.body.removeChild(overlay);
+    
+    editorContainer.appendChild(cropButton);
+    editorContainer.appendChild(rotateLeftButton);
+    editorContainer.appendChild(rotateRightButton);
+    editorContainer.appendChild(saveButton);
+    
+    imageContainer.appendChild(largeImg);
+    imageContainer.appendChild(editorContainer);
+    
+    overlay.appendChild(imageContainer);
+    overlay.appendChild(closeBtn);
+    document.body.appendChild(overlay);
+}
+
+function initCrop(img) {
+    if (cropper) {
+        cropper.destroy();
+    }
+    cropper = new Cropper(img, {
+        aspectRatio: NaN,
+        viewMode: 1,
+        minCropBoxWidth: 200,
+        minCropBoxHeight: 200,
+    });
+}
+
+function rotateImage(img, degrees) {
+    if (cropper) {
+        cropper.rotate(degrees);
+    } else {
+        img.style.transform = `rotate(${(parseInt(img.dataset.rotation || 0) + degrees) % 360}deg)`;
+        img.dataset.rotation = (parseInt(img.dataset.rotation || 0) + degrees) % 360;
+    }
+}
+
+async function saveEditedImage(img, originalSrc) {
+    let editedImageData;
+    if (cropper) {
+        editedImageData = cropper.getCroppedCanvas().toDataURL();
+        cropper.destroy();
+        cropper = null;
+    } else {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        
+        const rotation = parseInt(img.dataset.rotation || 0);
+        if (rotation) {
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(rotation * Math.PI / 180);
+            ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+            ctx.restore();
+        } else {
+            ctx.drawImage(img, 0, 0);
+        }
+        
+        editedImageData = canvas.toDataURL();
+    }
+    
+    try {
+        const processedImageData = await processImage(editedImageData);
+        addPhotoToGallery(processedImageData);
+        
+        const originalThumbnail = document.querySelector(`img[src="${originalSrc}"]`);
+        if (originalThumbnail) {
+            originalThumbnail.classList.add('edited');
+        }
+        
+        document.body.removeChild(img.closest('.image-overlay'));
+    } catch (error) {
+        console.error("Error al procesar la imagen editada:", error);
+        speak("Error al procesar la imagen editada");
+    }
+}
+
+function toggleVoiceCapture() {
     if (!cameraOn) {
         speak("Por favor, enciende la cámara primero.");
         return;
     }
 
-    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-    await toggleCamera();
-    await toggleCamera();
-    speak("Cambiando a la siguiente cámara");
-}
-
-// Funciones de captura por voz
-function toggleVoiceCapture() {
-    if (!cameraOn) {
-        speak("Por favor, enciende la cámara primero");
-        return;
-    }
-
-    if (isVoiceCaptiveActive) {
+    if (isVoiceCaptureActive) {
         stopVoiceCapture();
     } else {
         startVoiceCapture();
@@ -136,13 +239,13 @@ function startVoiceCapture() {
     };
 
     recognition.onend = () => {
-        if (isVoiceCaptiveActive) {
+        if (isVoiceCaptureActive) {
             recognition.start();
         }
     };
 
     recognition.start();
-    isVoiceCaptiveActive = true;
+    isVoiceCaptureActive = true;
     document.getElementById('voiceCaptureBtn').textContent = 'Detener Captura por Voz';
     speak('Captura por voz activada. Diga "tomar foto" o "capturar" en cualquier momento para tomar una foto.');
 }
@@ -153,12 +256,98 @@ function stopVoiceCapture() {
         recognition.onend = null;
         recognition = null;
     }
-    isVoiceCaptiveActive = false;
+    isVoiceCaptureActive = false;
     document.getElementById('voiceCaptureBtn').textContent = 'Foto por Voz';
     speak('Captura por voz desactivada');
 }
 
-// Funciones de utilidad
+async function procesarImagenes() {
+    console.log("Función procesarImagenes() iniciada");
+    
+    if (isProcessing) {
+        console.log("Ya se está procesando una solicitud. Por favor, espere.");
+        mostrarMensajeModal("Procesamiento en curso, por favor espere", true);
+        return;
+    }
+
+    const fotosSeleccionadas = document.querySelectorAll('.fotoCheckbox:checked');
+    console.log("Fotos seleccionadas:", fotosSeleccionadas.length);
+    
+    if (fotosSeleccionadas.length === 0) {
+        console.log("No hay fotos seleccionadas");
+        mostrarMensajeModal("Por favor, seleccione al menos una foto para procesar.", true);
+        return;
+    }
+
+    isProcessing = true;
+    mostrarMensajeModal("Procesando imágenes...", false);
+
+    try {
+        const formData = new FormData();
+
+        for (const checkbox of fotosSeleccionadas) {
+            const img = checkbox.closest('.miniatura-container').querySelector('img');
+            if (!img) continue;
+
+            console.log(`Procesando imagen: ${img.src.substring(0, 100)}...`);
+
+            try {
+                const blob = await fetch(img.src)
+                    .then(response => response.blob());
+                
+                const nombreUUID = generateUUID();
+                formData.append('fotos', blob, `${nombreUUID}.jpg`);
+                formData.append('uuid', nombreUUID);
+            } catch (error) {
+                console.error('Error al procesar imagen:', error);
+                throw new Error(`Error al procesar una de las imágenes: ${error.message}`);
+            }
+        }
+
+        console.log("Enviando imágenes al servidor...");
+
+        const response = await fetch('/upload_fotos', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Respuesta del servidor:', errorText);
+            throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("text/html")) {
+            const htmlContent = await response.text();
+            const formSection = document.getElementById('form-section');
+            if (formSection) {
+                formSection.innerHTML = htmlContent;
+                formSection.style.display = 'block';
+                console.log('Formulario actualizado y mostrado');
+            } else {
+                console.error('Elemento form-section no encontrado');
+            }
+
+            // Limpiar selección pero mantener las imágenes
+            fotosSeleccionadas.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            activarBotones();
+            mostrarMensajeModal('Imágenes procesadas exitosamente', false);
+        } else {
+            throw new Error('Respuesta del servidor en formato incorrecto');
+        }
+
+    } catch (error) {
+        console.error('Error al procesar las imágenes:', error);
+        mostrarMensajeModal(`Error al procesar las imágenes: ${error.message}`, true);
+    } finally {
+        isProcessing = false;
+    }
+}
+
+// Función auxiliar para generar UUID
 function generateUUID() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -176,17 +365,34 @@ function dataURItoBlob(dataURI) {
     return new Blob([ab], {type: mimeString});
 }
 
+async function switchCamera() {
+    if (!cameraOn) {
+        speak("Por favor, enciende la cámara primero.");
+        return;
+    }
+
+    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+    toggleCamera();
+    toggleCamera();
+    speak("Cambiando a la siguiente cámara");
+}
+
 // Exportaciones
 export { 
+    procesarImagenes, 
     toggleCamera, 
     capturePhoto, 
     toggleVoiceCapture, 
-    switchCamera 
+    switchCamera,
+    showLargeImage
 };
 
-// Event listeners globales
+// Asignar funciones al objeto global
 if (typeof window !== 'undefined') {
     window.toggleCamera = toggleCamera;
     window.capturePhoto = capturePhoto;
     window.toggleVoiceCapture = toggleVoiceCapture;
+    window.procesarImagenes = procesarImagenes;
 }
+
+console.log("Script camera_functions.js cargado");

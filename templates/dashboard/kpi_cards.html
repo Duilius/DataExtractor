@@ -1,0 +1,111 @@
+{# templates/dashboard/kpi_cards.html #}
+<div class="kpi-grid">
+
+    <!-- templates/dashboard/latest_item.html -->
+    <div id="latest-item-container" class="latest-item-card full-width-mobile">
+        <h3>Último Bien Registrado</h3>
+        
+        <!-- Contenedor principal de la galería e información -->
+        <div class="gallery-info-container">
+            
+            <!-- Imagen principal -->
+            <div id="main-image-container" class="main-image">
+                <img id="main-image" src="" alt="Imagen del Bien">
+            </div>
+    
+            <!-- Miniaturas de imágenes -->
+            <div class="thumbnail-container">
+                <img class="thumbnail" src="imagen1.jpg" alt="Miniatura 1" onclick="selectImage('imagen1.jpg')">
+                <img class="thumbnail" src="imagen2.jpg" alt="Miniatura 2" onclick="selectImage('imagen2.jpg')">
+                <img class="thumbnail" src="imagen3.jpg" alt="Miniatura 3" onclick="selectImage('imagen3.jpg')">
+            </div>
+    
+            <!-- Información del custodio y detalles del bien -->
+            <div class="info-section">
+                <!-- Foto y nombre del custodio -->
+                <div class="custodian-info">
+                    <img id="custodian-photo" alt="Foto del Custodio">
+                    <p class="custodian-name" id="custodian-name">Nombre del Custodio</p>
+                </div>
+
+                <!-- Datos principales del bien -->
+                <div class="item-info">
+                    <p><strong>Área:</strong> <span id="item-area">Área del Bien</span></p>
+                    <p><strong>Descripción:</strong> <span id="item-description">Descripción del Bien</span></p>
+                    <p><strong>Marca:</strong> <span id="item-brand">Marca del Bien</span></p>
+                    <p><strong>Modelo:</strong> <span id="item-model">Modelo del Bien</span></p>
+                    <p><strong>Estado:</strong> <span id="item-status">Estado del Bien</span></p>
+                    <p><strong>Código Patrimonial:</strong> <span id="item-code">Código del Bien</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <!--TABLAS RESUMEN -->
+
+    
+
+    <div class="kpi-card" data-type="total">
+        <div class="kpi-header">
+            <h3>Total Activos</h3>
+            <button class="refresh-btn" data-kpi="total">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+        <div class="kpi-content">
+            <span class="kpi-number" id="total-bienes">-</span>
+            <span class="kpi-label">bienes registrados</span>
+        </div>
+    </div>
+    
+    <div class="kpi-card" data-type="estado">
+        <div class="kpi-header">
+            <h3>Estado de Bienes</h3>
+            <button class="refresh-btn" data-kpi="estado">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+        <div class="kpi-content">
+            <canvas id="estado-chart"></canvas>
+        </div>
+    </div>
+    
+    <div class="kpi-card" data-type="tipo">
+        <div class="kpi-header">
+            <h3>Tipo de Bienes</h3>
+            <button class="refresh-btn" data-kpi="tipo">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+        <div class="kpi-content">
+            <canvas id="tipo-chart"></canvas>
+        </div>
+    </div>
+    
+    <div class="kpi-card" data-type="faltantes">
+        <div class="kpi-header">
+            <h3>Faltantes</h3>
+            <button class="refresh-btn" data-kpi="faltantes">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+        <div class="kpi-content">
+            <span class="kpi-number" id="total-faltantes">-</span>
+            <span class="kpi-label">en último inventario</span>
+        </div>
+    </div>
+    
+    <div class="kpi-card" data-type="pendientes">
+        <div class="kpi-header">
+            <h3>Asignaciones Pendientes</h3>
+            <button class="refresh-btn" data-kpi="pendientes">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+        <div class="kpi-content">
+            <span class="kpi-number" id="total-pendientes">-</span>
+            <span class="kpi-label">por confirmar</span>
+        </div>
+    </div>
+</div>

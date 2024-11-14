@@ -1,0 +1,348 @@
+/* -------------------------------------------
+   VARIABLES GLOBALES
+   ------------------------------------------- */
+   :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242424;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --accent-primary: #4a90e2;
+    --accent-secondary: #2d5a8e;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+}
+
+/* -------------------------------------------
+   ESTILOS BASE
+   ------------------------------------------- */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    background-color: var(--bg-primary);
+    min-height: 100vh;
+}
+
+/* Grid Principal */
+.kpi-grid {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Tarjetas Base */
+.kpi-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px var(--shadow-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px var(--shadow-color);
+}
+
+/* Headers */
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.kpi-header h3 {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Botón Refresh */
+.refresh-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+    color: var(--accent-primary);
+    background: rgba(74, 144, 226, 0.1);
+}
+
+.refresh-btn.spinning i {
+    animation: spin 1s linear infinite;
+}
+
+/* Contenido KPI */
+.kpi-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.kpi-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.kpi-label {
+    color: antiquewhite;
+    font-size: 0.9rem;
+}
+
+/* Gráficos */
+canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 200px;
+}
+
+/* -------------------------------------------
+   ÚLTIMO BIEN REGISTRADO - ESTILOS BASE (MOBILE FIRST)
+   ------------------------------------------- */
+.latest-item-card {
+    background-color: var(--bg-secondary);
+    padding: 1.25rem;
+    border-radius: 12px;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+}
+
+.latest-item-card h3 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0 0 1rem 0;
+}
+
+/* Contenedor Principal */
+.gallery-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Imagen Principal */
+.main-image {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--bg-primary);
+}
+
+.main-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+}
+
+/* Miniaturas */
+.thumbnail-container {
+    display: flex;
+    gap: 0.5rem;
+    height: 60px;
+    overflow-x: auto;
+    padding: 0.25rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) var(--bg-primary);
+}
+
+.thumbnail-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.thumbnail-container::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 3px;
+}
+
+.thumbnail-container::-webkit-scrollbar-thumb {
+    background-color: var(--accent-primary);
+    border-radius: 3px;
+}
+
+.thumbnail {
+    height: 100%;
+    width: auto;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.thumbnail:hover {
+    transform: scale(1.05);
+}
+
+/* Sección de Información */
+.info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+/* Información del Custodio - Mobile First */
+.custodian-info {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 0.75rem;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    align-items: start;
+}
+
+.custodian-info img {
+    width: 70px;
+    height: 93px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid var(--accent-primary);
+    grid-row: span 2;
+}
+
+.custodian-info .custodian-name {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--accent-primary);
+    grid-column: 2;
+    text-align: left;
+}
+
+/* Información del Bien - Mobile First */
+.item-info {
+    width: 100%;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.item-info p {
+    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(120px, auto) 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.item-info strong {
+    color: var(--accent-primary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.item-info span {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-align: left;
+}
+
+/* Animaciones */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.fade-out {
+    opacity: 0;
+}
+
+/* -------------------------------------------
+   MEDIA QUERIES
+   ------------------------------------------- */
+/* Tablet (≥640px) */
+@media (min-width: 640px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Tablet Grande (≥768px) */
+@media (min-width: 768px) {
+    .info-section {
+        flex-direction: row;
+    }
+
+    .custodian-info {
+        width: 20%;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .custodian-info img {
+        width: 100%;
+        max-width: 120px;
+        height: auto;
+        aspect-ratio: 3/4;
+    }
+
+    .custodian-info .custodian-name {
+        text-align: center;
+        grid-column: unset;
+    }
+
+    .item-info {
+        width: 80%;
+    }
+}
+
+/* Desktop (≥1024px) */
+@media (min-width: 1024px) {
+    .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .latest-item-card {
+        grid-column: span 2;
+    }
+
+    .main-image {
+        height: 300px;
+    }
+
+    .gallery-info-container {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+
+    .item-info {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .item-info p {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .item-info strong {
+        font-size: 0.8rem;
+    }
+
+    .item-info span {
+        font-size: 0.95rem;
+    }
+}

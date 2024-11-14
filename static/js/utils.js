@@ -1,3 +1,4 @@
+// utils.js
 console.log('Cargando utils.js');
 
 export function initializeUtils() {
@@ -51,30 +52,45 @@ export function initializeAuthModal() {
 
     if (authForm) {
         authForm.addEventListener('submit', handleLogin);
-    }
-}
-
-export function showAuthModal() {
-    const authModal = document.getElementById('authModalContainer');
-    if (authModal) {
-        authModal.style.display = 'block';
-    }
-}
-
-/* DEL MODAL ANTERIOR
-export function showAuthModal() {
-    console.log('Intentando mostrar el modal de autenticación');
-    const authModal = document.getElementById('authModalContainer');
-    console.log('authModal:', authModal);
-    if (authModal) {
-        authModal.style.display = 'block';
-        document.body.classList.add('modal-open');
-        console.log('Modal de autenticación mostrado');
     } else {
-        console.warn('Elemento authModalContainer no encontrado');
+        console.warn('Formulario de autenticación no encontrado');
+    }
+
+    // Restablecer valores guardados si existen
+    const visitorEmail = localStorage.getItem('visitorEmail');
+    const colleagueEmail1 = localStorage.getItem('colleagueEmail1');
+    const colleagueEmail2 = localStorage.getItem('colleagueEmail2');
+
+    if (visitorEmail) {
+        const visitorInput = document.getElementById('visitorEmail');
+        if (visitorInput) visitorInput.value = visitorEmail;
+    }
+    if (colleagueEmail1) {
+        const colleague1Input = document.getElementById('colleagueEmail1');
+        if (colleague1Input) colleague1Input.value = colleagueEmail1;
+    }
+    if (colleagueEmail2) {
+        const colleague2Input = document.getElementById('colleagueEmail2');
+        if (colleague2Input) colleague2Input.value = colleagueEmail2;
     }
 }
-*/
+
+export function showAuthModal() {
+    const authModal = document.getElementById('authModalContainer');
+    if (authModal) {
+        authModal.style.display = 'block';
+        // Agregar botón para continuar sin autenticación
+        const skipButton = document.createElement('button');
+        skipButton.textContent = 'Continuar sin registrarse';
+        skipButton.onclick = () => {
+            authModal.style.display = 'none';
+        };
+        const modalContent = authModal.querySelector('.modal-content');
+        if (modalContent && !modalContent.querySelector('.skip-button')) {
+            modalContent.appendChild(skipButton);
+        }
+    }
+}
 
 export function hideAuthModal() {
     const authModal = document.getElementById('authModalContainer');
@@ -83,75 +99,64 @@ export function hideAuthModal() {
     }
 }
 
-/* DEL MODAL ANTERIOR
-export function hideAuthModal() {
-    const authModal = document.getElementById('authModalContainer');
-    if (authModal) {
-        authModal.style.display = 'none';
-        document.body.classList.remove('modal-open');
+function updateLoginButton() {
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const isAuthenticated = checkAuthStatus();
+
+    if (loginBtn && logoutBtn) {
+        if (isAuthenticated) {
+            loginBtn.style.display = 'none';
+            logoutBtn.style.display = 'inline-block';
+        } else {
+            loginBtn.style.display = 'inline-block';
+            logoutBtn.style.display = 'none';
+        }
     }
-}
-*/
-
-
-function sendEmailsToBackend(visitorEmail, colleagueEmail1, colleagueEmail2) {
-    // Implementa aquí la lógica para enviar los emails a tu backend
-    console.log('Emails para demo:', visitorEmail, colleagueEmail1, colleagueEmail2);
 }
 
 export function checkAuthStatus() {
     return !!localStorage.getItem('visitorEmail');
 }
 
-
-export function handleLogin(e) {
-    e.preventDefault();
-    const visitorEmail = document.getElementById('visitorEmail').value;
-    const colleagueEmail1 = document.getElementById('colleagueEmail1').value;
-    const colleagueEmail2 = document.getElementById('colleagueEmail2').value;
-
-    // Almacenar los emails (incluso si están vacíos)
-    localStorage.setItem('visitorEmail', visitorEmail);
-    localStorage.setItem('colleagueEmail1', colleagueEmail1);
-    localStorage.setItem('colleagueEmail2', colleagueEmail2);
-
-    hideAuthModal();
-    alert('¡Bienvenido a la demo! Explore las funcionalidades.');
-    // Aquí podrías llamar a una función para enviar los emails ingresados a tu backend
-    sendEmailsToBackend(visitorEmail, colleagueEmail1, colleagueEmail2);
+export function checkAuthBeforeProcessing() {
+    const isAuthenticated = localStorage.getItem('visitorEmail');
+    if (!isAuthenticated) {
+        // Solo mostramos el modal como sugerencia
+        showAuthModal();
+    }
+    // Siempre retornamos true para permitir continuar
+    return true;
 }
 
-
-/* DEL MODAL ANTERIOR*/
-/*
 export function handleLogin(e) {
     e.preventDefault();
-    const userInput = document.getElementById('userInput');
-    const passwordInput = document.getElementById('password');
+    
+    const visitorEmail = document.getElementById('visitorEmail')?.value;
+    const colleagueEmail1 = document.getElementById('colleagueEmail1')?.value;
+    const colleagueEmail2 = document.getElementById('colleagueEmail2')?.value;
 
-    if (!userInput || !passwordInput) {
-        console.warn('Elementos de input no encontrados');
+    if (!visitorEmail) {
+        mostrarMensajeModal('Por favor ingrese su email', true);
         return;
     }
 
-    const userId = userInput.value;
-    const password = passwordInput.value;
+    // Almacenar los emails
+    localStorage.setItem('visitorEmail', visitorEmail);
+    if (colleagueEmail1) localStorage.setItem('colleagueEmail1', colleagueEmail1);
+    if (colleagueEmail2) localStorage.setItem('colleagueEmail2', colleagueEmail2);
 
-    // Aquí iría la lógica de autenticación real
-    if (userId && password) {
-        localStorage.setItem('authenticatedUserId', userId);
-        hideAuthModal();
-        const authForm = document.getElementById('authForm');
-        if (authForm) authForm.reset();
-        alert('Autenticación exitosa');
-        updateLoginButton();
-    } else {
-        alert('Por favor, ingrese su Email/DNI y contraseña');
-    }
+    // Enviar emails al backend
+    sendEmailsToBackend(visitorEmail, colleagueEmail1, colleagueEmail2);
+
+    hideAuthModal();
+    updateLoginButton();
+    mostrarMensajeModal('¡Bienvenido a la demo! Explore las funcionalidades.', false);
 }
-*/
+
 function logout() {
-    const fotosNoGuardadas = false; // Esta variable debería ser manejada globalmente
+    const fotosNoGuardadas = document.querySelectorAll('.miniatura-container').length > 0;
+    
     if (fotosNoGuardadas) {
         if (confirm("Hay fotos no guardadas, ¿deseas salir de todas formas?")) {
             performLogout();
@@ -162,27 +167,11 @@ function logout() {
 }
 
 function performLogout() {
-    localStorage.removeItem('authenticatedUserId');
+    localStorage.removeItem('visitorEmail');
+    localStorage.removeItem('colleagueEmail1');
+    localStorage.removeItem('colleagueEmail2');
     updateLoginButton();
-    alert("Sesión cerrada");
-}
-
-function updateLoginButton() {
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const authenticatedUserId = localStorage.getItem('authenticatedUserId');
-
-    if (loginBtn && logoutBtn) {
-        if (authenticatedUserId) {
-            loginBtn.style.display = 'none';
-            logoutBtn.style.display = 'inline-block';
-        } else {
-            loginBtn.style.display = 'inline-block';
-            logoutBtn.style.display = 'none';
-        }
-    } else {
-        console.warn('Elementos de botones de login/logout no encontrados');
-    }
+    mostrarMensajeModal("Sesión cerrada", false);
 }
 
 function toggleDarkMode() {
@@ -195,27 +184,22 @@ function toggleDarkMode() {
     }
 }
 
-function handleForgotPassword() {
-    alert('Funcionalidad de recuperación de contraseña no implementada');
+function sendEmailsToBackend(visitorEmail, colleagueEmail1, colleagueEmail2) {
+    fetch('/register_emails', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            visitorEmail,
+            colleagueEmail1,
+            colleagueEmail2
+        })
+    })
+    .then(response => response.json())
+    .catch(error => console.error('Error al registrar emails:', error));
 }
 
-function handleChangePassword() {
-    alert('Funcionalidad de cambio de contraseña no implementada');
-}
-
-export function checkAuthBeforeProcessing() {
-    const authenticatedUserId = localStorage.getItem('authenticatedUserId');
-    if (authenticatedUserId) {
-        return true;
-    } else {
-        //alert('Por favor, inicie sesión antes de procesar');
-        showAuthModal();
-        return false;
-    }
-}
-
-
-// utils.js - Agregar estas funciones
 export function mostrarMensajeModal(mensaje, esError = false) {
     const modal = document.getElementById("errorModal");
     const modalContent = document.getElementById("errorMessage");
@@ -228,11 +212,26 @@ export function mostrarMensajeModal(mensaje, esError = false) {
     if (modal) {
         modal.style.display = "flex";
         speak(mensaje);
+        
+        // Cerrar automáticamente después de 3 segundos
+        setTimeout(() => {
+            modal.style.display = "none";
+        }, 3000);
+    } else {
+        console.warn('Modal de mensajes no encontrado');
+        alert(mensaje); // Fallback si no existe el modal
     }
 }
 
-// La función speak que ya tenías
 export function speak(text, rate = 1, pitch = 1) {
+    if (!window.speechSynthesis) {
+        console.warn('Síntesis de voz no soportada en este navegador');
+        return;
+    }
+
+    // Cancelar cualquier síntesis anterior
+    window.speechSynthesis.cancel();
+
     // Esperar a que las voces estén cargadas
     if (speechSynthesis.getVoices().length === 0) {
         speechSynthesis.addEventListener('voiceschanged', () => {
@@ -256,6 +255,10 @@ function realizarHabla(text, rate = 1, pitch = 1) {
         utterance.voice = spanishVoice;
     }
     
-    speechSynthesis.cancel(); // Cancelar cualquier síntesis anterior
     speechSynthesis.speak(utterance);
 }
+
+// Hacer funciones disponibles globalmente
+window.speak = speak;
+window.mostrarMensajeModal = mostrarMensajeModal;
+window.toggleDarkMode = toggleDarkMode;
