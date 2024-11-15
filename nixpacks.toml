@@ -1,5 +1,16 @@
 [phases.setup]
-nixPkgs = ["zbar", "python311"]
+nixPkgs = [
+    "zbar",
+    "python311",
+    "libzbar",
+    "zbar-tools"
+]
+
+[phases.install]
+cmds = ["python -m pip install --upgrade pip"]
+
+[phases.build]
+cmds = ["pip install -r requirements.txt"]
 
 [start]
 cmd = "uvicorn ini_dataextractor:app --host 0.0.0.0 --port $PORT"
