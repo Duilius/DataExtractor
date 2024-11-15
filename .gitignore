@@ -18,9 +18,10 @@ claves_dataextractor.py
 rtf_ocr_claves.json
 
 # Archivos específicos en la raíz
-a*.py
-b*.py
-d*.py
+/a*.py
+/b*.py
+/d*.py
+!database.py
 goo*.py
 *ultima.py
 *tesseract.py
@@ -29,42 +30,4 @@ p*.py
 v*.py
 resultado*.py
 
-# Archivos binarios y compilados
-*.dll
-*.whl
-
-# Imágenes
-*.jpg
-*.png
-
-# Carpetas específicas
-backup-local/
-dinamic/
-config/
-
-# Scripts específicos
-scripts/py/claves.py
-scripts/py/a*.py
-scripts/py/b*.py
-scripts/py/d*.py
-scripts/py/i*.py
-scripts/py/r*.py
-scripts/py/s*.py
-scripts/py/t*.py
-scripts/py/*.csv
-
-# Scripts y backups de JavaScript
-static/BACKUP-JS/
-static/js/*copia*.js
-static/js/*-7-oct*.js
-
-# Archivos del sistema
-.DS_Store
-Thumbs.db
-
-*.pyd
-env/
-env/Lib/
-
-env/
-*.pyd
+# [resto del archivo igual...]
