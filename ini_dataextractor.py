@@ -7,6 +7,7 @@ import io
 import base64
 
 import boto3
+from botocore.config import Config
 import traceback
 import re
 import numpy as np
@@ -53,7 +54,11 @@ s3_client = boto3.client(
     's3',
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
     aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-    region_name=os.getenv('AWS_REGION')
+    region_name=os.getenv('AWS_REGION'),
+    config=Config(
+        signature_version='s3v4',
+        s3={'addressing_style': 'path'}
+    )
 )
 client = OpenAI(api_key=os.getenv("inventario_demo_key"))
 BUCKET_NAME = "d-ex"
@@ -941,7 +946,8 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
                     'get_object',
                     Params={
                         'Bucket': BUCKET_NAME,
-                        'Key': s3_key
+                        'Key': s3_key,
+                        'ResponseContentType': 'image/webp'  # Añade esto para imágenes webp
                     },
                     ExpiresIn=3600
                 )
