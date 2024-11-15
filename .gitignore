@@ -68,4 +68,3 @@ env/Lib/
 
 env/
 *.pyd
-*.so

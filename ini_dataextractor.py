@@ -55,7 +55,7 @@ s3_client = boto3.client(
     aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
     region_name=os.getenv('AWS_REGION')
 )
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("inventario_demo_key"))
 BUCKET_NAME = "d-ex"
 MAX_IMAGE_SIZE = (1024, 1024)
 
