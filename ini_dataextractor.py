@@ -57,7 +57,7 @@ s3_client = boto3.client(
     region_name=os.getenv('AWS_REGION'),
     config=Config(
         signature_version='s3v4',
-        s3={'addressing_style': 'path'}
+        s3={'addressing_style': 'virtual'}
     )
 )
 client = OpenAI(api_key=os.getenv("inventario_demo_key"))
