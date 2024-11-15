@@ -974,6 +974,3 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error al obtener el último bien inventariado: {e}")
         raise HTTPException(status_code=500, detail="Error al obtener el último bien inventariado.")
-
-
-

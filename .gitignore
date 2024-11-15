@@ -1,8 +1,23 @@
-#claves.py
+# Entorno virtual
+env/
+openai-env/
+venv/
+.env
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Archivos sensibles y configuración
 claves.py
 c*.py
 c*.json
-#Archivos en la raíz(root)
+claves_dataextractor.py
+rtf_ocr_claves.json
+
+# Archivos específicos en la raíz
 a*.py
 b*.py
 d*.py
@@ -12,18 +27,22 @@ goo*.py
 o*.py
 p*.py
 v*.py
+resultado*.py
+
+# Archivos binarios y compilados
 *.dll
 *.whl
-resultado*.py
-###imagenes
+
+# Imágenes
 *.jpg
 *.png
-###Carpetas
+
+# Carpetas específicas
 backup-local/
-openai-env/
 dinamic/
 config/
 
+# Scripts específicos
 scripts/py/claves.py
 scripts/py/a*.py
 scripts/py/b*.py
@@ -34,17 +53,11 @@ scripts/py/s*.py
 scripts/py/t*.py
 scripts/py/*.csv
 
-rtf_ocr_claves.json
-
-
-#Scripts en BACKUP-JS
-static/BACKUP-JS
-#scripts en statis/js
+# Scripts y backups de JavaScript
+static/BACKUP-JS/
 static/js/*copia*.js
 static/js/*-7-oct*.js
 
-#pycache
-__pycache__/
-*.pyc
-#claves.py  
-claves_dataextractor.py
+# Archivos del sistema
+.DS_Store
+Thumbs.db
