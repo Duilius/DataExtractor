@@ -61,3 +61,11 @@ static/js/*-7-oct*.js
 # Archivos del sistema
 .DS_Store
 Thumbs.db
+
+*.pyd
+env/
+env/Lib/
+
+env/
+*.pyd
+*.so
