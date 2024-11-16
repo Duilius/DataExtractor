@@ -5,8 +5,6 @@ from pyzbar.pyzbar import decode
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 import io
 import base64
-import cv2
-
 import boto3
 from botocore.config import Config
 import traceback
