@@ -5,6 +5,7 @@ from pyzbar.pyzbar import decode
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 import io
 import base64
+import cv2
 
 import boto3
 from botocore.config import Config
@@ -30,6 +31,7 @@ from utils.dispositivo import determinar_tipo_dispositivo
 from database import SessionLocal
 from scripts.py.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, HistorialCodigoInventario, AsignacionBien, InventarioBien, TipoBien, TipoMovimiento, ProcesoInventario, Empleado, Oficina)
 from scripts.py.buscar_por_trabajador_inventario import consulta_registro
+import logging
 
 try:
     import claves  # Solo se usará en el entorno local
@@ -54,12 +56,9 @@ s3_client = boto3.client(
     's3',
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
     aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-    region_name=os.getenv('AWS_REGION'),
-    config=Config(
-        signature_version='s3v4',
-        s3={'addressing_style': 'virtual'}
-    )
+    region_name=os.getenv('AWS_REGION')
 )
+
 client = OpenAI(api_key=os.getenv("inventario_demo_key"))
 BUCKET_NAME = "d-ex"
 MAX_IMAGE_SIZE = (1024, 1024)
@@ -793,25 +792,6 @@ async def ibtgroup(request: Request):
     return templates.TemplateResponse("demo/ibtgroup.html", {"request": request})
 
 
-
-
-
-#**************** D A S H B O A R D ******************************
-# En ini_dataextractor.py, agregar:
-
-# Definir los modelos de datos
-#class Bien(Base):
-#    __tablename__ = 'bienes'
-
-#class Oficina(Base):
-#    __tablename__ = 'oficinas'
-
-#class Empleado(Base):
-#    __tablename__ = 'empleados'
-
-#class RegistroFallido(Base):
-#    __tablename__ = 'registros_fallidos'
-
 # Crear la función para obtener la sesión de la base de datos
 def get_db():
     db = SessionLocal()
@@ -888,18 +868,8 @@ async def get_dashboard_kpis(db: Session = Depends(get_db)):
     }
 
 
-
-### IMAGEN DE ÚLTIMO BIEN INVENTARIADO ###   **********  ### IMAGEN DE ÚLTIMO BIEN INVENTARIADO ###
-
 def get_s3_url(key):
-    s3 = boto3.client(
-        's3',
-        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-        region_name=os.getenv('AWS_REGION')
-    )
-    bucket_name = os.getenv('AWS_S3_BUCKET_NAME')
-    return s3.generate_presigned_url('get_object', Params={'Bucket': bucket_name, 'Key': key}, ExpiresIn=3600)
+    return f"https://d-ex.s3.amazonaws.com/{key}"
 
 @app.get("/dashboard/latest-item")
 async def get_latest_inventoried_item(db: Session = Depends(get_db)):
@@ -908,6 +878,9 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
         latest_item = db.query(Bien).order_by(Bien.id.desc()).first()
         if not latest_item:
             raise HTTPException(status_code=404, detail="No se encontró el último bien inventariado.")
+
+        # Log para verificar el bien obtenido
+        print(f"Último bien inventariado: {latest_item}")
 
         # Obtener asignación de custodio para el bien
         asignacion = db.query(AsignacionBien).filter(
@@ -933,7 +906,10 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
             case((ImagenBien.tipo == "PANOR", 1), (ImagenBien.tipo == "SERIE", 2), (ImagenBien.tipo == "CODIG", 3))
         ).all()
 
-       # Obtener las imágenes del bien, con URLs presignadas si existen
+        # Log para las imágenes obtenidas
+        print(f"Imágenes obtenidas desde la BD: {[image.url for image in images]}")
+
+        # Obtener las imágenes del bien con URLs directas
         image_urls = []
         main_image_url = None
         for img in images:
@@ -941,21 +917,12 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
                 # Extraer solo el nombre del objeto (Key) de la URL completa
                 s3_key = img.url.replace('https://d-ex.s3.amazonaws.com/', '')
                 
-                # Generar la URL presignada con el Key correcto
-                presigned_url = s3_client.generate_presigned_url(
-                    'get_object',
-                    Params={
-                        'Bucket': BUCKET_NAME,
-                        'Key': s3_key,
-                        'ResponseContentType': 'image/webp'  # Añade esto para imágenes webp
-                    },
-                    ExpiresIn=3600
-                )
+                # Crear URL directa
+                direct_url = f"https://d-ex.s3.amazonaws.com/{s3_key}"
                 
-                image_urls.append({"url": presigned_url, "tipo": img.tipo})
+                image_urls.append({"url": direct_url, "tipo": img.tipo})
                 if img.tipo == "PANOR":
-                    main_image_url = presigned_url
-
+                    main_image_url = direct_url
 
         # Formatear la respuesta con los datos necesarios
         result = {
@@ -974,6 +941,9 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
                 "foto": empleado.foto_perfil if empleado and empleado.foto_perfil else "ruta/a/imagen_default.png"
             }
         }
+
+        # Log para verificar la respuesta final antes de enviarla
+        print(f"Respuesta generada: {result}")
 
         return result
 
