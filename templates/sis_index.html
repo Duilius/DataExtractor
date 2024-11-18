@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIS - Gestión Patrimonial</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sis_index.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.10/htmx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hyperscript/0.9.12/hyperscript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body _="on load if localStorage.getItem('theme') === 'dark' add .dark-mode">
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header>
+            <div class="logos">
+                <img src="{{ url_for('static', path='/images/dataextractor.png') }}" alt="DataExtractor">
+                <img src="{{ url_for('static', path='/images/sis.png') }}" alt="S.I.S.">
+                <img src="{{ url_for('static', path='/images/cont-ia.png') }}" alt="Cont-IA">
+            </div>
+            <div class="controls">
+                <button 
+                    _="on click 
+                        toggle .dark-mode on document.body 
+                        then set theme to if document.body.classList.contains('dark-mode') then 'dark' else 'light'
+                        then localStorage.setItem('theme', theme)
+                        then set my.innerHTML to if theme is 'dark' then '🌙' else '☀️'
+                        then call initAllCharts()"
+                    class="theme-toggle">
+                    ☀️
+                </button>
+                <button class="user-button">👤</button>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="title-section">
+                <h1>INTELIGENCIA ARTIFICIAL EN GESTIÓN PATRIMONIAL</h1>
+                <h2>INVENTARIO - 2024</h2>
+            </div>
+
+            <div class="tabs-section">
+                <div class="tabs">
+                    <button class="tab active" 
+                            id="tab1btn"
+                            _="on click 
+                               take .active from .tab 
+                               add .active to me 
+                               take .active from .tab-content 
+                               add .active to #tab1Content
+                               then call initAllCharts()">
+                        Distribución y Avance
+                    </button>
+                    <button class="tab"
+                            id="tab2btn"
+                            _="on click 
+                               take .active from .tab 
+                               add .active to me 
+                               take .active from .tab-content 
+                               add .active to #tab2Content
+                               then call initAllCharts()">
+                        Estado y Tendencia
+                    </button>
+                </div>
+
+                <div id="tab1Content" class="tab-content active">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <h3>Distribución de Bienes</h3>
+                            <div class="chart-container">
+                                <canvas id="barChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Bienes Procesados</h3>
+                            <div class="chart-container">
+                                <canvas id="lineChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab2Content" class="tab-content">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <h3>Estado de Bienes</h3>
+                            <div class="chart-container">
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Tendencia</h3>
+                            <div class="chart-container">
+                                <canvas id="trendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Section -->
+            <div class="login-container">
+                <form class="login-form" hx-post="/api/login" hx-swap="outerHTML">
+                    <div class="form-group">
+                        <input type="text" name="dni" placeholder="DNI" required pattern="[0-9]{8}">
+                        <input type="password" name="password" placeholder="CLAVE" required>
+                        <button type="submit">ENTRAR</button>
+                    </div>
+                    <div class="form-links">
+                        <a href="#" hx-get="/cambiar-clave" hx-target="#modalContent">Cambiar Clave</a>
+                        <a href="#" hx-get="/reset-password" hx-target="#modalContent">Olvidé mi clave</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cities Navigation -->
+        <nav class="cities-nav">
+            <button class="nav-arrow" id="prevCity">&lt;</button>
+            <div class="cities-wrap">
+                <div class="cities-scroll">
+                    {% for city in ['AREQUIPA', 'LIMA', 'LORETO', 'TRUJILLO'] %}
+                    <button 
+                        class="city-pill"
+                        hx-get="/api/stats/{{ city.lower() }}"
+                        hx-trigger="click"
+                        _="on click add .active to me remove .active from .city-pill">
+                        {{ city }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="nav-arrow" id="nextCity">&gt;</button>
+        </nav>
+    </div>
+
+    <script src="{{ url_for('static', path='/js/sis_index.js') }}" defer></script>
+</body>
+</html>
