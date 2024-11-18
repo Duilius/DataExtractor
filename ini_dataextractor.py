@@ -5,6 +5,7 @@ from pyzbar.pyzbar import decode
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 import io
 import base64
+
 import boto3
 from botocore.config import Config
 import traceback
@@ -948,3 +949,70 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error al obtener el último bien inventariado: {e}")
         raise HTTPException(status_code=500, detail="Error al obtener el último bien inventariado.")
+    
+
+
+
+    ################################################### SIS ################################
+    # Rutas
+@app.get("/sis", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse(
+        "sis_index.html",
+        {"request": request}
+    )
+
+@app.post("/api/register")
+async def register_user(user_data: dict, db: Session = Depends(get_db)):
+    # Validar que el DNI no sea usado como contraseña
+    if user_data["password"] == user_data["dni"]:
+        raise HTTPException(status_code=400, detail="La contraseña no puede ser igual al DNI")
+    
+    # Crear usuario
+    db_user = User(
+        email=user_data["email"],
+        hashed_password=user_data["password"],  # En producción: hash la contraseña
+        full_name=user_data["full_name"],
+        dni=user_data["dni"],
+        role=user_data["role"]
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return {"message": "Usuario registrado exitosamente"}
+
+@app.post("/api/login")
+async def login(credentials: dict, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == credentials["email"]).first()
+    if not user or user.hashed_password != credentials["password"]:  # En producción: verificar hash
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+    return {"message": "Login exitoso"}
+
+@app.get("/api/stats/{sede}")
+async def get_stats(sede: str):
+    # Simulación de datos de estadísticas
+    stats = {
+        "lima": {
+            "inventariado": 75,
+            "pendiente": 25,
+            "total_activos": 1500
+        },
+        "arequipa": {
+            "inventariado": 60,
+            "pendiente": 40,
+            "total_activos": 800
+        },
+        "trujillo": {
+            "inventariado": 85,
+            "pendiente": 15,
+            "total_activos": 600
+        }
+    }
+    return stats.get(sede.lower(), {"error": "Sede no encontrada"})
+
+"""
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+"""
