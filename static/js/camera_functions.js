@@ -86,6 +86,13 @@ async function capturePhoto() {
         console.log("Procesando imagen");
         const { imageData: processedImageData, resized } = await processImage(canvas.toDataURL('image/png'));
         
+        console.log('Resolución actual de la cámara:', {
+            width: canvas.width,
+            height: canvas.height
+        });
+
+        alert("Resolución del Dispositivo:  \n Ancho:" +canvas.width + "\nAlto: \n" + canvas.height)
+
         console.log("Añadiendo foto a la galería");
         await addPhotoToGallery(processedImageData);
         
