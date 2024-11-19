@@ -5,6 +5,9 @@ body{
   text-align: center;
   justify-content: center;
   align-items: center;
+
+  touch-action: none; /* Previene zoom en la página */
+  overflow: hidden;
 }
 
 main{
@@ -259,6 +262,7 @@ input[type="radio"] {
   max-height: 80vh;
   background: #000;
   overflow: hidden;
+  touch-action: pinch-zoom; /* Permite zoom táctil solo en este elemento */
 }
 
 #cameraFeed {
