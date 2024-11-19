@@ -30,8 +30,8 @@ async function toggleCamera() {
                 video: {
                     deviceId: rearCamera ? { exact: rearCamera.deviceId } : undefined,
                     facingMode: rearCamera ? undefined : 'environment',
-                    width: { ideal: 4096 },  // 4K
-                    height: { ideal: 2160 }, // 4K
+                    width: { ideal: 4128 },  // 4K
+                    height: { ideal: 3096 }, // 4K
                     aspectRatio: { ideal: 4/3 },
                     frameRate: { ideal: 30 }
                 }
