@@ -243,3 +243,27 @@ input[type="radio"] {
 .btn:hover {
     opacity: 0.8; /* Efecto de opacidad al pasar el ratón */
 }
+
+/*VIDEO VIDEO VIDEO*/
+#camera-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#camera-visor {
+  width: 100%;
+  aspect-ratio: 4/3;  /* Proporción estándar de la cámara */
+  max-height: 80vh;
+  background: #000;
+  overflow: hidden;
+}
+
+#cameraFeed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;  /* Para llenar el espacio manteniendo la proporción */
+  transform: scaleX(1); /* Por si necesitamos voltear la imagen */
+}
