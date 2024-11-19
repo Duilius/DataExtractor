@@ -27,9 +27,14 @@ async function toggleCamera() {
         try {
             const rearCamera = cameras.find(camera => /(back|rear|environment|behind)/i.test(camera.label));
             const constraints = {
-                video: rearCamera 
-                    ? { deviceId: { exact: rearCamera.deviceId } }
-                    : { facingMode: 'environment' }
+                video: {
+                    deviceId: rearCamera ? { exact: rearCamera.deviceId } : undefined,
+                    facingMode: rearCamera ? undefined : 'environment',
+                    width: { ideal: 4096 },  // 4K
+                    height: { ideal: 2160 }, // 4K
+                    aspectRatio: { ideal: 4/3 },
+                    frameRate: { ideal: 30 }
+                }
             };
 
             const stream = await navigator.mediaDevices.getUserMedia(constraints);

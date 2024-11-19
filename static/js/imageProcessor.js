@@ -1,8 +1,10 @@
 // imageProcessor.js
 console.log('Cargando imageProcessor.js');
 
-const MAX_WIDTH = 1024;
-const MAX_HEIGHT = 1024;
+//const MAX_WIDTH = 1024;
+//const MAX_HEIGHT = 1024;
+const MAX_WIDTH = 4096;  // 4K
+const MAX_HEIGHT = 2160; // 4K
 
 export async function processImage(imageData) {
     return new Promise((resolve, reject) => {
@@ -25,7 +27,7 @@ export async function processImage(imageData) {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            const processedImageData = canvas.toDataURL('image/jpeg', 0.85);
+            const processedImageData = canvas.toDataURL('image/jpeg', 0.95);
             resolve({ imageData: processedImageData, resized: resized });
         };
         img.onerror = reject;
