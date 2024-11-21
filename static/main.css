@@ -1,15 +1,14 @@
-html{
-   touch-action: pan-y; /* Permite scroll vertical */
+html, body {
+    touch-action: pan-y; /* Solo scroll vertical en la página */
+    overflow: auto;
 }
-/* Añadir al final de main.css */
+
 body{
   width: 99%;
   margin: 0px auto;
   text-align: center;
   justify-content: center;
   align-items: center;
-  touch-action: pan-y; /* Permite scroll vertical */
-  overflow: hidden;
 }
 
 main{
@@ -264,8 +263,9 @@ input[type="radio"] {
   max-height: 80vh;
   background: #000;
   overflow: hidden;
-  touch-action: manipulation pinch-zoom; /* Permite zoom en el visor */
-  -webkit-overflow-scrolling: touch;
+  position: relative; /* Asegurar que los gestos se capturen correctamente */
+  overflow: visible;  /* Permitir que el zoom se expanda */
+  touch-action: none; /* Resetear para el contenedor */ 
 }
 
 #cameraFeed {
@@ -273,5 +273,8 @@ input[type="radio"] {
   height: 100%;
   object-fit: cover;  /* Para llenar el espacio manteniendo la proporción */
   transform: scaleX(1); /* Por si necesitamos voltear la imagen */
-  touch-action: manipulation pinch-zoom;
+  touch-action: pinch-zoom pan-x pan-y; /* Permitir zoom y pan en todas direcciones */
+  transform-origin: center; /* Centro para el zoom */
+  -webkit-user-select: none;
+  user-select: none;
 }
