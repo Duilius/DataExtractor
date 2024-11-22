@@ -1,4 +1,16 @@
 // main.js
+
+// Campos obligatorios definidos en el alcance global
+const camposObligatorios = [
+    { id: 'institucion', tipo: 'input' },
+    { id: 'worker', tipo: 'input' },
+    { id: 'registrador', tipo: 'input' },
+    { id: 'cod-2024', tipo: 'input' },
+    { id: 'color', tipo: 'input' },
+    { id: 'descripcion', tipo: 'input' },
+    { id: 'estado', tipo: 'select' }
+];
+
 import { speak } from './utils.js';
 import { limpiarFormulario } from './formHandler.js';
 import { mostrarMensajeModal } from './utils.js';
@@ -51,6 +63,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Cargar el contenido del modal de autenticación
+/*
     fetch('templates/demo/autenticacion_modal2.html')
     .then(response => response.text())
     .then(html => {
@@ -63,6 +76,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
     })
     .catch(error => console.error('Error al cargar el modal de autenticación:', error));
+*/
 
     // Event listeners para campos obligatorios
     camposObligatorios.forEach(campo => {
@@ -106,43 +120,62 @@ function mostrarBarraProgreso() {
     }, 1000);
 }
 
-// Definir campos obligatorios globalmente
-const camposObligatorios = [
-    { id: 'institucion', tipo: 'input' },
-    { id: 'worker', tipo: 'input' },
-    { id: 'registrador', tipo: 'input' },
-    { id: 'cod-2024', tipo: 'input' },
-    { id: 'color', tipo: 'input' },
-    { id: 'descripcion', tipo: 'input' },
-    { id: 'estado', tipo: 'select' }
-];
 
-// Función para validar el formulario
+function mostrarModalMedidasFaltantes(medidasFaltantes) {
+    // Crear el modal
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay-faltantes';
+
+    modal.innerHTML = `
+        <div class="modal-faltantes" style='color:#000;'>
+            <h3>Medidas Faltantes</h3>
+            <p>Faltan las siguientes medidas: ${medidasFaltantes.join(', ')}.</p>
+            <p>¿Desea subsanar las medidas o continuar sin registrarlas?</p>
+            <div class="modal-actions-faltantes">
+                <button id="subsanar-medidas" class="btn-faltantes btn-primary-faltantes">Subsanar</button>
+                <button id="continuar-sin-medidas" class="btn-faltantes btn-secondary-faltantes">Enviar de todas formas</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Manejar el botón Subsanar
+    document.getElementById('subsanar-medidas').addEventListener('click', () => {
+        modal.remove();
+    });
+
+    // Manejar el botón Enviar de todas formas
+    document.getElementById('continuar-sin-medidas').addEventListener('click', () => {
+        modal.remove();
+        document.querySelector('#formulario-bienes').submit();
+    });
+}
+
+
+
+
+// Validar formulario
 function validarFormulario() {
     console.log("Iniciando validación");
     let valido = true;
     let errores = [];
 
-    // Validar campos de texto, select y párrafo
+    // Validación de campos obligatorios
     camposObligatorios.forEach(campo => {
         const elemento = document.querySelector(`#${campo.id}`);
         if (!elemento) {
-            console.log(`Elemento ${campo.id} no encontrado`);
             valido = false;
             errores.push(`Campo ${campo.id} no encontrado`);
             return;
         }
 
         let valor = campo.tipo === 'input' || campo.tipo === 'select' ? 
-                   elemento.value : 
-                   elemento.textContent;
+                    elemento.value : 
+                    elemento.textContent;
 
-        if (!valor || 
-            valor.trim() === '' || 
-            valor === 'No disponible' || 
-            valor === 'Nombre del Trabajador') {
+        if (!valor || valor.trim() === '' || valor === 'No disponible') {
             valido = false;
-            console.log(`Campo ${campo.id} vacío o no válido`);
             elemento.classList.add('error');
             errores.push(`Campo ${campo.id} es obligatorio`);
         } else {
@@ -150,80 +183,56 @@ function validarFormulario() {
         }
     });
 
-    // Validar radio button de En Uso
-    const enUsoChecked = document.querySelector('input[name="enUso"]:checked');
-    if (!enUsoChecked) {
-        valido = false;
-        console.log("En uso no seleccionado");
-        const radioGroup = document.querySelector('.radio-group:has(input[name="enUso"])');
-        if (radioGroup) {
-            radioGroup.classList.add('error');
-        }
-        errores.push("Debe indicar si el bien está en uso");
-    }
-
-    if (!valido) {
-        document.getElementById('form-section').style.display = 'block';
-        mostrarMensajeModal(errores[0], true);
-        return false;
-    }
-
-    // Validación de formato de código de inventario
-    const cod2024 = document.querySelector('#cod-2024').value;
-    if (!/^\d+(-\d+)?$/.test(cod2024)) {
-        document.querySelector('#cod-2024').classList.add('error');
-        document.getElementById('form-section').style.display = 'block';
-        mostrarMensajeModal("El código de inventario debe ser numérico y puede contener un guion", true);
-        return false;
-    }
-
-    // Validación condicional para muebles
+    // Validación condicional de dimensiones
     const descripcion = document.querySelector('#descripcion').value.toLowerCase();
     const muebles = ['escritorio', 'mueble', 'mesa', 'repostero', 'estante', 
                      'archivador', 'credenza', 'pizarra', 'armario', 'librero', 
                      'persiana', 'cortina'];
-    
+
     if (muebles.some(mueble => descripcion.includes(mueble))) {
         const medidas = ['largo', 'alto', 'ancho'];
-        const medidasVacias = medidas.some(medida => !document.querySelector(`#${medida}`)?.value);
-        
-        if (medidasVacias) {
-            if (confirm('Este tipo de bien requiere medidas. ¿Desea agregarlas ahora?')) {
-                medidas.forEach(medida => {
-                    const inputMedida = document.querySelector(`#${medida}`);
-                    if (inputMedida && !inputMedida.value) {
-                        inputMedida.classList.add('highlight');
-                    }
-                });
-                return false;
+
+        medidas.forEach(medida => {
+            const inputMedida = document.querySelector(`#${medida}`);
+            if (inputMedida && (!inputMedida.value || isNaN(inputMedida.value))) {
+                inputMedida.value = '0'; // Asignar 0 si está vacío o es inválido
+                inputMedida.classList.add('highlight');
+            } else if (inputMedida) {
+                inputMedida.classList.remove('highlight');
             }
-        } else {
-            medidas.forEach(medida => {
-                const inputMedida = document.querySelector(`#${medida}`);
-                if (inputMedida) {
-                    inputMedida.classList.remove('highlight');
-                }
-            });
-        }
+        });
     }
 
-    return valido;
+    if (!valido) {
+        mostrarMensajeModal(errores[0], true);
+        return false;
+    }
+
+    return true;
 }
 
+
+// Función para limpiar la galería
+function limpiarGaleria() {
+    console.log("Limpiando galería...");
+    const galeria = document.querySelector('#miniaturas'); // Asegúrate de que este ID sea correcto
+    if (galeria) {
+        galeria.innerHTML = ''; // Vaciar contenido de la galería
+    }
+}
+
+
 // Función para registrar el bien
+// Modificación en la lógica de registro exitoso
 async function registrarBien() {
     console.log("Iniciando proceso de registro");
-    
+
     if (!validarFormulario()) {
-        console.log("Validación fallida");
         return;
     }
 
     try {
-        console.log("Preparando datos del formulario");
         const formData = new FormData();
-
-        // Mapeo de campos a sus selectores
         const campos = {
             'institucion': '#institucion',
             'worker': '#worker',
@@ -244,11 +253,13 @@ async function registrarBien() {
             'descripcion': '#descripcion',
             'observaciones': '#observaciones'
         };
-        
-        // Agregar cada campo al FormData
+
         for (const [key, selector] of Object.entries(campos)) {
             const elemento = document.querySelector(selector);
             let valor = elemento ? elemento.value : '';
+            if (['largo', 'ancho', 'alto'].includes(key)) {
+                valor = valor && !isNaN(valor) ? valor : '0';
+            }
             formData.append(key, valor);
         }
 
@@ -258,31 +269,22 @@ async function registrarBien() {
         const estado = document.querySelector('#estado')?.value || '';
         formData.append('estado', estado);
 
-        console.log("Enviando datos al servidor...");
-        
         const response = await fetch('/registrar_bien', {
             method: 'POST',
             body: formData
         });
 
-        const contentType = response.headers.get("content-type");
+        const data = await response.json();
+        if (response.ok && data.exito) {
+            mostrarMensajeModal('Registro completado con éxito', false);
 
-        if (contentType && contentType.includes("application/json")) {
-            const data = await response.json();
-            if (response.ok && data.exito) {
-                mostrarMensajeModal('Registro completado con éxito', false);
-                limpiarFormulario();
-                registrosExitosos++;
-                localStorage.setItem('registrosExitosos', registrosExitosos);
-                if (registrosExitosos % 5 === 0) {
-                    solicitarEnvioReporte();
-                }
-            } else {
-                mostrarMensajeModal(data.error || 'Error en el registro', true);
-            }
+            // Limpiar formulario y galería
+            limpiarFormulario();
+            document.querySelector("#form-section").style.display = 'none'; // Lo oculta
+            limpiarGaleria();
+
         } else {
-            const errorHtml = await response.text();
-            mostrarMensajeModal("Ocurrió un error: revise los campos e intente nuevamente.", true);
+            mostrarMensajeModal(data.error || 'Error en el registro', true);
         }
 
     } catch (error) {
@@ -290,6 +292,7 @@ async function registrarBien() {
         mostrarMensajeModal('Error al procesar el registro: ' + error.message, true);
     }
 }
+
 
 // Event listeners principales
 document.addEventListener('DOMContentLoaded', function() {
@@ -340,8 +343,19 @@ function solicitarEnvioReporte() {
     }
 }
 
+
+//Asigna valor 0 (CERO) a inputs #largo, #ancho y #alto
+document.querySelectorAll('.medidas').forEach(input => {
+    input.addEventListener('blur', () => {
+        if (input.value === '') {
+            input.value = '0';
+        }
+    });
+});
+
+
 // Hacer funciones globales disponibles
 window.registrarBien = registrarBien;
 window.validarFormulario = validarFormulario;
 window.mostrarBarraProgreso = mostrarBarraProgreso;
-window.solicitarEnvioReporte = solicitarEnvioReporte;
+//window.solicitarEnvioReporte = solicitarEnvioReporte;

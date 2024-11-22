@@ -17,6 +17,12 @@ export function initializeImageEditor() {
 
 
 export function showLargeImage(src) {
+    // Primero, verificar si ya existe un overlay y eliminarlo
+    const existingOverlay = document.querySelector('.image-overlay');
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
+
     const overlay = document.createElement('div');
     overlay.className = 'image-overlay';
     
@@ -29,15 +35,20 @@ export function showLargeImage(src) {
     
     const editorContainer = createEditorButtons(src);
     
-    imageContainer.appendChild(largeImg);
-    overlay.appendChild(imageContainer);
-    overlay.appendChild(editorContainer);
+    // Crear contenedor para el botón de cierre
+    const closeBtnContainer = document.createElement('div');
+    closeBtnContainer.className = 'close-btn-container';
     
     const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'X';
+    closeBtn.innerHTML = '<i class="fas fa-times"></i>'; // Usar icono de Font Awesome
     closeBtn.className = 'close-btn';
     closeBtn.onclick = closeLargeImage;
-    overlay.appendChild(closeBtn);
+    
+    closeBtnContainer.appendChild(closeBtn);
+    imageContainer.appendChild(largeImg);
+    overlay.appendChild(closeBtnContainer);
+    overlay.appendChild(imageContainer);
+    overlay.appendChild(editorContainer);
     
     document.body.appendChild(overlay);
     
@@ -192,7 +203,12 @@ function createEditorButtons(src) {
     ];
 
     const editorContainer = document.createElement('div');
-    editorContainer.className = 'editor-container';
+    editorContainer.className = 'editor-container draggable';
+    
+    const dragHandle = document.createElement('div');
+    dragHandle.className = 'drag-handle';
+    dragHandle.innerHTML = '<i class="fas fa-grip-lines"></i>';
+    editorContainer.appendChild(dragHandle);
 
     buttonRows.forEach((row, rowIndex) => {
         const rowDiv = document.createElement('div');
@@ -208,6 +224,65 @@ function createEditorButtons(src) {
 
         editorContainer.appendChild(rowDiv);
     });
+
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    function dragStart(e) {
+        if (e.type === "touchstart") {
+            initialX = e.touches[0].clientX - xOffset;
+            initialY = e.touches[0].clientY - yOffset;
+        } else {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+        }
+
+        if (e.target === dragHandle) {
+            isDragging = true;
+        }
+    }
+
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+
+            if (e.type === "touchmove") {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            setTranslate(currentX, currentY, editorContainer);
+        }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+    }
+
+    dragHandle.addEventListener('touchstart', dragStart, { passive: false });
+    dragHandle.addEventListener('touchend', dragEnd, { passive: false });
+    dragHandle.addEventListener('touchmove', drag, { passive: false });
+
+    dragHandle.addEventListener('mousedown', dragStart, { passive: false });
+    document.addEventListener('mousemove', drag, { passive: false });
+    document.addEventListener('mouseup', dragEnd, { passive: false });
 
     return editorContainer;
 }

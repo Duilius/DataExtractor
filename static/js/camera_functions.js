@@ -79,9 +79,10 @@ async function capturePhoto() {
         console.log("Iniciando captura de imagen");
         const canvas = document.createElement('canvas');
         const video = document.getElementById('cameraFeed');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
+        // Solo cambiamos estas dos líneas
+        canvas.width = 4128;  // En lugar de video.videoWidth
+        canvas.height = 3096; // En lugar de video.videoHeight
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
 
         console.log("Procesando imagen");
         const { imageData: processedImageData, resized } = await processImage(canvas.toDataURL('image/png'));
@@ -91,7 +92,7 @@ async function capturePhoto() {
             height: canvas.height
         });
 
-        alert("Resolución del Dispositivo:  \n Ancho:" +canvas.width + "\nAlto: \n" + canvas.height)
+        alert("Resolución del Dispositivo:  \nAncho:" + canvas.width + "\nAlto: " + canvas.height);
 
         console.log("Añadiendo foto a la galería");
         await addPhotoToGallery(processedImageData);
@@ -406,5 +407,15 @@ if (typeof window !== 'undefined') {
     window.toggleVoiceCapture = toggleVoiceCapture;
     window.procesarImagenes = procesarImagenes;
 }
+
+
+//BOTÓN PARA MINIMIZAR VIDEO    *************   BOTÓN PARA MINIMIZAR VIDEO  **********  BOTÓN PARA MINIMIZAR VIDEO
+document.getElementById('toggleVisor').addEventListener('click', function() {
+    const visor = document.getElementById('camera-visor');
+    const icon = this.querySelector('.minimize-icon');
+    
+    visor.classList.toggle('minimized');
+    icon.classList.toggle('minimized');
+});
 
 console.log("Script camera_functions.js cargado");
