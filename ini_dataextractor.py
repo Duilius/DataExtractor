@@ -543,6 +543,19 @@ async def process_and_store_images(imagenes: dict, datos: dict, db: Session) -> 
         print(f"Error en process_and_store_images: {str(e)}")
         raise
 
+
+def validar_dimensiones(valor: str) -> float:
+    """
+    Valida que el valor recibido sea numérico y lo convierte a float.
+    Si el valor es None, vacío o no numérico, retorna 0.
+    """
+    try:
+        return float(valor)
+    except (TypeError, ValueError):
+        
+        return 0.0
+
+
 # Modificar el endpoint registrar_bien existente
 @app.post("/registrar_bien")
 async def registrar_bien(
@@ -579,6 +592,11 @@ async def registrar_bien(
         )
 
     try:
+        # Validar y convertir las dimensiones
+        largo_validado = validar_dimensiones(largo)
+        ancho_validado = validar_dimensiones(ancho)
+        alto_validado = validar_dimensiones(alto)
+
         # Registro de los datos recibidos para verificación
         datos_recibidos = {
             "institucion": institucion,
@@ -591,9 +609,9 @@ async def registrar_bien(
             "cod_2019": cod_2019,
             "color": color,
             "material": material,
-            "largo": largo,
-            "ancho": ancho,
-            "alto": alto,
+            "largo": largo_validado,
+            "ancho": ancho_validado,
+            "alto": alto_validado,
             "marca": marca,
             "modelo": modelo,
             "num_serie": num_serie,
@@ -602,6 +620,7 @@ async def registrar_bien(
             "enUso": enUso,
             "estado": estado
         }
+
 
         # Verificación de duplicados
         bien_existente_patrim = None
