@@ -1,0 +1,108 @@
+.image-overlay {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: auto; /* Cambiado de 100vh a auto */
+    min-height: 200px; /* Altura mínima para el contenido */
+    background: rgba(0, 0, 0, 0.9); /* Más opaco para el fondo */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+    max-width: 800px;
+    padding: 10px; /* Reducir padding */
+}
+
+.image-container {
+    max-width: 90%;
+    max-height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px auto;
+}
+
+.close-btn-container {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001;
+    width: auto; /* Cambiado de 100% a auto */
+}
+
+.close-btn {
+    background: #ff3b3b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.close-btn:hover {
+    background: #ff0000;
+}
+
+
+.large-image {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+}
+
+/* Estilo para la BOTONERA DE EDICIÓN DE IMÁGENES */
+.editor-container {
+    position: relative;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 8px;
+    padding: 6px;
+    touch-action: none;
+    z-index: 1002;
+    user-select: none;
+    transform: translate3d(0, 0, 0);
+    margin: 10px auto; /* Centrar horizontalmente */
+    width: fit-content; /* Ajustar al contenido */
+    left: 0;           /* Reset posición inicial */
+    right: 0;          /* Reset posición inicial */
+}
+
+.drag-handle {
+    height: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    touch-action: none;
+}
+
+.drag-handle i {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.button-row {
+    display: flex;
+    gap: 4px;       /* Reducido de 8px a 4px */
+    margin-bottom: 4px;  /* Reducido de 8px a 4px */
+}
+
+/* Ajustar tamaño de los botones */
+.edit-btn {
+    padding: 4px 8px;  /* Reducir el padding */
+    font-size: 12px;   /* Reducir tamaño de fuente */
+}
+
+.button-row:last-child {
+    margin-bottom: 0;
+}

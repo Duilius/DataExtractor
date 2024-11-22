@@ -1,19 +1,29 @@
-html, body {
-    touch-action: pan-y; /* Solo scroll vertical en la página */
-    overflow: auto;
-}
-
+/* Añadir al final de main.css */
 body{
   width: 99%;
   margin: 0px auto;
-  text-align: center;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /*text-align: center;
   justify-content: center;
-  align-items: center;
+  align-items: center;*/
+}
+
+html, body {
+  overflow: auto;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 main{
-  width: 98%;
+  width: 100%;
   margin: 0px auto;
+  overflow-x: hidden; /* Prevenir scroll horizontal */
+  box-sizing: border-box;
 }
 /* Estilos para los nuevos botones de búsqueda */
 .search-btn {
@@ -114,12 +124,7 @@ header {
     margin-right: 20px;
   }
   
-  #camera-section {
-    background-color: var(--bg-secondary);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
+  
   
   #thumbnail-section {
     background-color: var(--bg-secondary);
@@ -227,14 +232,6 @@ input[type="radio"] {
     border-radius: 8px; /* Bordes redondeados */
 }
 
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #fff; /* Color de texto blanco */
-}
 
 .descartar-btn {
     background-color: #f44336; /* Color rojo para el botón de Descartar */
@@ -251,30 +248,185 @@ input[type="radio"] {
 /*VIDEO VIDEO VIDEO*/
 #camera-section {
   width: 100%;
+  background: #1a1d20;
+  border-radius: 8px;
+  overflow: hidden; /* Para mantener los bordes redondeados */
+  /*max-width: 800px; *//* O el ancho que prefieras */
+  box-sizing: border-box;
+  margin: 0 auto; /* Para centrar */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
+}
+
+.camera-controls {
   display: flex;
-  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: #343a40;
   align-items: center;
-  gap: 10px;
+  width: 100%;
+  box-sizing: border-box; /* Importante para que el padding no afecte el ancho */
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  background: #0d6efd;
+}
+
+.btn i {
+  font-size: 14px;
+}
+
+.btn-primary {
+  background: #0d6efd;
+}
+
+.btn-primary:hover {
+  background: #0b5ed7;
+}
+
+.btn-capture {
+  background: #198754;
+}
+
+.btn-capture:hover {
+  background: #157347;
+}
+
+.btn-voice {
+  background: #fd7e14;
+}
+
+.btn-voice:hover {
+  background: #dc6803;
+}
+
+.btn-minimize {
+  margin-left: auto;
+  padding: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+  display: flex; /* Asegura que el icono esté centrado */
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-minimize:hover {
+  background: rgba(255,255,255,0.2);
 }
 
 #camera-visor {
   width: 100%;
-  aspect-ratio: 4/3;  /* Proporción estándar de la cámara */
-  max-height: 80vh;
+  aspect-ratio: 4/3;
   background: #000;
   overflow: hidden;
-  position: relative; /* Asegurar que los gestos se capturen correctamente */
-  overflow: visible;  /* Permitir que el zoom se expanda */
-  touch-action: none; /* Resetear para el contenedor */ 
+  transition: height 0.3s ease;
+  box-sizing: border-box; /* Importante */
+}
+
+#camera-visor.minimized {
+  height: 80px;
 }
 
 #cameraFeed {
   width: 100%;
   height: 100%;
-  object-fit: cover;  /* Para llenar el espacio manteniendo la proporción */
-  transform: scaleX(1); /* Por si necesitamos voltear la imagen */
-  touch-action: pinch-zoom pan-x pan-y; /* Permitir zoom y pan en todas direcciones */
-  transform-origin: center; /* Centro para el zoom */
-  -webkit-user-select: none;
-  user-select: none;
+  object-fit: cover;
+}
+
+/* Ajusta el tamaño de los iconos */
+.fas {
+  font-size: 14px;
+  display: inline-block;
+}
+
+
+/*MENSAJE TEMPORAL PARA MUEBLES SIN MEDIDA*/
+.mensaje-temporal {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  z-index: 1000;
+  opacity: 0.9;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.mensaje-temporal.warning {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.highlight {
+  border: 2px solid #ff9800;
+}
+
+
+/*MODAL PARA MEDIDAS FALTANTES*/
+.modal-overlay-faltantes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-faltantes {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  text-align: center;
+}
+
+.modal-actions-faltantes {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-faltantes {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-primary-faltantes {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-secondary-faltantes {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-faltantes:hover {
+  opacity: 0.8;
 }
