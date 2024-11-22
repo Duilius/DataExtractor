@@ -14,7 +14,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{url_for('static', path='main.css')}}">
     <link rel="stylesheet" href="{{url_for('static', path='search.css')}}">
     <link rel="stylesheet" href="{{url_for('static', path='worker_info.css')}}">
@@ -28,6 +29,7 @@
     <link rel="stylesheet" href="{{url_for('static', path='botones_editor_image.css')}}">
     <link rel="stylesheet" href="{{url_for('static', path='autenticacion_modal2.css')}}">
     <link rel="stylesheet" href="{{url_for('static', path='modal_error.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', path='overlayImageEditor.css')}}">
 </head>
 <body>
     <header id="main-header">
@@ -71,13 +73,26 @@
         </section>
 
         <section id="camera-section">
-            <button id="cameraToggle" class="btn">Cámara On/Off</button>
-            <!--<button id="switchCameraBtn" class="btn" style="background: orange;">Cambiar Cámara</button>-->
-            <div id="camera-visor"> 
-                <video id="cameraFeed" autoplay></video>
+            <div class="camera-controls">
+                <button id="cameraToggle" class="btn btn-primary">
+                    <i class="fas fa-power-off"></i>
+                    ON/OFF
+                </button>
+                <button id="tomarFoto" class="btn btn-capture">
+                    <i class="fas fa-camera"></i>
+                    TOCAR
+                </button>
+                <button id="voiceCaptureBtn" class="btn btn-voice">
+                    <i class="fas fa-microphone"></i>
+                    VOZ
+                </button>
+                <button id="toggleVisor" class="btn btn-minimize" title="Minimizar visor">
+                    <i class="fas fa-compress-alt"></i>
+                </button>
             </div>
-            <button id="tomarFoto" class="btn">TOMAR FOTO</button>
-            <button id="voiceCaptureBtn" class="btn">FOTO POR VOZ</button>
+            <div id="camera-visor"> 
+                <video id="cameraFeed" autoplay playsinline></video>
+            </div>
         </section>
 
         <section id="thumbnail-section">
@@ -146,15 +161,15 @@
                 </div>
                 <div class="form-field">
                     <div class="field-header">Largo</div>
-                    <input type="number" class="medidas" id="largo" name="largo" step="0.01" placeholder="Largo">
+                    <input type="number" class="medidas" id="largo" name="largo" step="0.01" placeholder="Largo" value="0" min="0" required>
                 </div>
                 <div class="form-field">
                     <div class="field-header">Ancho</div>
-                    <input type="number" class="medidas" id="ancho" name="ancho" step="0.01" placeholder="Ancho">
+                    <input type="number" class="medidas" id="ancho" name="ancho" step="0.01" placeholder="Ancho" value="0" min="0" required>
                 </div>
                 <div class="form-field">
                     <div class="field-header">Alto</div>
-                    <input type="number" class="medidas" id="alto" name="alto" step="0.01" placeholder="Alto">
+                    <input type="number" class="medidas" id="alto" name="alto" step="0.01" placeholder="Alto" value="0" min="0" required>
                 </div>
             </div>
 
@@ -217,7 +232,9 @@
     </div>
     
     <!--MODAL PARA LOGUEARSE o AUTENTICARSE-->
+<!--
     <div id="authModalContainer" class="modalLogin"></div>
+-->
     <div id="form-buttons-container">
         <button id="descartarData" class="btn descartar-btn">Descartar</button>
         <button id="registrarFoto" class="btn registrar-btn">Registrar</button>
