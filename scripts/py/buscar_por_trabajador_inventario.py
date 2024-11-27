@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Enum, Boolean, Date, or_, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, aliased
@@ -124,3 +125,57 @@ def consulta_registro(valor):
         return []
     finally:
         db.close()
+
+
+
+#####################CONSULTA AREAS u OFICINAS #########################################
+def consulta_area(valor):
+    """
+    Consulta oficinas por código o nombre según el valor ingresado.
+    """
+    db = Session()
+    try:
+        # Base del query para la tabla oficinas
+        stmt = select(
+            Oficina.id,
+            Oficina.codigo,
+            Oficina.nombre,
+            Oficina.nivel,
+            Oficina.sede_id,
+            Oficina.institucion_id,
+            Oficina.jefe_id
+        )
+
+        # Lógica para filtrar la consulta
+        if valor.lower() == "todos":
+            # No se aplica filtro, devolverá todas las oficinas
+            pass
+        elif valor.isdigit() and len(valor) >= 3:
+            # Si el valor es numérico y tiene al menos 3 dígitos, filtrar por código
+            stmt = stmt.where(Oficina.codigo.like(f"{valor}%"))
+        elif len(valor) >= 3:
+            # Si el valor tiene al menos 3 caracteres, filtrar por nombre
+            stmt = stmt.where(Oficina.nombre.like(f"%{valor}%"))
+        else:
+            # Retornar vacío si no cumple las condiciones mínimas
+            return []
+
+        # Ejecutar la consulta
+        result = db.execute(stmt).fetchall()
+
+        # Formatear resultados para devolver como JSON
+        oficinas = [
+            {
+                "id": row.id,
+                "codigo": row.codigo,
+                "nombre": row.nombre,
+                "sede_id": row.sede_id,
+                "institucion_id": row.institucion_id
+            }
+            for row in result
+        ]
+
+        return oficinas
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en la consulta: {str(e)}")
