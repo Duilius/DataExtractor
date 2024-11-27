@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Resto de la configuración del dashboard
             const custodianPhoto = document.getElementById('custodian-photo');
-            custodianPhoto.src = "/static/img/" + (data.custodian.foto || 'default.png');
+            custodianPhoto.src = "/static/img/" + (data.custodian.foto || 'foto-no-hallado.jpeg');
             
             document.getElementById('custodian-name').textContent = data.custodian.nombre || 'Sin asignar';
             document.getElementById('item-description').textContent = data.item.descripcion || 'Sin descripción';
