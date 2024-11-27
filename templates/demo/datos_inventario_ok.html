@@ -1,89 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://unpkg.com/htmx.org@1.8.4" 
+        onload="console.log('HTMX loaded successfully')" 
+        onerror="console.log('Error loading HTMX')">
+    </script>
+    <script>
+        // Verificar si HTMX está cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('HTMX loaded:', typeof htmx !== 'undefined');
+            
+            // Intentar registrar un evento simple
+            const input = document.getElementById('ubicacion');
+            if (input) {
+                input.addEventListener('keyup', function(e) {
+                    console.log('Keyup event:', e.target.value);
+                });
+            } else {
+                console.log('Input not found');
+            }
+        });
+    </script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+    <link rel="stylesheet" href="{{url_for('static', path='worker_search.css')}}">
+
+    
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 5px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.search-container {
+    margin-top: 20px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+</style>
+
+</head>
+<body>
+
+
+{% set dato = datos[0][0] %}
 <section id="form-section" hx-swap="outerHTML" hx-on::after-settle="limpiarFotosProcessadas()">
-    <div class="form-layout">
-        <div class="form-group codes-group">
-            <h3>Códigos de Inventario</h3>
-            <div class="form-grid">
-                <div class="form-field">
-                    <div class="field-header">Cód. Patr.</div>
-                    <input type="text" id="cod-patr" maxlength="10" placeholder="Cód. Patr." value="{{ datos.INV_Patrim }}">
+        <div class="form-layout">
+            <div class="form-group message-group">
+                <h3>Situación del Bien</h3>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <div class="field-header">Según SIS !</div>
+                        <input type="text" id="situacion_sis" maxlength="30" readonly value="{{ dato.situacion_sis }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Según Inventariador</div>
+                        <select id="situacion_prov">
+                            <option value="Nuevo">Nuevo</option>
+                            <option value="Falt. Hall.">Faltante Hallado</option>
+                            <option value="Sobr. Regular.">Sobrante Regularizado</option>
+                            <option value="CP Etiquetado">Cod. Patr. Etiquetado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-field">
+                        <div class="field-header">Ubicación Real</div>
+
+<!-- Agregar un indicador de carga -->
+<!-- En el body, al final -->
+<div class="form-field">
+    <div class="field-header">Ubicación Real</div>
+    <input type="text" id="nombre_ubicacion" class="text-ancho" readonly>
+    <button type="button" id="buscarArea" class="btn">
+        <i class="fas fa-search"></i> Buscar Área
+    </button>
+</div>
+                     
+                    </div>
+                    
+                    <div id="lista-areas" class="oculto"></div>
                 </div>
                 <div class="form-field">
-                    <div class="field-header">Cód-2024</div>
-                    <input type="text" id="cod-2024" maxlength="10" placeholder="Cód-2024" value="{{ datos.INV_2024 }}">
+                    <div class="field-header">Ubicación actual del Bien</div>
+                    <input type="text" id="nombre_ubicacion" class="text-ancho" maxlength="300" readonly >
                 </div>
                 <div class="form-field">
-                    <div class="field-header">Cód-2023</div>
-                    <input type="text" id="cod-2023" maxlength="10" placeholder="Cód-2023" value="{{ datos.INV_2023 }}">
+                    <div class="field-header">Del proceso ...</div>
+                    <input type="text" id="mensaje" class="text-ancho" maxlength="300" readonly value="{{ dato.mensaje }}">
                 </div>
-                <div class="form-field">
-                    <div class="field-header">Cód-2021</div>
-                    <input type="text" id="cod-2021" maxlength="10" placeholder="Cód-2021" value="{{ datos.INV_2021 }}">
+            </div>
+            <!-- Códigos de Inventario -->
+            <div class="form-group codes-group">
+                <h3>Códigos de Inventario</h3>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <div class="field-header">Cód. Patr.</div>
+                        <input type="text" id="cod-patr" maxlength="10" placeholder="Cód. Patr." value="{{ dato.codigo_patr }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Cód-2024</div>
+                        <input type="text" id="cod-2024" maxlength="10" placeholder="Cód-2024" value="{{ dato.codigo_inv_2024 }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Cód-2023</div>
+                        <input type="text" id="cod-2023" maxlength="10" placeholder="Cód-2023" value="{{ dato.codigo_inv_2023 }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Cód-2022</div>
+                        <input type="text" id="cod-2022" maxlength="10" placeholder="Cód-2022" value="{{ dato.codigo_inv_2022 }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Cód-2021</div>
+                        <input type="text" id="cod-2021" maxlength="10" placeholder="Cód-2021" value="{{ dato.codigo_inv_2021 }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Cód-2020</div>
+                        <input type="text" id="cod-2020" maxlength="10" placeholder="Cód-2020" value="{{ dato.codigo_inv_2020 }}">
+                    </div>
                 </div>
+            </div>
+    
+            <!-- Características -->
+            <div class="form-group characteristics-group">
+                <h3>Características</h3>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <div class="field-header">Color</div>
+                        <input type="text" id="color" maxlength="20" placeholder="Color" value="{{ dato.color }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Material</div>
+                        <input type="text" id="material" maxlength="20" placeholder="Material" value="{{ dato.material }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Largo</div>
+                        <input type="number" class="medidas" id="largo" step="0.01" placeholder="Largo" value="{{ dato.largo }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Ancho</div>
+                        <input type="number" class="medidas" id="ancho" step="0.01" placeholder="Ancho" value="{{ dato.ancho }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Alto</div>
+                        <input type="number" class="medidas" id="alto" step="0.01" placeholder="Alto" value="{{ dato.alto }}">
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Marca y Modelo -->
+            <div class="form-group brand-group">
+                <h3>Marca y Modelo</h3>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <div class="field-header">Marca</div>
+                        <input type="text" id="marca" maxlength="10" placeholder="Marca" value="{{ dato.marca }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Modelo</div>
+                        <input type="text" id="modelo" maxlength="10" placeholder="Modelo" value="{{ dato.modelo }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">N° Serie</div>
+                        <input type="text" id="num-serie" maxlength="10" placeholder="N° Serie" value="{{ dato.numero_serie }}">
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Datos del Vehículo -->
+            <div class="form-group vehicle-data-card">
+                <h3>Datos del Vehículo</h3>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <div class="field-header">Placa</div>
+                        <input type="text" id="num-placa" name="num_placa" maxlength="10" placeholder="N° Placa" value="{{ dato.num_placa }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">N° Chasis</div>
+                        <input type="text" id="num-chasis" name="num_chasis" maxlength="20" placeholder="Chasis" value="{{ dato.num_chasis }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Año Fabricac.</div>
+                        <input type="text" id="anio-fabricac" name="anio_fabricac" maxlength="10" placeholder="Año - Fabricación" value="{{ dato.anio_fabricac }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">N° Motor</div>
+                        <input type="text" id="num-motor" name="num_motor" maxlength="10" placeholder="N° Serie" value="{{ dato.num_motor }}">
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Descripción -->
+            <div class="form-group description-group">
+                <!--<h3>Descripción</h3>-->
                 <div class="form-field">
-                    <div class="field-header">Cód-2019</div>
-                    <input type="text" id="cod-2019" maxlength="10" placeholder="Cód-2019" value="{{ datos.INV_2019 }}">
+                    <div class="field-header">Descripción</div>
+                    <input type="text" id="descripcion" class="text-ancho" maxlength="300" placeholder="Descripción del bien" value="{{ dato.descripcion }}">
+                </div>
+            </div>
+    
+            <!-- Observaciones -->
+            <div class="form-group observations-group">
+                <!--<h3>Observaciones</h3>-->
+                <div class="form-field">
+                    <div class="field-header">Observaciones</div>
+                    <input type="text" id="observaciones" class="text-ancho" maxlength="300" placeholder="Observaciones ..." value="{{ dato.observaciones }}">
                 </div>
             </div>
         </div>
+    </section>   
 
-        <div class="form-group characteristics-group">
-            <h3>Características</h3>
-            <div class="form-grid">
-                <div class="form-field">
-                    <div class="field-header">Color</div>
-                    <input type="text" id="color" maxlength="20" placeholder="Color" value="{{ datos.Color }}">
-                </div>
-                <div class="form-field">
-                    <div class="field-header">Material</div>
-                    <input type="text" id="material" maxlength="20" placeholder="Material" value="{{ datos.Material }}">
-                </div>
-                <div class="form-field">
-                    <div class="field-header">Largo</div>
-                    <input type="number" class="medidas" id="largo" step="0.01" placeholder="Largo">
-                </div>
-                <div class="form-field">
-                    <div class="field-header">Ancho</div>
-                    <input type="number" class="medidas" id="ancho" step="0.01" placeholder="Ancho">
-                </div>
-                <div class="form-field">
-                    <div class="field-header">Alto</div>
-                    <input type="number" class="medidas" id="alto" step="0.01" placeholder="Alto">
-                </div>
-            </div>
-        </div>
+<!--
+<script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
+<script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}"></script>
+-->
 
-        <div class="form-group brand-group">
-            <h3>Marca y Modelo</h3>
-            <div class="form-grid">
-                <div class="form-field">
-                    <div class="field-header">Marca</div>
-                    <input type="text" id="marca" maxlength="10" placeholder="Marca" value="{{ datos.Marca }}">
-                </div>
-                <div class="form-field">
-                    <div class="field-header">Modelo</div>
-                    <input type="text" id="modelo" maxlength="10" placeholder="Modelo" value="{{ datos.Modelo }}">
-                </div>
-                <div class="form-field">
-                    <div class="field-header">N° Serie</div>
-                    <input type="text" id="num-serie" maxlength="10" placeholder="N° Serie" value="{{ datos.N_Serie }}">
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group description-group">
-            <h3>Descripción</h3>
-            <div class="form-field">
-                <div class="field-header">Descripción</div>
-                <input type="text" id="descripcion" class="text-ancho" maxlength="300" placeholder="Descripción del bien" value="{{ datos.Descripcion }}">
-            </div>
-        </div>
-
-        <div class="form-group observations-group">
-            <h3>Observaciones</h3>
-            <div class="form-field">
-                <div class="field-header">Observaciones</div>
-                <input type="text" id="observaciones" class="text-ancho" maxlength="300" placeholder="Observaciones ...">
-            </div>
+<!-- En el body, al final -->
+<div id="areaSearchModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Búsqueda de Área</h3>
+        <div class="search-container">
+            <input type="search" 
+                   id="ubicacion" 
+                   name="ubicacion" 
+                   placeholder="Busca por Código o Nombre de Área"
+                   hx-post="/busca-areas"
+                   hx-trigger="keyup changed delay:500ms"
+                   hx-target="#lista-areas">
+            <div id="lista-areas"></div>
         </div>
     </div>
-</section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('areaSearchModal');
+    const btn = document.getElementById('buscarArea');
+    const span = modal.querySelector('.close');
+
+    btn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+});
+</script>
+<!-- Agregar antes de cerrar el body -->
+<script>
+    // Prueba básica de AJAX
+    fetch('/htmx-status')
+        .then(response => response.json())
+        .then(data => console.log('API Test:', data))
+        .catch(error => console.error('API Error:', error));
+    
+    // Verificar si los elementos existen
+    console.log('Form exists:', !!document.getElementById('area-search-form'));
+    console.log('Input exists:', !!document.getElementById('ubicacion'));
+    console.log('Lista exists:', !!document.getElementById('lista-areas'));
+</script>
+</body>
+</html>
