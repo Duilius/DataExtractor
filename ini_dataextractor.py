@@ -21,7 +21,7 @@ from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from sqlalchemy import text, func, case, create_engine, desc
+from sqlalchemy import text, func, case, create_engine, desc, or_
 from sqlalchemy import Column, Integer, String, Float, Numeric
 from sqlalchemy.orm import sessionmaker
 from decimal import Decimal
@@ -29,8 +29,9 @@ from datetime import datetime
 from utils.dispositivo import determinar_tipo_dispositivo
 from database import SessionLocal
 from scripts.py.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, HistorialCodigoInventario, AsignacionBien, InventarioBien, TipoBien, TipoMovimiento, ProcesoInventario, Empleado, Oficina)
-from scripts.py.buscar_por_trabajador_inventario import consulta_registro
+from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area
 import logging
+from create_tabla_inventario_anterior import InventarioAnterior
 
 try:
     import claves  # Solo se usará en el entorno local
@@ -142,6 +143,70 @@ async def busca_usuarios(request:Request, busca_usuario:str=Form()):
     return templates.TemplateResponse("demo/usuarios_responsables.html",{"request":request,"users":users})
 
 
+
+print("Current working directory:", os.getcwd())
+print("Templates directory exists:", os.path.exists("templates"))
+print("Demo template exists:", os.path.exists("templates/demo/areas_ubicadas.html"))
+
+
+@app.post('/test-htmx')
+async def test_htmx(request: Request):
+    print("Test endpoint called!")
+    return HTMLResponse("<div>HTMX está funcionando!</div>")
+
+@app.get('/htmx-status')
+async def htmx_status():
+    return {"status": "HTMX endpoint working"}
+
+
+
+# Antes del endpoint, agrega esto para verificar
+from pathlib import Path
+template_path = Path("templates/demo/areas_ubicadas.html")
+print("¿Template existe?:", template_path.exists())
+print("Ruta absoluta del template:", template_path.absolute())
+#########################
+# /busca-areas u oficinas
+#########################
+@app.post('/busca-areas')
+async def busca_areas(request: Request):
+    try:
+        # Primero leemos el body completo
+        body = await request.body()
+        print("Body recibido:", body)
+        
+        # Intentamos obtener el form data
+        form = await request.form()
+        print("Form data:", dict(form))
+        
+        # Obtenemos ubicacion
+        ubicacion = form.get('ubicacion', '')
+        print("Ubicación:", ubicacion)
+        
+        if not ubicacion:
+            return JSONResponse({"error": "No se recibió ubicacion"}, status_code=400)
+            
+        areas = consulta_area(ubicacion)
+        print("Áreas encontradas:", areas)
+        
+        # Agregamos un header para debug
+        response = templates.TemplateResponse(
+            "demo/areas_ubicadas.html",
+            {"request": request, "areas": areas},
+            headers={"X-Debug": "Response-Sent"}
+        )
+        return response
+        
+    except Exception as e:
+        print("Error completo:", str(e))
+        import traceback
+        print("Traceback:", traceback.format_exc())
+        return JSONResponse(
+            {"error": str(e), "traceback": traceback.format_exc()},
+            status_code=500
+        )
+
+
 # --------------------------------------------------------------
 # Recibe ancho de pantalla (al cargar o al redimensionar)
 # --------------------------------------------------------------
@@ -217,12 +282,12 @@ async def new_user(request: Request, countryCode: str = Form(), numWa: str = For
 @app.post('/servicios')
 async def servicios(request: Request):
     #return templates.TemplateResponse("demo/inv_demo.html", {'request': request})
-    return templates.TemplateResponse("demo/inventario_activos2.html", {'request': request})
+    return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
 
 
 @app.get('/demo-inventario')
 async def servicios(request: Request):
-    return templates.TemplateResponse("demo/inventario_activos2.html", {'request': request})
+    return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
 
 @app.get('/fotos')
 async def fotos(request: Request):
@@ -273,38 +338,36 @@ async def procesar_imagen_individual(base64_image: str) -> dict:
     Procesa una imagen individual con OpenAI para determinar su tipo
     """
     prompt_individual = """
-        Analiza esta imagen específica y ÚNICAMENTE extrae:
+    Analiza esta imagen específica y ÚNICAMENTE extrae los siguientes datos si están presentes:
 
-        Si ves códigos de inventario:
-        - Extráelos usando las claves 'INV_2021', 'INV_2023', etc.
-        
-        Si ves un número de serie:
-        - Extráelo usando la clave 'N_Serie'
-        
-        SOLO si ves el objeto completo (no solo etiquetas o detalles):
-        - Describe qué es (usar clave 'descripcion')
-        - Indica su color principal (usar clave 'color')
-        - Indica su material principal (usar clave 'material')
-        
-        IMPORTANTE: 
-        - NO describas etiquetas o superficies donde están pegadas
-        - NO incluyas descripción, color o material si solo ves etiquetas o números de serie
-        - Incluye SOLO las claves para los datos que necesitas según las reglas anteriores
-        - La respuesta debe ser un JSON válido con comillas dobles
-        
-        Ejemplo si ves solo etiquetas:
-        {
-            "INV_2021": "01-11321",
-            "INV_2023": "01-21763"
-        }
+    - "Codigo_Patrimonial": Códigos que comienzan con "AF".
+    - "Codigo_Inventario": Códigos que empiezan con años como "2021", "2022", etc.
+    - "Anio_Inventario": Los primeros 4 dígitos de una etiqueta que no comience con "AF".
+    - Si ves el objeto completo (no solo etiquetas o detalles):
+      - "Descripcion": Una breve descripción del objeto.
+      - "Color": El color principal del objeto.
+      - "Material": El material principal del objeto.
 
-        Ejemplo si ves el objeto completo:
-        {
-            "descripcion": "Silla de oficina giratoria",
-            "color": "azul",
-            "material": "tela"
-        }
-        """
+    IMPORTANTE:
+    - NO describas etiquetas o superficies donde están pegadas.
+    - NO incluyas descripción, color o material si solo ves etiquetas o números.
+    - Incluye SOLO las claves necesarias según las reglas anteriores.
+    - La respuesta debe ser un JSON válido con comillas dobles.
+
+    Ejemplo si solo ves etiquetas:
+    {
+        "Codigo_Patrimonial": "AF12345",
+        "Codigo_Inventario": "2023-00123",
+        "Anio_Inventario": "2023"
+    }
+
+    Ejemplo si ves el objeto completo:
+    {
+        "Descripcion": "Computadora portátil",
+        "Color": "negro",
+        "Material": "plástico"
+    }
+    """
 
     messages = [
         {"role": "system", "content": "Eres un asistente experto en toma de inventario de bienes."},
@@ -380,32 +443,104 @@ def generar_nombre_imagen(cod_usuario: str, cod_empleado: str, tipo: str, inv_20
 # Inicialización del estado de la aplicación para almacenar imágenes en memoria
 app.state.imagenes_procesadas = {}
 
-# Modificar el endpoint upload_fotos existente
-@app.post("/upload_fotos")
-async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uuid: List[str] = Form(...), db: Session = Depends(get_db)):
-    session_id = request.session.get('id', 'default')
+
+def buscar_en_inventario(db: Session, codigos: List[str]) -> Dict[str, str]:
+    resultados = {}
+    codigos = list(set(codigos))  # Elimina duplicados antes de buscar
+
+    for codigo in codigos:
+        # Verificar si ya se buscó este código previamente
+        if codigo in resultados:
+            continue  # Saltar al siguiente código para evitar duplicados
+
+        # Caso 1: Código patrimonial
+        if codigo.startswith("AF"):
+            result = db.query(InventarioAnterior).filter_by(codigo_patrimonial=codigo).first()
+            resultados[codigo] = result if result else "faltante"
+
+            if result:
+                print(f"Resultado para {codigo}: id={result.id}, descripcion={result.descripcion}, marca={result.marca}")
+            else:
+                print(f"No se encontró resultado para {codigo}")
+
+        # Caso 2: Código de inventario
+        elif codigo.startswith("2023") or codigo.startswith("2022"):
+            result = db.query(InventarioAnterior).filter(
+                or_(
+                    InventarioAnterior.codigo_inv_2023 == codigo,
+                    InventarioAnterior.codigo_inv_2022 == codigo
+                )
+            ).first()
+            resultados[codigo] = result if result else "faltante"
+
+            if result:
+                print(f"Resultado para {codigo}: id={result.id}, descripcion={result.descripcion}, marca={result.marca}")
+            else:
+                print(f"No se encontró resultado para {codigo}")
     
-    datos_combinados = {
-        "INV_Patrim": "No disponible",
-        "INV_2024": "No disponible",
-        "INV_2023": "No disponible",
-        "INV_2021": "No disponible",
-        "INV_2019": "No disponible",
-        "Marca": "No disponible",
-        "Modelo": "No disponible",
-        "N_Serie": "No disponible",
-        "descripcion": "No disponible",
-        "color": "No disponible",
-        "material": "No disponible"
+    return resultados
+
+
+def determinar_mensaje(codigos: List[str], resultados: Dict[str, str]) -> str:
+    if not codigos:
+        return "POSIBLE NUEVO"
+    if any(codigo.startswith("AF") and resultados.get(codigo) == "faltante" for codigo in codigos):
+        return "POSIBLE SOBRANTE"
+    if any(
+        (codigo.startswith("2023") or codigo.startswith("2022"))
+        and not any(c.startswith("AF") for c in codigos)
+        and resultados.get(codigo) == "faltante"
+        for codigo in codigos
+    ):
+        return "POSIBLE SOBRANTE"
+    if any(
+        (codigo.startswith("2023") or codigo.startswith("2022"))
+        and not any(c.startswith("AF") for c in codigos)
+        and resultados.get(codigo) == "existe"
+        for codigo in codigos
+    ):
+        return "SIN COD PATR"
+    return "N/A"
+
+
+def actualizar_situacion_sis(db: Session, codigos: List[str]) -> str:
+    if any(codigo.startswith("AF") for codigo in codigos):
+        return "BIEN FALTANTE"
+    if any(
+        codigo.startswith("2023") or codigo.startswith("2022") for codigo in codigos
+    ):
+        return "ETIQUETAR COD PATR"
+    return "N/A"
+
+def obtener_valores_inventario(resultado):
+    # Asignar el código patrimonial
+    codigo_patr = resultado.codigo_patrimonial if resultado.codigo_patrimonial else None
+    
+    # Asignar los códigos de inventario correspondientes, verificando si existen en los campos de la tabla
+    codigos_inventario = {
+        "cod-patr": codigo_patr,
+        "cod-2023": resultado.codigo_inv_2023 if resultado.codigo_inv_2023 else None,
+        "cod-2022": resultado.codigo_inv_2022 if resultado.codigo_inv_2022 else None,
+        "cod-2021": resultado.codigo_inv_2021 if resultado.codigo_inv_2021 else None,
+        "cod-2020": resultado.codigo_inv_2020 if resultado.codigo_inv_2020 else None
     }
 
-    try:
-        imagenes_procesadas = {}
-        datos_todas_imagenes = []
-        contador_codig = 1  # Contador solo para imágenes tipo CODIG
+    return codigos_inventario
 
-        # Procesar cada imagen individualmente
-        for i, (foto, id_uuid) in enumerate(zip(fotos, uuid)):
+# Modificar el endpoint upload_fotos existente
+@app.post("/upload_fotos")
+async def upload_fotos(
+    request: Request,
+    fotos: List[UploadFile] = File(...),
+    uuid: List[str] = Form(...),
+    db: Session = Depends(get_db)
+):
+    session_id = request.session.get('id', 'default')
+    resultados_busqueda = []
+
+    try:
+        for foto in fotos:
+            # Leer y procesar la imagen
             file_content = await foto.read()
             if len(file_content) == 0:
                 raise ValueError(f"El archivo {foto.filename} está vacío")
@@ -413,69 +548,77 @@ async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uu
             optimized_image = optimize_image(file_content)
             base64_image = base64.b64encode(optimized_image).decode("utf-8")
 
+            # Extraer datos de la imagen
             datos_imagen = await procesar_imagen_individual(base64_image)
-            tipo = determinar_tipo_imagen(datos_imagen)
-            
-            # Almacenar información de la imagen
-            imagenes_procesadas[id_uuid] = {
-                'contenido': optimized_image,
-                'tipo': tipo,
-                'num_imagen': contador_codig if tipo == 'CODIG' else None
+
+            codigo_patrimonial = datos_imagen.get("Codigo_Patrimonial")
+            codigo_inventario = datos_imagen.get("Codigo_Inventario")
+
+            # Consultar en la base de datos utilizando buscar_en_inventario
+            if codigo_patrimonial or codigo_inventario:
+                codigos = [codigo_patrimonial, codigo_inventario]
+                resultados = buscar_en_inventario(db, codigos)
+
+                # Filtrar resultados válidos
+                for codigo, resultado in resultados.items():
+                    if isinstance(resultado, InventarioAnterior):
+                        resultados_busqueda.append(resultado)
+                    else:
+                        print(f"No se encontró resultado para {codigo}")
+
+                # Generar los valores para el diccionario
+                for dato in resultados_busqueda:
+                    codigos_inventario = obtener_valores_inventario(dato)
+
+                    # Verificar los valores que se asignan
+                    print(f"Resultado para {dato.codigo_patrimonial}: {codigos_inventario}")
+
+        # Preparar los datos para pasar a la plantilla
+        datos_para_plantilla = [
+            {
+                "mensaje": codigos_inventario.get("mensaje", "Mensaje no disponible"),
+                "situacion_sis": codigos_inventario.get("situacion_sis", "Situación no especificada"),
+                "codigo_patr": dato.codigo_patrimonial if dato.codigo_patrimonial else "Sin código patrimonial",
+                "codigo_inv_2023": dato.codigo_inv_2023 if dato.codigo_inv_2023 else "No disponible",
+                "codigo_inv_2022": dato.codigo_inv_2022 if dato.codigo_inv_2022 else "No disponible",
+                "codigo_inv_2021": dato.codigo_inv_2021 if dato.codigo_inv_2021 else "No disponible",
+                "codigo_inv_2020": dato.codigo_inv_2020 if dato.codigo_inv_2020 else "No disponible",
+                "descripcion": dato.descripcion if dato.descripcion else "Sin descripción",
+                "material": dato.material if dato.material else "Material no disponible",
+                "color": dato.color if dato.color else "Color no disponible",
+                "marca": dato.marca if dato.marca else "Marca no disponible",
+                "modelo": dato.modelo if dato.modelo else "Modelo no disponible",
+                "largo": dato.largo if dato.largo else "Largo no disponible",
+                "ancho": dato.ancho if dato.ancho else "Ancho no disponible",
+                "alto": dato.alto if dato.alto else "Alto no disponible",
+                "numero_serie": dato.numero_serie if dato.numero_serie else "N° Serie no disponible",
+                "observaciones": dato.observaciones if dato.observaciones else "Observaciones no disponible",
+                "anio_fabricac": dato.anio_fabricac if dato.anio_fabricac else "Año no disponible",
+                "estado": dato.estado if dato.estado else "Estado no disponible",
+                "num_placa": dato.num_placa if dato.num_placa else "Placa no disponible",
+                "num_chasis": dato.num_chasis if dato.num_chasis else "N° Chasis no disponible",
+                "num_motor": dato.num_motor if dato.num_motor else "N° Serie motor no disponible"
             }
-            
-            if tipo == 'CODIG':
-                contador_codig += 1
+            for dato in resultados_busqueda
+        ]
 
-            print(f"Imagen {i+1}: UUID={id_uuid}, Tipo={tipo}, Datos={datos_imagen}")
-            datos_todas_imagenes.append(datos_imagen)
+        print(f"Datos enviados a la plantilla: {datos_para_plantilla}")
 
-            # Actualizar datos combinados
-            for key, value in datos_imagen.items():
-                if key in datos_combinados and value != "No disponible":
-                    # Para descripción, color y material, solo tomar de imágenes PANOR
-                    if key in ['descripcion', 'color', 'material']:
-                        if tipo == 'PANOR':
-                            datos_combinados[key] = value
-                    # Para otros datos, tomar el primer valor válido encontrado
-                    elif datos_combinados[key] == "No disponible":
-                        datos_combinados[key] = value
-
-        # Almacenar en el estado de la aplicación
-        app.state.imagenes_procesadas[session_id] = imagenes_procesadas
-        
-        # Almacenar información en la sesión
-        request.session['imagenes_info'] = {
-            uuid: {
-                'tipo': info['tipo'],
-                'num_imagen': info['num_imagen']
-            } for uuid, info in imagenes_procesadas.items()
-        }
-
-        print(f"Procesamiento completado. Tipos de imágenes: {[(uuid, info['tipo']) for uuid, info in imagenes_procesadas.items()]}")
-        print(f"Datos combinados finales: {datos_combinados}")
-        
-        # Convertir claves a mayúsculas para el template
-        datos_template = datos_combinados.copy()
-        if 'descripcion' in datos_template:
-            datos_template['Descripcion'] = datos_template.pop('descripcion')
-        if 'color' in datos_template:
-            datos_template['Color'] = datos_template.pop('color')
-        if 'material' in datos_template:
-            datos_template['Material'] = datos_template.pop('material')
-        
+        datos_para_plantilla = [datos_para_plantilla[:1]]
         return templates.TemplateResponse(
             "demo/datos_inventario_ok.html",
-            {"request": request, "datos": datos_template}
+            {"request": request, "datos": datos_para_plantilla}
         )
 
     except Exception as e:
-        print(f"Error inesperado: {str(e)}")
+        print(f"Error inesperado: {e}")
         traceback.print_exc()
-        app.state.imagenes_procesadas.pop(session_id, None)
         return templates.TemplateResponse(
             "demo/datos_inventario_error.html",
             {"request": request, "error": str(e)}
         )
+
+
 
 async def upload_to_s3_with_type(image_data: bytes, filename: str) -> str:
     """
@@ -563,12 +706,14 @@ async def registrar_bien(
     db: Session = Depends(get_db),
     institucion: str = Form(...),
     worker: str = Form(...),
+    ubicacion: str = Form(...),  # Nuevo campo
     registrador: str = Form(...),
     cod_patr: str = Form(None),
     cod_2024: str = Form(...),
     cod_2023: str = Form(None),
+    cod_2022: str = Form(None),
     cod_2021: str = Form(None),
-    cod_2019: str = Form(None),
+    cod_2020: str = Form(None),
     color: str = Form(...),
     material: str = Form(...),
     largo: str = Form(None),
@@ -577,6 +722,12 @@ async def registrar_bien(
     marca: str = Form(None),
     modelo: str = Form(None),
     num_serie: str = Form(None),
+    situacion_sis: str = Form(...),  # Nuevo campo
+    situacion_prov: str = Form(...),  # Nuevo campo
+    num_placa: str = Form(None),  # Nuevo campo
+    num_chasis: str = Form(None),  # Nuevo campo
+    num_motor: str = Form(None),  # Nuevo campo
+    anio_fabricac: str = Form(None),  # Nuevo campo
     descripcion: str = Form(...),
     observaciones: str = Form(None),
     enUso: str = Form(...),
@@ -601,12 +752,14 @@ async def registrar_bien(
         datos_recibidos = {
             "institucion": institucion,
             "worker": worker,
+            "ubicacion": ubicacion,  # Nuevo campo
             "registrador": registrador,
             "cod_patr": cod_patr,
             "cod_2024": cod_2024,
             "cod_2023": cod_2023,
+            "cod_2022": cod_2022,
             "cod_2021": cod_2021,
-            "cod_2019": cod_2019,
+            "cod_2020": cod_2020,
             "color": color,
             "material": material,
             "largo": largo_validado,
@@ -615,6 +768,11 @@ async def registrar_bien(
             "marca": marca,
             "modelo": modelo,
             "num_serie": num_serie,
+            "ubicacion": ubicacion,  # Nuevo campo
+            "num_placa": num_placa,  # Nuevo campo
+            "num_chasis": num_chasis,  # Nuevo campo
+            "num_motor": num_motor,  # Nuevo campo
+            "anio_fabricac": anio_fabricac,  # Nuevo campo
             "descripcion": descripcion,
             "observaciones": observaciones,
             "enUso": enUso,
@@ -639,8 +797,9 @@ async def registrar_bien(
             codigo_patrimonial=cod_patr,
             codigo_inv_2024=cod_2024,
             codigo_inv_2023=cod_2023,
+            codigo_inv_2022=cod_2022,
             codigo_inv_2021=cod_2021,
-            codigo_inv_2019=cod_2019,
+            codigo_inv_2020=cod_2020,
             descripcion=descripcion,
             tipo=TipoBien.MUEBLE,
             color=color,
@@ -651,6 +810,11 @@ async def registrar_bien(
             marca=marca,
             modelo=modelo,
             numero_serie=num_serie,
+            ubicacion= ubicacion,  # Nuevo campo
+            num_placa= num_placa,  # Nuevo campo
+            num_chasis= num_chasis,  # Nuevo campo
+            num_motor= num_motor,  # Nuevo campo
+            anio_fabricac= anio_fabricac,  # Nuevo campo
             estado=estado,
             en_uso=(enUso == 'Sí'),
             observaciones=observaciones
@@ -661,10 +825,11 @@ async def registrar_bien(
         # Procesar y guardar imágenes
         datos_imagenes = {
             'bien_id': nuevo_bien.id,
+            'codigo_patrimonial': cod_patr,
+            'codigo_inv_2024': cod_2024,
             'proceso_inventario_id': int(registrador),  # O el ID que corresponda
             'registrador': registrador,
-            'worker': worker,
-            'cod_2024': cod_2024
+            'worker': worker
         }
 
         resultados_imagenes = await process_and_store_images(imagenes, datos_imagenes, db)
@@ -956,7 +1121,7 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
             },
             "custodian": {
                 "nombre": empleado.nombre if empleado else None,
-                "foto": empleado.foto_perfil if empleado and empleado.foto_perfil else "ruta/a/imagen_default.png"
+                "foto": empleado.foto_perfil if empleado and empleado.foto_perfil else "foto-no-hallado.jpeg"
             }
         }
 
