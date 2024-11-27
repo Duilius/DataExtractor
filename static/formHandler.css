@@ -1,118 +1,141 @@
 /* formHandler.css */
 
-.form-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+/* Variables globales */
+:root {
+    --primary-bg: #f8f9fa;
+    --shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --border-radius: 8px;
+    --spacing: 1rem;
 }
 
-.form-header h2 {
-    margin: 0;
-    color: #007bff; 
-}
-
-.btn-modal {
-    background-color: #ffc107;
-    color: #000;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn-modal:hover {
-    background-color: #ffdb58;
-}
-
+/* Contenedor principal */
 #form-section {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 15px;
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-}
-
-.form-layout {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
-}
-
-.form-group {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 15px;
-}
-
-.form-group h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #333;
-    font-size: 1.1em;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
-}
-
-.form-field {
-    margin-bottom: 10px;
-}
-
-.field-header {
-    font-size: 0.85em;
-    font-weight: bold;
-    margin-bottom: 3px;
-    color: #555;
-}
-
-input[type="text"],
-input[type="number"] {
     width: 100%;
-    padding: 6px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 1rem;
     box-sizing: border-box;
 }
 
-/* Estilos específicos para grupos */
-.codes-group { background-color: #e6f2ff; }
-.characteristics-group { background-color: #e6fff2; }
-.brand-group { background-color: #fff9e6; }
-.description-group { background-color: #f2f2f2; }
-.observations-group { background-color: #f5e6ff; }
+/* Layout principal */
+.form-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing);
+}
 
-/* Ajustes para pantallas más pequeñas */
-@media (max-width: 600px) {
+/* Estilos base para grupos */
+.form-group {
+    background: #ffffff;
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.form-group h3 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Grid base - Siempre 2 columnas mínimo */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Siempre 2 columnas mínimo */
+    gap: 1rem;
+    width: 100%;
+}
+
+/* Campos de formulario */
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field-header {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #555;
+}
+
+input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    box-sizing: border-box;
+}
+
+input.text-ancho {
+    width: 100%;
+}
+
+/* Colores específicos para grupos */
+.codes-group { 
+    background-color: #e6f2ff;
+}
+
+.characteristics-group { 
+    background-color: #e6fff2;
+}
+
+.brand-group { 
+    background-color: #fff9e6;
+}
+
+.vehicle-data-card { 
+    background-color: #f0f7ff;
+}
+
+.description-group { 
+    background-color: #f2f2f2;
+}
+
+.observations-group { 
+    background-color: #f5e6ff;
+}
+
+/* Grids específicos */
+.codes-group .form-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2x3 por defecto */
+}
+
+.characteristics-group .form-grid,
+.brand-group .form-grid,
+.vehicle-data-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2x2 por defecto */
+}
+
+/* Media queries */
+@media (min-width: 768px) {
+    .codes-group .form-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3x2 en tablets y desktop */
+    }
+
     .form-layout {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
     }
+}
 
-    .form-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+/* Campos de texto largo */
+.text-ancho {
+    min-height: 80px;
+}
 
-    .form-group {
-        padding: 10px;
-    }
+/* Utilidades */
+.w-full { width: 100%; }
+.mb-4 { margin-bottom: 1rem; }
 
-    .form-group h3 {
-        font-size: 1em;
-    }
+/* Estilos para inputs numéricos */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
 
-    .field-header {
-        font-size: 0.8em;
-    }
-
-    input[type="text"],
-    input[type="number"] {
-        font-size: 13px;
-        padding: 5px;
-    }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
