@@ -126,7 +126,56 @@
             </div>
         </div>
 
-        <section id="form-section" hx-swap="outerHTML" hx-on::after-settle="limpiarFotosProcessadas()" style="display: none;">
+        <section id="form-section" hx-swap="outerHTML" hx-on::after-settle="limpiarFotosProcessadas()" style="display: block;">
+            <div class="form-layout">
+                <div class="form-group message-group">
+                    <h3>Situación del Bien</h3>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <div class="field-header">Según SIS !</div>
+                            <input type="text" id="situacion_sis" maxlength="30" readonly value="{{ dato.situacion_sis }}">
+                        </div>
+                        <div class="form-field">
+                            <div class="field-header">Según Inventariador</div>
+                            <select id="situacion_prov">
+                                <option value="Nuevo">Nuevo</option>
+                                <option value="Falt. Hall.">Faltante Hallado</option>
+                                <option value="Sobr. Regular.">Sobrante Regularizado</option>
+                                <option value="CP Etiquetado">Cod. Patr. Etiquetado</option>
+                            </select>
+                        </div>
+                        
+                        
+                            <div class="field-header">Ubicación Real</div>
+                            <form id="area-search-form">
+                            <input type="search" id="ubicacion" name="ubicacion" maxlength="30" placeholder="Busca por Código o por Nombre Área" 
+                            hx-post="/busca-areas"
+                            hx-trigger="keyup changed delay:1000ms"
+                            hx-target="#lista-areas"
+                            _="on keyup 
+                                if my.value.length is greater than 2
+                                    remove .oculto from #lista-areas 
+                                else
+                                    add .oculto to #lista-areas
+                                end
+                            "/>
+                            </form>
+                        </div>
+                        
+                        <div id="lista-areas" class="oculto"></div>
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Ubicación actual del Bien</div>
+                        <input type="text" id="nombre_ubicacion" class="text-ancho" maxlength="300" readonly value="{{ dato.nombre_ubicacion }}">
+                    </div>
+                    <div class="form-field">
+                        <div class="field-header">Del proceso ...</div>
+                        <input type="text" id="mensaje" class="text-ancho" maxlength="300" readonly value="{{ dato.mensaje }}">
+                    </div>
+                </div>
+
+
+
             <div class="form-row">
                 <div class="form-field">
                     <div class="field-header">Cód. Patr.</div>
@@ -251,7 +300,7 @@
             });
         });
 
-        var areaSearchUrl = "{{ url_for('serve_template', path='demo/area_search.html') }}";
+        var areaSearchUrl = "{{ url_for('serve_template', path='demo/areas_ubicadas.html') }}";
         var workerSearchUrl = "{{ url_for('serve_template', path='demo/worker_search.html') }}";
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
