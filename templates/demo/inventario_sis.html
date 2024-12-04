@@ -10,8 +10,6 @@
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
     <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 
-    <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     
     <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">-->
@@ -65,10 +63,12 @@
             <div id="worker-details">
                 <p id="worker-name">Nombre del Trabajador</p>
                 <p id="worker-area">Área de Trabajo</p>
-                <input type="hidden" id="worker" name="worker" value="88"><!--Usuario del bien-->
-                <input type="hidden" id="area"><!--Area del Usuario del bien-->
+                <input type="hidden" id="worker" name="worker"><!--Usuario del bien-->
+                <input type="hidden" id="codigoOficina" name="codigoOficina"><!--Area del Usuario del bien-->
+            <!--
                 <input type="hidden" id="institucion" name="institucion" value="16">
                 <input type="hidden" id="registrador" name="registrador" value="9999">
+            -->
             </div>
         </section>
 
@@ -263,23 +263,32 @@
         <button id="registrarFoto" class="btn registrar-btn">Registrar</button>
     </div>
 
-    <script>
-        document.getElementById('searchByArea').addEventListener('click', function() {
-            htmx.ajax('GET', workerSearchUrl, '#modal-body');
-        });
+<!-- Scripts existentes -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="{{url_for('static', path='js/main.js')}}" type="module"></script>
+<!--<script src="{{url_for('static', path='js/prueba_scripts.js')}}"></script>-->
+<script src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}"></script>
 
-        document.getElementById('searchByWorker').addEventListener('click', function() {
-            htmx.ajax('GET', workerSearchUrl, '#modal-body').then(function() {
-                htmx.process(document.querySelector('#modal-body')); // Re-inicializa HTMX dentro del modal
-            });
-        });
+<!-- Scripts de autenticación -->
+<script src="{{ url_for('static', path='js/session_manager.js') }}"></script>
+<script src="{{ url_for('static', path='js/user_controls.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Verificar estado de sesión inmediatamente
+        const cookieString = document.cookie;
+        const hasCookie = cookieString.includes('session_data=');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        if (hasCookie) {
+            loginBtn.style.display = 'none';
+            logoutBtn.style.display = 'block';
+        } else {
+            loginBtn.style.display = 'block';
+            logoutBtn.style.display = 'none';
+        }
+    });
+</script>
 
-        var areaSearchUrl = "{{ url_for('serve_template', path='demo/area_search.html') }}";
-        var workerSearchUrl = "{{ url_for('serve_template', path='demo/worker_search.html') }}";
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script type="module" src="{{url_for('static', path='js/main.js')}}"></script>
-    <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
-    <script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}" defer></script>
 </body>
 </html>

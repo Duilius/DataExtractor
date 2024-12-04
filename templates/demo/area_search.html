@@ -1,10 +1,37 @@
-<div class="search-modal"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+    <link rel="stylesheet" href="{{url_for('static', path='worker_search.css')}}">
+    <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
+</head>
+<body>
+
+<!--<div class="search-modal"></div>-->
     <h2>Búsqueda por Área</h2>
     
     <div class="search-container">
-        <input type="text" id="area-search" placeholder="Buscar área..." minlength="3">
-        <div id="area-results" class="search-results"></div>
+        <form id="oficinas-search-form">
+            <input type="search" name="area_search" id="area-search" size="30" placeholder="Buscar área..." minlength="3"
+            hx-post="/busca-areas"
+            hx-trigger="keyup changed delay:1000ms"
+            hx-target="#lista-oficinas"
+            _="on keyup 
+                if my.value.length is greater than 2
+                    remove .oculto from #lista-oficinas 
+                else
+                    add .oculto to #lista-oficinas
+                end
+            "/>
+        </form>
     </div>
+    <div id="lista-oficinas" class="search-results"></div>
+    
     
     <div class="selected-item">
         <strong>Área seleccionada:</strong>
@@ -48,3 +75,9 @@ document.getElementById('area-search-form').addEventListener('submit', function(
     document.getElementById('area-search-results').innerHTML = `Mostrando resultados para: ${area}`;
 });
 </script>
+
+
+<script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
+<script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}"></script>
+</body>
+</html>

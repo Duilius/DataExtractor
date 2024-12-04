@@ -65,10 +65,12 @@
             <div id="worker-details">
                 <p id="worker-name">Nombre del Trabajador</p>
                 <p id="worker-area">Área de Trabajo</p>
-                <input type="hidden" id="worker" name="worker" value="88"><!--Usuario del bien-->
+                <input type="hidden" id="worker" name="worker"><!--Usuario del bien-->
                 <input type="hidden" id="area"><!--Area del Usuario del bien-->
+                <!--
                 <input type="hidden" id="institucion" name="institucion" value="16">
                 <input type="hidden" id="registrador" name="registrador" value="9999">
+                -->
             </div>
         </section>
 
@@ -148,7 +150,7 @@
                         
                             <div class="field-header">Ubicación Real</div>
                             <form id="area-search-form">
-                            <input type="search" id="ubicacion" name="ubicacion" maxlength="30" placeholder="Busca por Código o por Nombre Área" 
+                            <input type="search" id="codOficina" name="codOficina" maxlength="30" placeholder="Busca por Código o por Nombre Área" 
                             hx-post="/busca-areas"
                             hx-trigger="keyup changed delay:1000ms"
                             hx-target="#lista-areas"
@@ -166,7 +168,7 @@
                     </div>
                     <div class="form-field">
                         <div class="field-header">Ubicación actual del Bien</div>
-                        <input type="text" id="nombre_ubicacion" class="text-ancho" maxlength="300" readonly value="{{ dato.nombre_ubicacion }}">
+                        <input type="text" id="codigoOficina" class="text-ancho" maxlength="300" readonly value="{{ dato.codigoOficina }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Del proceso ...</div>

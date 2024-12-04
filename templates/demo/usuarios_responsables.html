@@ -40,6 +40,7 @@
             <input type="hidden" id="nombres-{{ user[1] }}" value="{{ user[2] }}">
             <input type="hidden" id="gerencia-{{ user[1] }}" value="{{ user[5] }}">
             <input type="hidden" id="foto-{{ user[1] }}" value="/static/img/{{ user[1] +'.jpg' }}">
+            <input type="hidden" id="oficina-{{ user[1] }}" value="{{ user[4] }}">
 
             <div class="foto-empleado">
                 <img src="{{ url_for('static', path='img/' + user[1] + '.jpg') }}" width="100%">
@@ -56,7 +57,7 @@
 <input type="hidden" id="nombres-seleccionado">
 <input type="hidden" id="gerencia-seleccionado">
 <input type="hidden" id="foto-seleccionado">
-
+<input type="hidden" id="oficina-seleccionado">
 
 <script>
     // Definición de las funciones
@@ -65,11 +66,13 @@
         const nombresSeleccionados = document.getElementById(`nombres-${userId}`);
         const gerenciaSeleccionada = document.getElementById(`gerencia-${userId}`);
         const fotoSeleccionada = document.getElementById(`foto-${userId}`);
+        const oficinaSeleccionada = document.getElementById(`oficina-${userId}`);
 
         document.getElementById('codigo-seleccionado').value = codigoSeleccionado.value;
         document.getElementById('nombres-seleccionado').value = nombresSeleccionados.value;
         document.getElementById('gerencia-seleccionado').value = gerenciaSeleccionada.value;
         document.getElementById('foto-seleccionado').value = fotoSeleccionada.value;
+        document.getElementById('oficina-seleccionado').value = oficinaSeleccionada.value;
 
         // Ocultar todas las tarjetas
             const empleados = document.querySelectorAll('#lista-usuarios .empleado');
@@ -91,14 +94,19 @@
 
     function transferData() {
         // Obtener los datos seleccionados del modal
+
+        const selectedCodigo = document.getElementById('codigo-seleccionado').value;
         const selectedPhoto = document.getElementById('foto-seleccionado').value;
         const selectedName = document.getElementById('nombres-seleccionado').value;
         const selectedArea = document.getElementById('gerencia-seleccionado').value;
+        const oficinaId = document.getElementById('oficina-seleccionado').value;
 
         // Asignar los valores a los elementos correspondientes en la página principal
         document.getElementById('worker-photo').src = selectedPhoto;
         document.getElementById('worker-name').textContent = selectedName;
         document.getElementById('worker-area').textContent = selectedArea;
+        document.getElementById('worker').value = selectedCodigo;
+        document.getElementById('codigoOficina').value = oficinaId;
 
         closeModal();
     }

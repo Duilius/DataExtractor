@@ -96,7 +96,7 @@
                     </div>
                     <div class="form-field">
                         <div class="field-header">Según Inventariador</div>
-                        <select id="situacion_prov">
+                        <select id="situacion_prov" name="situacion-prov">
                             <option value="Nuevo">Nuevo</option>
                             <option value="Falt. Hall.">Faltante Hallado</option>
                             <option value="Sobr. Regular.">Sobrante Regularizado</option>
@@ -104,20 +104,14 @@
                         </select>
                     </div>
                     
-                    <div class="form-field">
-                        <div class="field-header">Ubicación Real</div>
 
 <!-- Agregar un indicador de carga -->
 <!-- En el body, al final -->
 <div class="form-field">
     <div class="field-header">Ubicación Real</div>
     <input type="text" id="nombre_ubicacion" class="text-ancho" readonly>
-    <button type="button" id="buscarArea" class="btn">
-        <i class="fas fa-search"></i> Buscar Área
-    </button>
 </div>
                      
-                    </div>
                     
                     <div id="lista-areas" class="oculto"></div>
                 </div>
@@ -136,27 +130,27 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <div class="field-header">Cód. Patr.</div>
-                        <input type="text" id="cod-patr" maxlength="10" placeholder="Cód. Patr." value="{{ dato.codigo_patr }}">
+                        <input type="text" id="cod-patr" name="cod_patr" maxlength="10" placeholder="Cód. Patr." value="{{ dato.codigo_patr }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Cód-2024</div>
-                        <input type="text" id="cod-2024" maxlength="10" placeholder="Cód-2024" value="{{ dato.codigo_inv_2024 }}">
+                        <input type="text" id="cod-2024" name="cod_2024" maxlength="10" placeholder="Cód-2024" value="{{ dato.codigo_inv_2024 }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Cód-2023</div>
-                        <input type="text" id="cod-2023" maxlength="10" placeholder="Cód-2023" value="{{ dato.codigo_inv_2023 }}">
+                        <input type="text" id="cod-2023" name="cod_2023" maxlength="10" placeholder="Cód-2023" value="{{ dato.codigo_inv_2023 }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Cód-2022</div>
-                        <input type="text" id="cod-2022" maxlength="10" placeholder="Cód-2022" value="{{ dato.codigo_inv_2022 }}">
+                        <input type="text" id="cod-2022" name="cod_2022" maxlength="10" placeholder="Cód-2022" value="{{ dato.codigo_inv_2022 }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Cód-2021</div>
-                        <input type="text" id="cod-2021" maxlength="10" placeholder="Cód-2021" value="{{ dato.codigo_inv_2021 }}">
+                        <input type="text" id="cod-2021" name="cod_2021" maxlength="10" placeholder="Cód-2021" value="{{ dato.codigo_inv_2021 }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Cód-2020</div>
-                        <input type="text" id="cod-2020" maxlength="10" placeholder="Cód-2020" value="{{ dato.codigo_inv_2020 }}">
+                        <input type="text" id="cod-2020" name="cod_2020" maxlength="10" placeholder="Cód-2020" value="{{ dato.codigo_inv_2020 }}">
                     </div>
                 </div>
             </div>
@@ -167,23 +161,23 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <div class="field-header">Color</div>
-                        <input type="text" id="color" maxlength="20" placeholder="Color" value="{{ dato.color }}">
+                        <input type="text" id="color" name="color" maxlength="20" placeholder="Color" value="{{ dato.color }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Material</div>
-                        <input type="text" id="material" maxlength="20" placeholder="Material" value="{{ dato.material }}">
+                        <input type="text" id="material" name="material" maxlength="20" placeholder="Material" value="{{ dato.material }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Largo</div>
-                        <input type="number" class="medidas" id="largo" step="0.01" placeholder="Largo" value="{{ dato.largo }}">
+                        <input type="number" class="medidas" id="largo" name="largo" step="0.01" placeholder="Largo" value="{{ dato.largo }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Ancho</div>
-                        <input type="number" class="medidas" id="ancho" step="0.01" placeholder="Ancho" value="{{ dato.ancho }}">
+                        <input type="number" class="medidas" id="ancho" name="ancho" step="0.01" placeholder="Ancho" value="{{ dato.ancho }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Alto</div>
-                        <input type="number" class="medidas" id="alto" step="0.01" placeholder="Alto" value="{{ dato.alto }}">
+                        <input type="number" class="medidas" id="alto" name="alto" step="0.01" placeholder="Alto" value="{{ dato.alto }}">
                     </div>
                 </div>
             </div>
@@ -194,15 +188,15 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <div class="field-header">Marca</div>
-                        <input type="text" id="marca" maxlength="10" placeholder="Marca" value="{{ dato.marca }}">
+                        <input type="text" id="marca" name="marca" maxlength="10" placeholder="Marca" value="{{ dato.marca }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">Modelo</div>
-                        <input type="text" id="modelo" maxlength="10" placeholder="Modelo" value="{{ dato.modelo }}">
+                        <input type="text" id="modelo" name="modelo" maxlength="10" placeholder="Modelo" value="{{ dato.modelo }}">
                     </div>
                     <div class="form-field">
                         <div class="field-header">N° Serie</div>
-                        <input type="text" id="num-serie" maxlength="10" placeholder="N° Serie" value="{{ dato.numero_serie }}">
+                        <input type="text" id="num-serie" name="num_serie" maxlength="10" placeholder="N° Serie" value="{{ dato.numero_serie }}">
                     </div>
                 </div>
             </div>
@@ -235,7 +229,7 @@
                 <!--<h3>Descripción</h3>-->
                 <div class="form-field">
                     <div class="field-header">Descripción</div>
-                    <input type="text" id="descripcion" class="text-ancho" maxlength="300" placeholder="Descripción del bien" value="{{ dato.descripcion }}">
+                    <input type="text" id="descripcion" name="descripcion" class="text-ancho" maxlength="300" placeholder="Descripción del bien" value="{{ dato.descripcion }}">
                 </div>
             </div>
     
@@ -244,7 +238,7 @@
                 <!--<h3>Observaciones</h3>-->
                 <div class="form-field">
                     <div class="field-header">Observaciones</div>
-                    <input type="text" id="observaciones" class="text-ancho" maxlength="300" placeholder="Observaciones ..." value="{{ dato.observaciones }}">
+                    <input type="text" id="observaciones" name="observaciones" class="text-ancho" maxlength="300" placeholder="Observaciones ..." value="{{ dato.observaciones }}">
                 </div>
             </div>
         </div>
@@ -252,8 +246,8 @@
 
 <!--
 <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
-<script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}"></script>
 -->
+<script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}"></script>
 
 <!-- En el body, al final -->
 <div id="areaSearchModal" class="modal">
