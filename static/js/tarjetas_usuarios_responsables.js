@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('gerencia-seleccionado').value = gerenciaSeleccionada.value;
         document.getElementById('foto-seleccionada').value = fotoSeleccionada.value;
 
+        document.getElementById('worker').value = userId;
+
         // Ocultar todas las tarjetas
         const empleados = document.querySelectorAll('#lista-usuarios .empleado');
         empleados.forEach(emp => emp.classList.add('oculto'));

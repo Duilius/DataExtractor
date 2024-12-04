@@ -2,9 +2,7 @@
 
 // Campos obligatorios definidos en el alcance global
 const camposObligatorios = [
-    { id: 'institucion', tipo: 'input' },
     { id: 'worker', tipo: 'input' },
-    { id: 'registrador', tipo: 'input' },
     { id: 'cod-2024', tipo: 'input' },
     { id: 'color', tipo: 'input' },
     { id: 'descripcion', tipo: 'input' },
@@ -234,14 +232,15 @@ async function registrarBien() {
     try {
         const formData = new FormData();
         const campos = {
-            'institucion': '#institucion',
-            'worker': '#worker',
-            'registrador': '#registrador',
+            'codigoOficina': '#codigoOficina',
+            'worker': '#worker', /* Código de Custodio */ 
+            /*'situacion_prov': '#situacion-prov',*/
             'cod_patr': '#cod-patr',
             'cod_2024': '#cod-2024',
             'cod_2023': '#cod-2023',
+            'cod_2022': '#cod-2022',
             'cod_2021': '#cod-2021',
-            'cod_2019': '#cod-2019',
+            'cod_2020': '#cod-2020',
             'color': '#color',
             'material': '#material',
             'largo': '#largo',
@@ -250,6 +249,10 @@ async function registrarBien() {
             'marca': '#marca',
             'modelo': '#modelo',
             'num_serie': '#num-serie',
+            'num_placa': '#num-placa',
+            'num_chasis': '#num-chasis',
+            'num_motor': '#num-motor',
+            'anio_fabricac': '#anio-fabricac',
             'descripcion': '#descripcion',
             'observaciones': '#observaciones'
         };

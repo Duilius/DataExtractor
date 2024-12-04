@@ -297,6 +297,7 @@ async function procesarImagenes() {
 
     try {
         const formData = new FormData();
+        const imagenesInfo = []; // Array para almacenar información de las imágenes
 
         for (const checkbox of fotosSeleccionadas) {
             const img = checkbox.closest('.miniatura-container').querySelector('img');
@@ -311,16 +312,30 @@ async function procesarImagenes() {
                 const nombreUUID = generateUUID();
                 formData.append('fotos', blob, `${nombreUUID}.jpg`);
                 formData.append('uuid', nombreUUID);
+
+                // Guardar información de la imagen
+                imagenesInfo.push({
+                    uuid: nombreUUID,
+                    data: img.src
+                });
+
+                // Crear cookie para la imagen
+                document.cookie = `image_${nombreUUID}=${img.src}; path=/`;
+                
             } catch (error) {
                 console.error('Error al procesar imagen:', error);
                 throw new Error(`Error al procesar una de las imágenes: ${error.message}`);
             }
         }
 
+        // Añadir información de imágenes al formData
+        formData.append('imagenesInfo', JSON.stringify(imagenesInfo));
+
         console.log("Enviando imágenes al servidor...");
 
         const response = await fetch('/upload_fotos', {
             method: 'POST',
+            credentials: 'include', // Para asegurar envío de cookies
             body: formData
         });
 
@@ -361,7 +376,7 @@ async function procesarImagenes() {
 }
 
 // Función auxiliar para generar UUID
-function generateUUID() {
+export function generateUUID() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );

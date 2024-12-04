@@ -5,6 +5,7 @@ import { showLargeImage, closeLargeImage } from './imageEditor.js';
 import { processImage } from './imageProcessor.js';
 import { speak, mostrarMensajeModal } from './utils.js';
 import { checkAuthBeforeProcessing } from './utils.js';
+import { generateUUID } from './camera_functions.js';
 
 let isGalleryInitialized = false;
 
@@ -197,6 +198,11 @@ async function handleFiles(files) {
                 reader.readAsDataURL(file);
             });
 
+            const nombreUUID = generateUUID();
+            // Cambiar el formato del nombre de la cookie
+            document.cookie = `imagen_procesada=${nombreUUID}; path=/`;
+            document.cookie = `${nombreUUID}=${encodeURIComponent(imageData)}; path=/`;
+            
             await addPhotoToGallery(imageData);
         } catch (error) {
             console.error(`Error al procesar el archivo ${file.name}:`, error);
