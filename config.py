@@ -1,0 +1,1 @@
+JWT_SECRET_KEY = "ADKkjk8h8_oiiu77hHJHg6hghghLJKG45LJwh"
