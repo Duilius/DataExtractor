@@ -17,3 +17,11 @@ engine = create_engine(f'{db_type}://{db_user}:{db_password}@{db_host}:{db_port}
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+# Agregamos la función get_db
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
