@@ -1,3 +1,4 @@
+from sqlalchemy.orm import registry
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Enum, Date, Float, Boolean, DateTime, Text, JSON
 from sqlalchemy.orm import declarative_base, relationship, registry
 from sqlalchemy.sql import func
@@ -5,6 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import enum
 from datetime import datetime
 import os
+from scripts.sql_alc.base_models import Base
+from database import engine  # Importamos engine desde database.py
 
 try:
     import claves  # Solo se usará en el entorno local
@@ -20,12 +23,12 @@ db_port = os.getenv("DB_PORT")
 db_name = os.getenv("DB_NAME")
 db_type = os.getenv("DB_TYPE")
 
-engine = create_engine(f'{db_type}://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
-Base = declarative_base()
+#engine = create_engine(f'{db_type}://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
+#Base = declarative_base()
 
 # Crear el registry primero
-mapper_registry = registry()
-Base = mapper_registry.generate_base()
+#mapper_registry = registry()
+#Base = mapper_registry.generate_base()
 
 # Enumeraciones
 class NivelJerarquico(enum.Enum):
@@ -108,6 +111,8 @@ class Institucion(Base):
     bienes = relationship("Bien", back_populates="institucion")
     empleados = relationship("Empleado", back_populates="institucion")
     procesos_inventario = relationship("ProcesoInventario", back_populates="institucion")
+    usuarios = relationship("Usuario", back_populates="institucion")
+
 
 class Sede(Base):
     __tablename__ = 'sedes'
@@ -117,6 +122,11 @@ class Sede(Base):
     direccion = Column(String(255))
     institucion = relationship("Institucion", back_populates="sedes")
     oficinas = relationship("Oficina", back_populates="sede")
+    cantidad_bienes = Column(Integer, default=0)
+    region = Column(String(100))
+    provincia = Column(String(100))
+    distrito = Column(String(100))
+    usuarios_actuales = relationship("Usuario", back_populates="sede_actual")
 
 class Oficina(Base):
     __tablename__ = 'oficinas'
@@ -149,18 +159,21 @@ class Empleado(Base):
     oficina = relationship("Oficina", back_populates="empleados", foreign_keys=[oficina_id])
     oficina_dirigida = relationship("Oficina", back_populates="jefe", foreign_keys="Oficina.jefe_id")
     asignaciones = relationship("AsignacionBien", back_populates="empleado")
+    usuario = relationship("Usuario", back_populates="empleado")  # Añadir esta línea
 
 class Bien(Base):
     __tablename__ = 'bienes'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     institucion_id = Column(Integer, ForeignKey('instituciones.id'), nullable=False)
+    sede_actual_id = Column(Integer, ForeignKey('sedes.id'), nullable=True)  # Añadir esta línea
     codigo_patrimonial = Column(String(50), unique=True)
     codigo_nacional = Column(String(50), ForeignKey('catalogo_nacional_bienes.codigo'))
     codigo_inv_2024 = Column(String(50))  # Añadido
     codigo_inv_2023 = Column(String(50))  # Añadido
+    codigo_inv_2022 = Column(String(50))  # Añadido
     codigo_inv_2021 = Column(String(50))  # Añadido
-    codigo_inv_2019 = Column(String(50))  # Añadido
+    codigo_inv_2020 = Column(String(50))  # Añadido
     descripcion = Column(String(255), nullable=False)
     tipo = Column(Enum(TipoBien), nullable=False)
     material = Column(String(100))
@@ -173,7 +186,14 @@ class Bien(Base):
     numero_serie = Column(String(100))
     estado = Column(Enum(EstadoBien), default=EstadoBien.B)
     en_uso = Column(Boolean, default=True)
+    num_placa=Column(String(100))
+    num_chasis=Column(String(100))
+    num_motor=Column(String(100))
+    anio_fabricac=Column(Integer)
     observaciones = Column(Text)
+    codigo_inventariador = Column(String(50))
+    custodio_bien = Column(String(50))
+    codigo_oficina = Column(String(50))  # antes era ubicacion
 
     # Relaciones
     institucion = relationship("Institucion", back_populates="bienes")
@@ -183,6 +203,8 @@ class Bien(Base):
     movimientos = relationship("MovimientoBien", back_populates="bien")
     imagenes = relationship("ImagenBien", back_populates="bien")
     historial_codigos = relationship("HistorialCodigoInventario", back_populates="bien")
+    sede_actual = relationship("Sede", foreign_keys=[sede_actual_id])
+    
 
 class ImagenBien(Base):
     __tablename__ = 'imagenes_bienes'
@@ -192,6 +214,8 @@ class ImagenBien(Base):
     url = Column(String(255), nullable=False)
     tipo = Column(String(50), nullable=False)  # 'principal', 'secundaria', etc.
     fecha_registro = Column(DateTime, default=func.now())
+    codigo_inventariador = Column(String(50))
+    codigo_custodio = Column(String(50))
     bien = relationship("Bien", back_populates="imagenes")
 
 class HistorialCodigoInventario(Base):
@@ -212,6 +236,9 @@ class AsignacionBien(Base):
     fecha_asignacion = Column(DateTime, default=datetime.utcnow)
     estado_confirmacion = Column(Enum('Pendiente', 'Confirmado', 'Rechazado'), default='Pendiente')
     observaciones = Column(Text)
+    fecha_confirmacion = Column(DateTime)
+    codigo_patrimonial = Column(String(50))
+    codigo_inventariador = Column(String(50))
     bien = relationship("Bien", back_populates="asignaciones")
     empleado = relationship("Empleado", back_populates="asignaciones")
     proceso_inventario = relationship("ProcesoInventario", back_populates="asignaciones")
@@ -328,10 +355,13 @@ class RegistroFallido(Base):
     jefe = relationship("Empleado", foreign_keys=[jefe_id])
 
 # Al final del archivo, después de definir todas las clases
+
+mapper_registry = registry()
+
 def configure_mappers():
     mapper_registry.configure()
 
-# Crear todas las tablas
-Base.metadata.create_all(engine)
-
-#print("Tablas creadas exitosamente.")
+# Crear todas las tablas solo si este archivo se ejecuta directamente
+if __name__ == "__main__":
+    Base.metadata.create_all(engine)
+    print("Tablas creadas exitosamente.")
