@@ -1,0 +1,150 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block head %}
+
+{% endblock %}
+{% block title %}Dashboard Gerencial{% endblock %}
+
+{% block sidebar_menu %}
+<div class="menu-section">
+    <h3>Control de Operaciones</h3>
+    <ul>
+        <li><a href="/indicadores-avance">Indicadores de Avance</a></li>
+        <li><a href="/productividad">Productividad</a></li>
+        <li><a href="/estado-inventario">Estado del Inventario</a></li>
+        <li><a href="/planificacion">Planificación</a></li>
+    </ul>
+</div>
+
+<div class="menu-section">
+    <h3>Reportes Gerenciales</h3>
+    <ul>
+        <li><a href="/reporte-ejecutivo">Reporte Ejecutivo</a></li>
+        <li><a href="/proyecciones">Proyecciones</a></li>
+        <li><a href="/cumplimiento">Cumplimiento</a></li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="metrics-grid" hx-get="/dashboard/metricas-gerenciales" hx-trigger="load">
+    <!-- KPIs Principales -->
+    <div class="metric-card highlight">
+        <div class="metric-value">{{ metrics.avance_global }}%</div>
+        <div class="metric-label">Avance Global</div>
+        <div class="metric-trend">
+            {% if metrics.tendencia_positiva %}
+            <span class="trend-up">↑</span>
+            {% else %}
+            <span class="trend-down">↓</span>
+            {% endif %}
+            {{ metrics.variacion }}% vs ayer
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-value">{{ metrics.productividad }}%</div>
+        <div class="metric-label">Eficiencia del Equipo</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-value">{{ metrics.dias_restantes }}</div>
+        <div class="metric-label">Días Restantes</div>
+    </div>
+</div>
+
+<div class="grid-2-cols mt-6">
+    <!-- Gráfico de Avance -->
+    <div class="card">
+        <h2>Avance por Sede</h2>
+        <div class="chart-container" hx-get="/dashboard/chart-avance-sedes" hx-trigger="load">
+            <!-- HTMX cargará el gráfico aquí -->
+        </div>
+    </div>
+
+    <!-- Productividad por Equipo -->
+    <div class="card">
+        <h2>Productividad por Equipo</h2>
+        <div class="chart-container" hx-get="/dashboard/chart-productividad" hx-trigger="load">
+            <!-- HTMX cargará el gráfico aquí -->
+        </div>
+    </div>
+</div>
+
+<div class="card mt-6">
+    <h2>Estado Actual del Proyecto</h2>
+    <div class="project-status-grid">
+        <!-- Progreso vs Planificación -->
+        <div class="status-item">
+            <h3>Progreso vs Plan</h3>
+            <div class="progress-bar">
+                <div class="progress" style="width: {{ metrics.cumplimiento_plan }}%"></div>
+            </div>
+            <div class="status-details">
+                <span>Real: {{ metrics.avance_real }}%</span>
+                <span>Plan: {{ metrics.avance_planificado }}%</span>
+            </div>
+        </div>
+
+        <!-- Calidad del Inventario -->
+        <div class="status-item">
+            <h3>Calidad del Inventario</h3>
+            <div class="quality-metrics">
+                <div>Precisión: {{ metrics.precision }}%</div>
+                <div>Errores: {{ metrics.errores }}</div>
+                <div>Pendientes de Revisión: {{ metrics.pendientes_revision }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas y Notificaciones -->
+<div class="card mt-6">
+    <h2>Alertas y Acciones Requeridas</h2>
+    <div class="alerts-container" hx-get="/api/alertas-gerenciales" hx-trigger="load every 5m">
+        <!-- HTMX actualizará las alertas cada 5 minutos -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicialización de gráficos y componentes interactivos
+    initDashboardCharts();
+});
+
+function initDashboardCharts() {
+    // Aquí irá la lógica de inicialización de gráficos
+    // usando la biblioteca de gráficos que prefieras
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicialización de gráficos
+    window.renderChart = function(canvas, data, tipo) {
+        new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => tipo === 'Avance' ? d.sede : d.equipo),
+                datasets: [{
+                    label: `${tipo} (%)`,
+                    data: data.map(d => tipo === 'Avance' ? d.avance : d.productividad),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

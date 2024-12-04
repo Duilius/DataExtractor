@@ -1,0 +1,111 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Dashboard Comisión{% endblock %}
+
+{% block sidebar_menu %}
+<div class="menu-section">
+    <h3>Supervisión</h3>
+    <ul>
+        <li><a href="/reportes/por-sede" class="menu-item">
+            <i class="fas fa-building"></i>
+            <span>Por Sede</span>
+        </a></li>
+        <li><a href="/reportes/consolidado" class="menu-item">
+            <i class="fas fa-chart-pie"></i>
+            <span>Consolidado</span>
+        </a></li>
+    </ul>
+</div>
+
+<div class="menu-section">
+    <h3>Validación</h3>
+    <ul>
+        <li><a href="/validar/hallazgos" class="menu-item">
+            <i class="fas fa-check-circle"></i>
+            <span>Validar Hallazgos</span>
+        </a></li>
+        <li><a href="/validar/sobrantes" class="menu-item">
+            <i class="fas fa-plus-circle"></i>
+            <span>Revisar Sobrantes</span>
+        </a></li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="header-info">
+        <h1>Panel de Control - Comisión</h1>
+        <div class="progress-info">
+            <span class="progress-label">Avance Global:</span>
+            <span class="progress-value">{{ metrics.avance_global }}%</span>
+        </div>
+    </div>
+</div>
+
+<div class="metrics-summary">
+    <div class="metric-card">
+        <div class="metric-value">{{ metrics.total_sedes }}</div>
+        <div class="metric-label">Sedes</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-value">{{ metrics.total_bienes }}</div>
+        <div class="metric-label">Total Bienes</div>
+    </div>
+    <div class="metric-card highlight">
+        <div class="metric-value">{{ metrics.total_inventariados }}</div>
+        <div class="metric-label">Bienes Inventariados</div>
+    </div>
+</div>
+
+<div class="sedes-grid">
+    <h2>Avance por Sede</h2>
+    <div class="table-container">
+        <table class="data-table" data-sortable>
+            <thead>
+                <tr>
+                    <th data-sortable-type="alpha">Sede <i class="fas fa-sort"></i></th>
+                    <th data-sortable-type="alpha">Región <i class="fas fa-sort"></i></th>
+                    <th data-sortable-type="numeric">Total Bienes <i class="fas fa-sort"></i></th>
+                    <th data-sortable-type="numeric">Inventariados <i class="fas fa-sort"></i></th>
+                    <th data-sortable-type="numeric">Pendientes <i class="fas fa-sort"></i></th>
+                    <th data-sortable-type="numeric">Avance <i class="fas fa-sort"></i></th>
+                    <th data-sortable="false">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sede in metrics.sedes %}
+                <tr>
+                    <td>{{ sede.nombre }}</td>
+                    <td>{{ sede.region }}</td>
+                    <td class="text-right">{{ sede.total_bienes }}</td>
+                    <td class="text-right">{{ sede.inventariados }}</td>
+                    <td class="text-right">{{ sede.pendientes }}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: {{ sede.porcentaje }}%">
+                                <span>{{ sede.porcentaje }}%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn-action" onclick="verDetalle('{{ sede.id }}')">
+                            <i class="fas fa-eye"></i> Ver Detalle
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function verDetalle(sedeId) {
+    window.location.href = `/reportes/sede/${sedeId}`;
+}
+</script>
+{% endblock %}

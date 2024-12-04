@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/shared/chatbot.css') }}">
+</head>
+<body>
+    <!-- Chatbot Widget -->
+    <div id="chatbot">
+        <div id="chat-header">
+            <h4>Asistente Virtual</h4>
+            <button id="close-chat">X</button>
+        </div>
+        <div id="chat-body">
+            <div id="chat-messages"></div>
+            <div id="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Escribe tu pregunta aquí...">
+                <button id="send-btn">Enviar</button>
+            </div>
+        </div>
+    </div>
+    <!-- Chatbot Toggle Button -->
+    <button id="chat-toggle">💬</button>
+    <script src="{{ url_for('static', path='js/chatbot.js') }}"></script>
+</body>
+</html>
