@@ -1,0 +1,44 @@
+/* Estilos específicos para el dashboard del inventariador */
+
+/* Métricas específicas */
+.metric-card.inventory {
+    border-left: 4px solid #1a237e;
+}
+
+.metric-card.pending {
+    border-left: 4px solid #f59e0b;
+}
+
+/* Tabla de registros */
+.registros-table th {
+    background-color: #1a237e;
+    color: white;
+}
+
+.registros-table tr:hover {
+    background-color: #f0f4ff;
+}
+
+/* Botones específicos */
+.btn-inventory {
+    background-color: #1a237e;
+    color: white;
+}
+
+.btn-scan {
+    background-color: #059669;
+    color: white;
+}
+
+/* Estado de bienes */
+.estado-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.estado-badge.nuevo { background-color: #34d399; color: #064e3b; }
+.estado-badge.bueno { background-color: #60a5fa; color: #1e3a8a; }
+.estado-badge.regular { background-color: #fcd34d; color: #92400e; }
+.estado-badge.malo { background-color: #f87171; color: #7f1d1d; }
