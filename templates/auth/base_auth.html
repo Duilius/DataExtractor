@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Autenticación{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/auth.css') }}">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="{{ url_for('static', path='img/logo.png') }}" alt="Logo" class="auth-logo">
+                {% block header %}{% endblock %}
+            </div>
+            
+            {% if messages %}
+            <div class="auth-messages">
+                {% for message in messages %}
+                    <div class="message {{ message.type }}">{{ message.text }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
