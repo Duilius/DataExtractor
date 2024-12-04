@@ -1,4 +1,6 @@
 # Importaciones necesarias
+from pydantic import BaseModel
+from middleware.auth_middleware import AuthMiddleware
 import secrets
 from io import BytesIO
 from pyzbar.pyzbar import decode
@@ -32,6 +34,15 @@ from scripts.py.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido,
 from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area
 import logging
 from create_tabla_inventario_anterior import InventarioAnterior
+from auth_routes import auth_router
+from scripts.sql_alc.auth_models import Usuario  # Cambiamos User por Usuario que es el nombre que usamos
+from office_routes import office_router
+from scripts.py.auth_utils import AuthUtils
+from config import JWT_SECRET_KEY
+from dashboard_routes import dashboard_router
+from admin_routes import admin_router
+from starlette.requests import Request
+from scripts.py.utils import obtener_id_usuario, obtener_id_empleado
 
 try:
     import claves  # Solo se usará en el entorno local
@@ -41,17 +52,28 @@ except ImportError:
 
 # Configuración de FastAPI, OpenAI, y S3
 app = FastAPI()
+
+# Primero los templates y static files
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Después de crear la app FastAPI y antes de cualquier ruta
 from starlette.middleware.sessions import SessionMiddleware
-# Después de crear la app FastAPI (app = FastAPI())
+
+# Después los middlewares en orden
+app.add_middleware(AuthMiddleware)
 app.add_middleware(
     SessionMiddleware,
-    secret_key=secrets.token_urlsafe(32),  # Genera una clave secreta aleatoria
+    secret_key=secrets.token_urlsafe(32),
     session_cookie="inventario_session"
 )
 
-templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Finalmente los routers
+app.include_router(office_router)
+app.include_router(auth_router)
+app.include_router(dashboard_router)
+app.include_router(admin_router)
+
 s3_client = boto3.client(
     's3',
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
@@ -180,7 +202,7 @@ async def busca_areas(request: Request):
         print("Form data:", dict(form))
         
         # Obtenemos ubicacion
-        ubicacion = form.get('ubicacion', '')
+        ubicacion = form.get('area_search', '')
         print("Ubicación:", ubicacion)
         
         if not ubicacion:
@@ -284,10 +306,28 @@ async def servicios(request: Request):
     #return templates.TemplateResponse("demo/inv_demo.html", {'request': request})
     return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
 
-
 @app.get('/demo-inventario')
 async def servicios(request: Request):
-    return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
+    try:
+        access_token = request.cookies.get("access_token")
+        print(f"Token recibido: {access_token}")
+        
+        if not access_token:
+            print("No hay token de acceso")
+            return RedirectResponse(url="/auth/login", status_code=302)
+        
+        auth_utils = AuthUtils(JWT_SECRET_KEY)  # Usar la constante
+        try:
+            payload = auth_utils.verify_access_token(access_token)
+            print(f"Token verificado exitosamente: {payload}")
+            return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
+        except Exception as token_error:
+            print(f"Error verificando token: {str(token_error)}")
+            return RedirectResponse(url="/auth/login", status_code=302)
+            
+    except Exception as e:
+        print(f"Error general en /demo-inventario: {str(e)}")
+        return RedirectResponse(url="/auth/login", status_code=302)
 
 @app.get('/fotos')
 async def fotos(request: Request):
@@ -593,7 +633,7 @@ async def upload_fotos(
                 "alto": dato.alto if dato.alto else "Alto no disponible",
                 "numero_serie": dato.numero_serie if dato.numero_serie else "N° Serie no disponible",
                 "observaciones": dato.observaciones if dato.observaciones else "Observaciones no disponible",
-                "anio_fabricac": dato.anio_fabricac if dato.anio_fabricac else "Año no disponible",
+                "anio_fabricac": dato.anio_fabricac if dato.anio_fabricac else 0,
                 "estado": dato.estado if dato.estado else "Estado no disponible",
                 "num_placa": dato.num_placa if dato.num_placa else "Placa no disponible",
                 "num_chasis": dato.num_chasis if dato.num_chasis else "N° Chasis no disponible",
@@ -605,10 +645,41 @@ async def upload_fotos(
         print(f"Datos enviados a la plantilla: {datos_para_plantilla}")
 
         datos_para_plantilla = [datos_para_plantilla[:1]]
+
+        # Almacenar las imágenes procesadas
+        imagenes_procesadas = {}
+        for foto, id_uuid in zip(fotos, uuid):
+            file_content = await foto.seek(0)  # Regresar al inicio del archivo
+            file_content = await foto.read()
+            imagenes_procesadas[id_uuid] = {
+                'contenido': optimize_image(file_content),
+                'tipo': 'CODIG',  # O determinar el tipo según tu lógica
+                'num_imagen': None
+            }
+
+        # Almacenar en el estado de la aplicación
+        if not hasattr(app.state, 'imagenes_procesadas'):
+            app.state.imagenes_procesadas = {}
+        app.state.imagenes_procesadas[session_id] = imagenes_procesadas
+
+        # Almacenar información en la sesión
+        request.session['imagenes_info'] = {
+            uuid: {
+                'tipo': info['tipo'],
+                'num_imagen': info['num_imagen']
+            } for uuid, info in imagenes_procesadas.items()
+        }
+
+        #print(f"Imágenes almacenadas en app.state: {len(imagenes_procesadas)} imágenes")
+        #print(f"Session ID: {session_id}")
+        #print(f"app.state.imagenes_procesadas: {app.state.imagenes_procesadas}")
+        #print(f"Session imagenes_info: {request.session.get('imagenes_info')}")
+
         return templates.TemplateResponse(
             "demo/datos_inventario_ok.html",
             {"request": request, "datos": datos_para_plantilla}
         )
+        
 
     except Exception as e:
         print(f"Error inesperado: {e}")
@@ -643,6 +714,8 @@ async def process_and_store_images(imagenes: dict, datos: dict, db: Session) -> 
     resultados = []
     contador_codig = 1
 
+    print("Datos de la IMAGEN >====>", datos)
+
     try:
         for uuid, imagen_info in imagenes.items():
             tipo = imagen_info['tipo']
@@ -651,15 +724,16 @@ async def process_and_store_images(imagenes: dict, datos: dict, db: Session) -> 
             # Generar nombre final según tipo
             nombre_final = generar_nombre_imagen(
                 cod_usuario=datos['registrador'],
-                cod_empleado=datos['worker'],
+                cod_empleado=obtener_id_empleado(db, datos['worker']),
                 tipo=tipo,
-                inv_2024=datos['cod_2024'],
+                inv_2024=datos['codigo_inv_2024'],
                 num_imagen=contador_codig if tipo == 'CODIG' else None
             )
 
             if tipo == 'CODIG':
                 contador_codig += 1
 
+            print("debe grabar )))))", datos["codigo_inv_2024"])
             # Subir a S3
             s3_url = await upload_to_s3_with_type(contenido, nombre_final)
 
@@ -704,10 +778,8 @@ def validar_dimensiones(valor: str) -> float:
 async def registrar_bien(
     request: Request,
     db: Session = Depends(get_db),
-    institucion: str = Form(...),
     worker: str = Form(...),
-    ubicacion: str = Form(...),  # Nuevo campo
-    registrador: str = Form(...),
+    codigoOficina: str = Form(...),  # antes ubicacion
     cod_patr: str = Form(None),
     cod_2024: str = Form(...),
     cod_2023: str = Form(None),
@@ -722,8 +794,8 @@ async def registrar_bien(
     marca: str = Form(None),
     modelo: str = Form(None),
     num_serie: str = Form(None),
-    situacion_sis: str = Form(...),  # Nuevo campo
-    situacion_prov: str = Form(...),  # Nuevo campo
+    #situacion_sis: str = Form(...),  # Nuevo campo
+    #situacion_prov: str = Form(...),  # Nuevo campo
     num_placa: str = Form(None),  # Nuevo campo
     num_chasis: str = Form(None),  # Nuevo campo
     num_motor: str = Form(None),  # Nuevo campo
@@ -733,14 +805,46 @@ async def registrar_bien(
     enUso: str = Form(...),
     estado: str = Form(...)
 ):
-    session_id = request.session.get('id', 'default')
-    imagenes = app.state.imagenes_procesadas.get(session_id, {})
+    #Cookie de USAURIO INVENTARIADOR
+    # Acceder a las cookies
+    session_cookie = request.cookies.get("session_data")  # Cambia "session" por el nombre real de tu cookie
 
-    if not imagenes:
-        return JSONResponse(
-            content={"exito": False, "error": "No hay imágenes para procesar"},
-            status_code=400
-        )
+    if session_cookie:
+        # Convertir la cookie de JSON a diccionario
+        import json
+        try:
+            session_data = json.loads(session_cookie)
+        except json.JSONDecodeError:
+            return {"error": "La cookie de sesión no es válida."}
+
+        # Usar datos de la cookie
+        registrador = session_data.get("codigo")
+        institucion_id = session_data.get("institucion_id")
+        sede_actual_id = session_data.get("sede_actual_id")
+
+        try:
+            registrador_id = obtener_id_usuario(db, registrador)
+            # Usar inventariador_id en las tablas que lo requieran
+        except ValueError as e:
+            return JSONResponse(
+                content={"exito": False, "error": str(e)},
+                status_code=400
+            )
+
+    # Obtener el UUID de la cookie
+    uuid_imagen = request.cookies.get("imagen_procesada")
+    if uuid_imagen:
+        # Obtener imágenes del estado de la aplicación
+        session_id = request.session.get('id', 'default')
+        imagenes = app.state.imagenes_procesadas.get(session_id, {})
+
+        if not imagenes:
+            print(f"No hay imágenes en app.state para session_id: {session_id}")
+            print(f"Estado actual de app.state.imagenes_procesadas: {app.state.imagenes_procesadas}")
+            return JSONResponse(
+                content={"exito": False, "error": "No hay imágenes para procesar"},
+                status_code=400
+            )
 
     try:
         # Validar y convertir las dimensiones
@@ -750,10 +854,12 @@ async def registrar_bien(
 
         # Registro de los datos recibidos para verificación
         datos_recibidos = {
-            "institucion": institucion,
-            "worker": worker,
-            "ubicacion": ubicacion,  # Nuevo campo
-            "registrador": registrador,
+            "institucion_id": institucion_id,
+            "sede_actual_id": sede_actual_id,
+            #"situacion_prov": situacion_prov,
+            "custodio_bien": worker,
+            "codigo_oficina": codigoOficina,  # Nuevo campo
+            "codigo_inventariador": registrador_id,
             "cod_patr": cod_patr,
             "cod_2024": cod_2024,
             "cod_2023": cod_2023,
@@ -768,7 +874,6 @@ async def registrar_bien(
             "marca": marca,
             "modelo": modelo,
             "num_serie": num_serie,
-            "ubicacion": ubicacion,  # Nuevo campo
             "num_placa": num_placa,  # Nuevo campo
             "num_chasis": num_chasis,  # Nuevo campo
             "num_motor": num_motor,  # Nuevo campo
@@ -793,7 +898,11 @@ async def registrar_bien(
 
         # Registrar el bien
         nuevo_bien = Bien(
-            institucion_id=institucion,
+            institucion_id=institucion_id,
+            sede_actual_id=sede_actual_id,
+            #situacion_prov=situacion_prov,
+            codigo_inventariador=registrador_id,
+            custodio_bien= worker, #falta programar
             codigo_patrimonial=cod_patr,
             codigo_inv_2024=cod_2024,
             codigo_inv_2023=cod_2023,
@@ -810,7 +919,7 @@ async def registrar_bien(
             marca=marca,
             modelo=modelo,
             numero_serie=num_serie,
-            ubicacion= ubicacion,  # Nuevo campo
+            codigo_oficina= codigoOficina,  # Nuevo campo
             num_placa= num_placa,  # Nuevo campo
             num_chasis= num_chasis,  # Nuevo campo
             num_motor= num_motor,  # Nuevo campo
@@ -827,18 +936,20 @@ async def registrar_bien(
             'bien_id': nuevo_bien.id,
             'codigo_patrimonial': cod_patr,
             'codigo_inv_2024': cod_2024,
-            'proceso_inventario_id': int(registrador),  # O el ID que corresponda
-            'registrador': registrador,
+            'proceso_inventario_id': registrador_id,  # O el ID que corresponda
+            'registrador': registrador_id,
             'worker': worker
         }
-
+        print("DATOS PARA IMAGEN ===>", datos_imagenes)
         resultados_imagenes = await process_and_store_images(imagenes, datos_imagenes, db)
 
         # Registro de asignación
         asignacion = AsignacionBien(
             bien_id=nuevo_bien.id,
-            empleado_id=worker,
-            proceso_inventario_id=int(registrador),
+            codigo_patrimonial=cod_patr,
+            codigo_inventariador=registrador_id,
+            empleado_id=obtener_id_empleado(db,worker),
+            proceso_inventario_id=registrador_id,
             fecha_asignacion=func.now(),
             estado_confirmacion="Pendiente"
         )
@@ -862,8 +973,10 @@ async def registrar_bien(
         registro_fallido = RegistroFallido(
             datos_bien=json.dumps(datos_recibidos),
             error=error_message,
-            inventariador_id=registrador,
-            institucion_id=institucion,
+            inventariador_id=registrador_id,
+            institucion_id=institucion_id,
+            sede_id=sede_actual_id,
+            oficina_id=codigoOficina,
             responsable_id=worker
         )
         db.add(registro_fallido)
@@ -881,9 +994,11 @@ async def registrar_bien(
         
         registro_fallido = RegistroFallido(
             datos_bien=json.dumps(datos_recibidos),
-            error=str(e),
-            inventariador_id=registrador,
-            institucion_id=institucion,
+            error=error_message,
+            inventariador_id=registrador_id,
+            institucion_id=institucion_id,
+            sede_id=sede_actual_id,
+            oficina_id=codigoOficina,
             responsable_id=worker
         )
         db.add(registro_fallido)
@@ -1153,7 +1268,7 @@ async def register_user(user_data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="La contraseña no puede ser igual al DNI")
     
     # Crear usuario
-    db_user = User(
+    db_user = Usuario(
         email=user_data["email"],
         hashed_password=user_data["password"],  # En producción: hash la contraseña
         full_name=user_data["full_name"],
@@ -1167,9 +1282,12 @@ async def register_user(user_data: dict, db: Session = Depends(get_db)):
 
 @app.post("/api/login")
 async def login(credentials: dict, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == credentials["email"]).first()
+    user = db.query(Usuario).filter(Usuario.email == credentials["email"]).first()
     if not user or user.hashed_password != credentials["password"]:  # En producción: verificar hash
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
+    
+    print(f"Token generado: {access_token}")
+    print(f"Secret key usado: {os.getenv('JWT_SECRET_KEY')}")
     return {"message": "Login exitoso"}
 
 @app.get("/api/stats/{sede}")
@@ -1198,5 +1316,54 @@ async def get_stats(sede: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
 """
+
+
+# ******************************* CHATBOT **************************
+
+class ChatbotQuery(BaseModel):
+    question: str
+
+
+async def get_session_user(request: Request):
+    """Obtiene y valida los datos de sesión del usuario."""
+    # Recuperar la cookie de la solicitud
+    cookie_data = request.cookies.get("session_data")
+    if not cookie_data:
+        raise HTTPException(status_code=401, detail="No autorizado: sesión no encontrada.")
+
+    try:
+        # Decodificar los datos de sesión desde JSON
+        session = json.loads(cookie_data)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Error al decodificar la sesión.")
+
+    # Validar que contenga los datos requeridos
+    if "tipo_usuario" not in session:
+        raise HTTPException(status_code=401, detail="No autorizado: tipo de usuario no encontrado.")
+    
+    return session
+
+
+@app.get("/chatbot", response_class=HTMLResponse)
+async def chatbot_view(request: Request):
+    return templates.TemplateResponse("dashboard/shared/chatbot.html", {"request": request})
+
+
+# ******* CONSULTAS DINÁMICAS **************
+@app.post("/chatbot/query")
+async def chatbot_query(
+    payload: ChatbotQuery,  # Cambiamos de `question: str` a `payload: ChatbotQuery`
+    session: dict = Depends(get_session_user)
+):
+    question = payload.question  # Extraemos la pregunta desde el cuerpo JSON
+    tipo_usuario = session["tipo_usuario"]
+
+    # Restringir según el tipo de usuario
+    if tipo_usuario == "Comisión Cliente" and "estadísticas" in question.lower():
+        return {"response": "No tienes permiso para ver estadísticas."}
+    elif tipo_usuario == "Inventariador Proveedor" and "gerencial" in question.lower():
+        return {"response": "Este contenido no está disponible para tu perfil."}
+
+    # Si el usuario tiene acceso permitido, procesar la pregunta
+    return {"response": "Estamos trabajando en tu respuesta."}
