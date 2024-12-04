@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - Sistema de Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/dashboards/base_dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/dashboards/comision.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sortable/0.8.0/js/sortable.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!--<script src="https://unpkg.com/htmx.org/dist/ext/sortable.js"></script>-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/dashboards/gerencial.css') }}">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar sidebar-collapsed">
+            <div class="sidebar-header">
+                <img src="{{ url_for('static', path='img/logo.png') }}" alt="Logo" class="logo">
+                <h1>Sistema de Inventario</h1>
+            </div>
+            <nav class="sidebar-nav">
+                {% block sidebar_menu %}{% endblock %}
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content main-content-expanded">
+            <div class="menu-toggle">
+                <button id="sidebarToggle" class="btn-toggle">
+                    ☰
+                </button>
+            </div>
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="user-info">
+                    <span>{{ user.codigo }}</span>
+                    <span>{{ user.tipo_usuario }}</span>
+                </div>
+                <div class="actions">
+                    <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+    <script src="{{ url_for('static', path='js/dashboard.js') }}"></script>
+    {% block scripts %}
+    {% endblock %}
+
+</body>
+</html>
