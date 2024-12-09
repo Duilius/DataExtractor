@@ -17,7 +17,7 @@ from openai import OpenAI
 from openai import OpenAIError
 import json
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends, Body, APIRouter
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -33,7 +33,8 @@ from database import SessionLocal
 from scripts.py.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, HistorialCodigoInventario, AsignacionBien, InventarioBien, TipoBien, TipoMovimiento, ProcesoInventario, Empleado, Oficina)
 from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area
 import logging
-from create_tabla_inventario_anterior import InventarioAnterior
+#from create_tabla_inventario_anterior import InventarioAnterior
+from scripts.sql_alc.anterior_sis import AnteriorSis
 from auth_routes import auth_router
 from scripts.sql_alc.auth_models import Usuario  # Cambiamos User por Usuario que es el nombre que usamos
 from office_routes import office_router
@@ -43,6 +44,7 @@ from dashboard_routes import dashboard_router
 from admin_routes import admin_router
 from starlette.requests import Request
 from scripts.py.utils import obtener_id_usuario, obtener_id_empleado
+from proveedor_routes import proveedor_router
 
 try:
     import claves  # Solo se usará en el entorno local
@@ -73,6 +75,7 @@ app.include_router(office_router)
 app.include_router(auth_router)
 app.include_router(dashboard_router)
 app.include_router(admin_router)
+app.include_router(proveedor_router)  # Añadimos el nuevo router
 
 s3_client = boto3.client(
     's3',
@@ -380,32 +383,33 @@ async def procesar_imagen_individual(base64_image: str) -> dict:
     prompt_individual = """
     Analiza esta imagen específica y ÚNICAMENTE extrae los siguientes datos si están presentes:
 
-    - "Codigo_Patrimonial": Códigos que comienzan con "AF".
-    - "Codigo_Inventario": Códigos que empiezan con años como "2021", "2022", etc.
-    - "Anio_Inventario": Los primeros 4 dígitos de una etiqueta que no comience con "AF".
+    Si ves códigos de inventario:
+    - Extráelos usando las claves 'inv_2023', 'inv_2022', 'codigo_SBN', 'cod_patr'
+
+    - "codigo_SBN": Códigos de exactamente 12 digitos, precedido de "SBN:"
+    - "inv_2023": Códigos de exactamente 5 digitos, escrito en fondo blanco con letras negras, que tienen encima el texto "INV 2023".
+    - "inv_2022": Códigos de exactamente 5 digitos, escrito en fondo negro con letras blanca, que tienen encima el texto "INV - 2022".
+    - "cod_patr": Códigos de 4 o 5 digitos dispuestos en forma vertical y acompañado de las letras "CP", en forma horizontal o viceversa. Presentes en etiquetas con el texto "SEGURO INTEGRAL DE SALUD"
     - Si ves el objeto completo (no solo etiquetas o detalles):
-      - "Descripcion": Una breve descripción del objeto.
-      - "Color": El color principal del objeto.
-      - "Material": El material principal del objeto.
+    - "descripcion_IA": Una muy breve descripción del objeto sin comentar objetos encima ni al rededor. Incluir color principal y material.
 
     IMPORTANTE:
-    - NO describas etiquetas o superficies donde están pegadas.
+    - Si ves claramente etiquetas de inventario, NO describas la etiqueta misma ni la superficie donde están pegadas.
     - NO incluyas descripción, color o material si solo ves etiquetas o números.
     - Incluye SOLO las claves necesarias según las reglas anteriores.
     - La respuesta debe ser un JSON válido con comillas dobles.
 
     Ejemplo si solo ves etiquetas:
     {
-        "Codigo_Patrimonial": "AF12345",
-        "Codigo_Inventario": "2023-00123",
-        "Anio_Inventario": "2023"
+        "codigo_SBN": "74641240062",
+        "inv_2023": "03234",
+        "inv_2022": "05123",
+        "cod_patr": "2173"
     }
 
     Ejemplo si ves el objeto completo:
     {
-        "Descripcion": "Computadora portátil",
-        "Color": "negro",
-        "Material": "plástico"
+        "descripcion-IA": "Archivador de melamina con puertas de vidrio, color blanco"
     }
     """
 
@@ -451,74 +455,58 @@ async def procesar_imagen_individual(base64_image: str) -> dict:
 def determinar_tipo_imagen(datos_extraidos: dict) -> str:
     """
     Determina el tipo de imagen basado en los datos extraídos.
-    Prioridad: SERIE > PANOR > CODIG
+    Prioridad: codigo_SBN > inv_2024 > cod_patr > inv_2023
     """
     print(f"Determinando tipo de imagen para datos: {datos_extraidos}")
     
     # Si tiene número de serie, es SERIE
-    if 'N_Serie' in datos_extraidos and datos_extraidos['N_Serie'] != "No disponible":
-        return 'SERIE'
+    #if 'N_Serie' in datos_extraidos and datos_extraidos['N_Serie'] != "No disponible":
+    #    return 'SERIE'
     
-    # Si tiene descripción, es PANOR
-    if 'descripcion' in datos_extraidos and datos_extraidos['descripcion'] != "No disponible":
+    # Si tiene descripción-IA, es PANOR
+    if 'descripcion-IA' in datos_extraidos and datos_extraidos['descripcion-IA'] != "No disponible":
         return 'PANOR'
     
     # Si tiene algún código de inventario, es CODIG
-    inv_prefixes = ['INV_', 'codigo_inv_']
+    inv_prefixes = ['inv_', 'codigo_', 'cod_patr']
     for key in datos_extraidos:
         if any(key.startswith(prefix) for prefix in inv_prefixes):
             if datos_extraidos[key] != "No disponible":
-                return 'CODIG'
+                return 'CODIGO'
     
     return 'OTRO'
 
-def generar_nombre_imagen(cod_usuario: str, cod_empleado: str, tipo: str, inv_2024: str, num_imagen: int = None) -> str:
+def generar_nombre_imagen(cod_usuario: str, cod_empleado: str, tipo: str, inv_2024: str, inv_2023: str, codigo_SBN: str, num_imagen: int = None) -> str:
     """
     Genera el nombre final de la imagen según su tipo
     """
-    if tipo == 'CODIG' and num_imagen is not None:
-        return f"CORPAC-{cod_usuario}-{cod_empleado}-{tipo}-{inv_2024}-{num_imagen}.webp"
-    return f"CORPAC-{cod_usuario}-{cod_empleado}-{tipo}-{inv_2024}.webp"
+    if tipo == 'CODIGO' and num_imagen is not None:
+        return f"SIS-{cod_usuario}-{cod_empleado}-{tipo}-{inv_2023}-{inv_2024}-{codigo_SBN}-{num_imagen}.webp"
+    return f"SIS-{cod_usuario}-{cod_empleado}-{tipo}-{inv_2023}-{inv_2024}-{codigo_SBN}.webp"
 
 # Inicialización del estado de la aplicación para almacenar imágenes en memoria
 app.state.imagenes_procesadas = {}
 
 
-def buscar_en_inventario(db: Session, codigos: List[str]) -> Dict[str, str]:
-    resultados = {}
-    codigos = list(set(codigos))  # Elimina duplicados antes de buscar
+def buscar_en_inventario(db: Session, valor: str, campo: str):
+    """
+    Busca en la base de datos un registro basado en el campo y valor proporcionados.
+    """
+    try:
+        if campo == "inv_2023":
+            return db.query(AnteriorSis).filter_by(inv_2023=valor).first()
+        elif campo == "codigo_SBN":
+            return db.query(AnteriorSis).filter_by(codigo_SBN=valor).first()
+        elif campo == "cod_patr":
+            return db.query(AnteriorSis).filter_by(codigo_patrimonial=valor).first()
+        elif campo == "inv_2022":
+            return db.query(AnteriorSis).filter_by(inv_2022=valor).first()
+        else:
+            return None
+    except Exception as e:
+        print(f"Error en la búsqueda: {e}")
+        return None
 
-    for codigo in codigos:
-        # Verificar si ya se buscó este código previamente
-        if codigo in resultados:
-            continue  # Saltar al siguiente código para evitar duplicados
-
-        # Caso 1: Código patrimonial
-        if codigo.startswith("AF"):
-            result = db.query(InventarioAnterior).filter_by(codigo_patrimonial=codigo).first()
-            resultados[codigo] = result if result else "faltante"
-
-            if result:
-                print(f"Resultado para {codigo}: id={result.id}, descripcion={result.descripcion}, marca={result.marca}")
-            else:
-                print(f"No se encontró resultado para {codigo}")
-
-        # Caso 2: Código de inventario
-        elif codigo.startswith("2023") or codigo.startswith("2022"):
-            result = db.query(InventarioAnterior).filter(
-                or_(
-                    InventarioAnterior.codigo_inv_2023 == codigo,
-                    InventarioAnterior.codigo_inv_2022 == codigo
-                )
-            ).first()
-            resultados[codigo] = result if result else "faltante"
-
-            if result:
-                print(f"Resultado para {codigo}: id={result.id}, descripcion={result.descripcion}, marca={result.marca}")
-            else:
-                print(f"No se encontró resultado para {codigo}")
-    
-    return resultados
 
 
 def determinar_mensaje(codigos: List[str], resultados: Dict[str, str]) -> str:
@@ -590,74 +578,82 @@ async def upload_fotos(
 
             # Extraer datos de la imagen
             datos_imagen = await procesar_imagen_individual(base64_image)
+            print("Datos extraídos de la imagen:", datos_imagen)  # Verifica que los datos están correctamente extraídos
 
-            codigo_patrimonial = datos_imagen.get("Codigo_Patrimonial")
-            codigo_inventario = datos_imagen.get("Codigo_Inventario")
+            # Obtener los códigos extraídos
+            inv_2023 = datos_imagen.get("inv_2023")
+            codigo_SBN = datos_imagen.get("codigo_SBN")
+            cod_patr = datos_imagen.get("cod_patr")
+            inv_2022 = datos_imagen.get("inv_2022")
 
-            # Consultar en la base de datos utilizando buscar_en_inventario
-            if codigo_patrimonial or codigo_inventario:
-                codigos = [codigo_patrimonial, codigo_inventario]
-                resultados = buscar_en_inventario(db, codigos)
-
-                # Filtrar resultados válidos
-                for codigo, resultado in resultados.items():
-                    if isinstance(resultado, InventarioAnterior):
-                        resultados_busqueda.append(resultado)
+            # Priorizar búsqueda en la base de datos
+            codigos = {
+                "inv_2023": inv_2023,
+                "codigo_SBN": codigo_SBN,
+                "cod_patr": cod_patr,
+                "inv_2022": inv_2022
+            }
+            print("Diccionario codigos:", codigos)  # Verifica que el diccionario tenga los datos correctos
+            for clave in ["inv_2023", "codigo_SBN", "cod_patr", "inv_2022"]:
+                print(f"Comprobando clave: {clave}, valor: {codigos[clave]}")  # Verifica el valor de cada clave
+                if codigos[clave]:  # Si el valor de la clave no es None ni vacío
+                    if codigos[clave].strip():  # Verifica que no sea una cadena vacía
+                        print(f"Buscando en la base de datos con {clave}: {codigos[clave]}")
+                        resultado = buscar_en_inventario(db, codigos[clave], clave)
+                        if resultado:
+                            print(f"Resultado encontrado para {clave}: {resultado}")
+                            resultados_busqueda.append(resultado)
+                            break  # Detenerse si se encontró un resultado
+                        else:
+                            print(f"No se encontró registro para {clave} con valor {codigos[clave]}")
                     else:
-                        print(f"No se encontró resultado para {codigo}")
+                        print(f"Valor vacío para la clave: {clave}")
+                else:
+                    print(f"Clave {clave} no tiene valor asignado")
 
-                # Generar los valores para el diccionario
-                for dato in resultados_busqueda:
-                    codigos_inventario = obtener_valores_inventario(dato)
 
-                    # Verificar los valores que se asignan
-                    print(f"Resultado para {dato.codigo_patrimonial}: {codigos_inventario}")
 
-        # Preparar los datos para pasar a la plantilla
+        # Preparar los datos para la plantilla
         datos_para_plantilla = [
             {
-                "mensaje": codigos_inventario.get("mensaje", "Mensaje no disponible"),
-                "situacion_sis": codigos_inventario.get("situacion_sis", "Situación no especificada"),
-                "codigo_patr": dato.codigo_patrimonial if dato.codigo_patrimonial else "Sin código patrimonial",
-                "codigo_inv_2023": dato.codigo_inv_2023 if dato.codigo_inv_2023 else "No disponible",
-                "codigo_inv_2022": dato.codigo_inv_2022 if dato.codigo_inv_2022 else "No disponible",
-                "codigo_inv_2021": dato.codigo_inv_2021 if dato.codigo_inv_2021 else "No disponible",
-                "codigo_inv_2020": dato.codigo_inv_2020 if dato.codigo_inv_2020 else "No disponible",
-                "descripcion": dato.descripcion if dato.descripcion else "Sin descripción",
-                "material": dato.material if dato.material else "Material no disponible",
-                "color": dato.color if dato.color else "Color no disponible",
-                "marca": dato.marca if dato.marca else "Marca no disponible",
-                "modelo": dato.modelo if dato.modelo else "Modelo no disponible",
-                "largo": dato.largo if dato.largo else "Largo no disponible",
-                "ancho": dato.ancho if dato.ancho else "Ancho no disponible",
-                "alto": dato.alto if dato.alto else "Alto no disponible",
-                "numero_serie": dato.numero_serie if dato.numero_serie else "N° Serie no disponible",
-                "observaciones": dato.observaciones if dato.observaciones else "Observaciones no disponible",
-                "anio_fabricac": dato.anio_fabricac if dato.anio_fabricac else 0,
-                "estado": dato.estado if dato.estado else "Estado no disponible",
+                "codigo_patr": dato.codigo_patrimonial or "Sin código patrimonial",
+                "codigo_inv_2023": dato.inv_2023 or "No disponible",
+                "codigo_inv_2022": dato.inv_2022 or "No disponible",
+                "codigo_nacional": dato.codigo_nacional or "No disponible",
+                "descripcion": dato.descripcion or "Sin descripción",
+                "material": dato.material or "Material no disponible",
+                "color": dato.color or "Color no disponible",
+                "marca": dato.marca or "Marca no disponible",
+                "modelo": dato.modelo or "Modelo no disponible",
+                "largo": dato.largo or "Largo no disponible",
+                "ancho": dato.ancho or "Ancho no disponible",
+                "alto": dato.alto or "Alto no disponible",
+                "numero_serie": dato.numero_serie or "N° Serie no disponible",
+                "observaciones": dato.observaciones or "Observaciones no disponible",
+                "anio_fabricac": dato.anio_fabricac or 0,
                 "num_placa": dato.num_placa if dato.num_placa else "Placa no disponible",
                 "num_chasis": dato.num_chasis if dato.num_chasis else "N° Chasis no disponible",
-                "num_motor": dato.num_motor if dato.num_motor else "N° Serie motor no disponible"
+                "num_motor": dato.num_motor if dato.num_motor else "N° Serie motor no disponible",
+                "procedencia": dato.procedencia if dato.procedencia else "Sin dato",
+                "propietario": dato.propietario if dato.propietario else "Sin dato",
+                "faltante": dato.faltante if dato.faltante else "Sin dato",
+                "sede":  dato.sede if dato.sede else "Sin dato",
+                "ubicacion_actual":  dato.ubicacion_actual if dato.ubicacion_actual else "Sin dato"
             }
             for dato in resultados_busqueda
         ]
 
-        print(f"Datos enviados a la plantilla: {datos_para_plantilla}")
-
-        datos_para_plantilla = [datos_para_plantilla[:1]]
-
-        # Almacenar las imágenes procesadas
+        # Almacenar imágenes procesadas
         imagenes_procesadas = {}
         for foto, id_uuid in zip(fotos, uuid):
-            file_content = await foto.seek(0)  # Regresar al inicio del archivo
+            file_content = await foto.seek(0)
             file_content = await foto.read()
             imagenes_procesadas[id_uuid] = {
                 'contenido': optimize_image(file_content),
-                'tipo': 'CODIG',  # O determinar el tipo según tu lógica
+                'tipo': 'CODIG',
                 'num_imagen': None
             }
 
-        # Almacenar en el estado de la aplicación
         if not hasattr(app.state, 'imagenes_procesadas'):
             app.state.imagenes_procesadas = {}
         app.state.imagenes_procesadas[session_id] = imagenes_procesadas
@@ -669,25 +665,20 @@ async def upload_fotos(
                 'num_imagen': info['num_imagen']
             } for uuid, info in imagenes_procesadas.items()
         }
-
-        #print(f"Imágenes almacenadas en app.state: {len(imagenes_procesadas)} imágenes")
-        #print(f"Session ID: {session_id}")
-        #print(f"app.state.imagenes_procesadas: {app.state.imagenes_procesadas}")
-        #print(f"Session imagenes_info: {request.session.get('imagenes_info')}")
+        print("Resultados de la búsqueda:", resultados_busqueda)  # Verifica los resultados obtenidos
 
         return templates.TemplateResponse(
             "demo/datos_inventario_ok.html",
             {"request": request, "datos": datos_para_plantilla}
         )
-        
 
     except Exception as e:
         print(f"Error inesperado: {e}")
-        traceback.print_exc()
         return templates.TemplateResponse(
             "demo/datos_inventario_error.html",
             {"request": request, "error": str(e)}
         )
+
 
 
 
@@ -1031,56 +1022,57 @@ async def barcode_page(request: Request):
 
 @app.post("/procesar_codigo_barras")
 async def procesar_codigo_barras(file: UploadFile = File(...)):
-   try:
-       contents = await file.read()
-       imagen = Image.open(io.BytesIO(contents))
-       codigos = decode(imagen)
-       
-       if not codigos:
-           return {"success": False, "mensaje": "No se detectaron códigos de barras"}
-           
-       draw = ImageDraw.Draw(imagen)
-       resultados = []
-       
-       for codigo in codigos:
-           datos = codigo.data.decode("utf-8")
-           tipo = codigo.type
-           datos_procesados = post_procesar_codigo(tipo, datos)
-           
-           rect = codigo.rect
-           draw.rectangle(
-               [rect.left, rect.top, rect.left + rect.width, rect.top + rect.height],
-               outline="red",
-               width=5
-           )
-           
-           resultados.append({
-               "tipo": tipo,
-               "datos_originales": datos,
-               "datos_procesados": datos_procesados
-           })
-       
-       buffered = io.BytesIO()
-       imagen.save(buffered, format="JPEG")
-       img_str = base64.b64encode(buffered.getvalue()).decode()
-       
-       return {
-           "success": True,
-           "resultados": resultados,
-           "imagen_procesada": img_str
-       }
-       
-   except Exception as e:
-       print(f"Error en el procesamiento: {str(e)}")
-       return JSONResponse(
-           content={"success": False, "mensaje": f"Error al procesar la imagen: {str(e)}"},
-           status_code=400
-       )
+    try:
+        contents = await file.read()
+        imagen = Image.open(io.BytesIO(contents))
+        codigos = decode(imagen)
+        
+        if not codigos:
+            return {"success": False, "mensaje": "No se detectaron códigos de barras"}
+            
+        draw = ImageDraw.Draw(imagen)
+        resultados = []
+        
+        for codigo in codigos:
+            datos = codigo.data.decode("utf-8")
+            tipo = codigo.type
+            datos_procesados = post_procesar_codigo(tipo, datos)
+            
+            rect = codigo.rect
+            draw.rectangle(
+                [rect.left, rect.top, rect.left + rect.width, rect.top + rect.height],
+                outline="red",
+                width=5
+            )
+            
+            resultados.append({
+                "tipo": tipo,
+                "datos_originales": datos,
+                "datos_procesados": datos_procesados
+            })
+        
+        buffered = io.BytesIO()
+        imagen.save(buffered, format="JPEG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        
+        return {
+            "success": True,
+            "resultados": resultados,
+            "imagen_procesada": img_str
+        }
+    
+    except Exception as e:
+        print(f"Error en el procesamiento: {str(e)}")
+        return JSONResponse(
+            content={"success": False, "mensaje": f"Error al procesar la imagen: {str(e)}"},
+            status_code=400
+        )
 
 def post_procesar_codigo(tipo, datos):
-   if tipo == "CODE128" and len(datos) == 7 and datos.startswith("01"):
-       return f"{datos[:2]}-{datos[2:]}"
-   return datos
+    if tipo == "CODE128" and len(datos) == 7 and datos.startswith("01"):
+        return f"{datos[:2]}-{datos[2:]}"
+
+    return datos
 
 
 
@@ -1248,12 +1240,12 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error al obtener el último bien inventariado: {e}")
         raise HTTPException(status_code=500, detail="Error al obtener el último bien inventariado.")
-    
+        
 
 
 
-    ################################################### SIS ################################
-    # Rutas
+################################################### SIS ################################
+# Rutas
 @app.get("/sis", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse(
