@@ -149,7 +149,8 @@ class Empleado(Base):
     codigo = Column(String(20), unique=True, nullable=False)
     nombre = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
-    celular = Column(String(20))
+    puesto = Column(String(20)) #antes celular
+    sede_id = Column(Integer, ForeignKey('sedes.id'), nullable=False)
     oficina_id = Column(Integer, ForeignKey('oficinas.id'))
     es_inventariador = Column(Boolean, default=False)
     password_hash = Column(String(255))
@@ -160,7 +161,8 @@ class Empleado(Base):
     oficina_dirigida = relationship("Oficina", back_populates="jefe", foreign_keys="Oficina.jefe_id")
     asignaciones = relationship("AsignacionBien", back_populates="empleado")
     usuario = relationship("Usuario", back_populates="empleado")  # Añadir esta línea
-
+    sede = relationship("Sede")
+    
 class Bien(Base):
     __tablename__ = 'bienes'
     

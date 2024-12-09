@@ -76,7 +76,7 @@ class Empleado(Base):
     codigo = Column(String(20), unique=True, nullable=False)
     nombre = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
-    celular = Column(String(20))
+    puesto = Column(String(20))
     oficina_id = Column(Integer, ForeignKey('oficinas.id'))
     es_inventariador = Column(Boolean, default=False)
     password_hash = Column(String(255))
@@ -86,35 +86,27 @@ class Empleado(Base):
     oficina = relationship("Oficina", back_populates="empleados", foreign_keys=[oficina_id])
     oficina_dirigida = relationship("Oficina", back_populates="jefe", foreign_keys="Oficina.jefe_id")
 
+#CONSULTA REGISTRO
 def consulta_registro(valor):
     db = Session()
     try:
-        Jefe = aliased(Empleado, name='jefe')
-        OficinaJefe = aliased(Oficina, name='oficina_jefe')
-
+        # Ajustamos los campos según el modelo actual
         stmt = select(
             Empleado.id,
             Empleado.codigo,
             Empleado.nombre,
             cast(Empleado.estado_empleado, String).label('estado_empleado'),
-            Oficina.id.label('oficina_id'),
-            Oficina.nombre.label('area_usuario'),
-            Jefe.id.label('jefe_id'),
-            Jefe.nombre.label('nombre_jefe'),
-            OficinaJefe.id.label('oficina_jefe_id'),
-            OficinaJefe.nombre.label('area_jefe'),
-            Oficina.jefe_id == Empleado.id
-        ).select_from(Empleado)\
-         .join(Oficina, Empleado.oficina_id == Oficina.id)\
-         .outerjoin(Jefe, Oficina.jefe_id == Jefe.id)\
-         .outerjoin(OficinaJefe, Jefe.oficina_id == OficinaJefe.id)
+            Empleado.institucion_id,
+            Empleado.puesto,
+            Empleado.oficina_id
+        ).select_from(Empleado)
 
         if valor.lower() == "todos":
             pass
         elif valor.isdigit() and len(valor) >= 3:
             stmt = stmt.where(Empleado.codigo.like(f"{valor}%"))
         elif len(valor) >= 3:
-            stmt = stmt.where(Empleado.nombre.like(f"%{valor}%"))
+            stmt = stmt.where(Empleado.nombre.like(f"{valor}%"))
         else:
             return []
 
