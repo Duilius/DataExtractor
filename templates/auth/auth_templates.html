@@ -1,0 +1,31 @@
+{# forgot_password.html #}
+{% extends "auth/base_auth.html" %}
+{% block content %}
+<form hx-post="/auth/forgot-password" class="auth-form">
+    <h2>Recuperar contraseña</h2>
+    <input type="email" name="email" placeholder="Email" required>
+    <button type="submit">Enviar</button>
+    <a href="/auth/login">Volver al login</a>
+</form>
+
+{# reset_password.html #}
+{% extends "auth/base_auth.html" %}
+{% block content %}
+<form hx-post="/auth/reset-password/{{ token }}" class="auth-form">
+    <h2>Nueva contraseña</h2>
+    <input type="password" name="new_password" placeholder="Nueva contraseña" required>
+    <input type="password" name="confirm_password" placeholder="Confirmar contraseña" required>
+    <button type="submit">Cambiar</button>
+</form>
+
+{# change_password.html #}
+{% extends "auth/base_auth.html" %}
+{% block content %}
+<form hx-post="/auth/change-password" class="auth-form">
+    <h2>Cambiar contraseña</h2>
+    <input type="password" name="current_password" placeholder="Contraseña actual" required>
+    <input type="password" name="new_password" placeholder="Nueva contraseña" required>
+    <input type="password" name="confirm_password" placeholder="Confirmar contraseña" required>
+    <button type="submit">Cambiar</button>
+</form>
+{% endblock %}
