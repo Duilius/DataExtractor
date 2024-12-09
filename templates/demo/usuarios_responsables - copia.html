@@ -21,19 +21,31 @@
         <li class="empleado" id="empleado-{{ user[1] }}">
             <div class="datos-empleado">
                 <div class="datos-usuario">
-                    <span class="codigo">{{ user[1] }}</span>
+                    <span class="nombres">{{ user[1] }}</span>
                     <span class="nombres">{{ user[2] }}</span>
                 </div>
                 <div class="area-usuario">
-                    <p class="puesto">{{ user[5] }}</p>
+                    <span class="sede">Sede: &nbsp;ABCDEF</span>
+                    <p class="area">{{ user[5] }}</p>
                 </div>
+                
+                <div class="datos-jefe">
+                    <h4>Jefe Inmediato:</h4>
+                    <div class="nombre-jefe">{{ user[7] }}</div>
+                    <div class="area-jefe">{{ user[9] }}</div>
+                </div>
+                
             </div>
             <input type="hidden" id="codigo-{{ user[1] }}" value="{{ user[1] }}">
             <input type="hidden" id="nombres-{{ user[1] }}" value="{{ user[2] }}">
+            <input type="hidden" id="gerencia-{{ user[1] }}" value="{{ user[5] }}">
+            <input type="hidden" id="foto-{{ user[1] }}" value="/static/img/{{ user[1] +'.jpg' }}">
+            <input type="hidden" id="oficina-{{ user[1] }}" value="{{ user[4] }}">
 
-            <div class="seleccion-empleado">
-                <button class="seleccionar" onclick="selectUser('{{ user[1] }}', '{{ user[2] }}')">
-                    <i class='bx bx-check-double'>Seleccionar</i>
+            <div class="foto-empleado">
+                <img src="{{ url_for('static', path='img/' + user[1] + '.jpg') }}" width="100%">
+                <button class="seleccionar" onclick="selectUser('{{ user[1] }}', '{{ user[1] }}')">
+                    <i class='bx bx-check-double' >Seleccionar</i>
                 </button>
             </div>
         </li>
@@ -49,18 +61,36 @@
 
 <script>
     // Definición de las funciones
-    function selectUser(userId) {
-    document.getElementById('codigo-seleccionado').value = userId;
-    document.getElementById('nombres-seleccionado').value = document.getElementById(`nombres-${userId}`).value;
+    function selectUser(userId, userName) {
+        const codigoSeleccionado = document.getElementById(`codigo-${userId}`);
+        const nombresSeleccionados = document.getElementById(`nombres-${userId}`);
+        const gerenciaSeleccionada = document.getElementById(`gerencia-${userId}`);
+        const fotoSeleccionada = document.getElementById(`foto-${userId}`);
+        const oficinaSeleccionada = document.getElementById(`oficina-${userId}`);
 
-    // Ocultar todas las tarjetas
-    const empleados = document.querySelectorAll('#lista-usuarios .empleado');
-    empleados.forEach(emp => emp.style.display = 'none');
-    
-    // Mostrar solo el seleccionado
-    document.getElementById(`empleado-${userId}`).style.display = '';
-    document.getElementById('aceptar-descartar').classList.remove('oculto');
-}
+        document.getElementById('codigo-seleccionado').value = codigoSeleccionado.value;
+        document.getElementById('nombres-seleccionado').value = nombresSeleccionados.value;
+        document.getElementById('gerencia-seleccionado').value = gerenciaSeleccionada.value;
+        document.getElementById('foto-seleccionado').value = fotoSeleccionada.value;
+        document.getElementById('oficina-seleccionado').value = oficinaSeleccionada.value;
+
+        // Ocultar todas las tarjetas
+            const empleados = document.querySelectorAll('#lista-usuarios .empleado');
+            empleados.forEach(emp =>{
+                console.log(emp.innerHTML); // Verifica si los elementos están siendo seleccionados
+                //emp.classList.add('oculto') 
+                emp.style.display = 'none';  // Forzar el ocultamiento del elemento
+            });
+        
+        // Mostrar solo la tarjeta seleccionada
+        //document.getElementById(`empleado-${userId}`).classList.remove('oculto');
+        document.getElementById(`empleado-${userId}`).style.display='';
+
+        // Mostrar botones ACEPTAR y DESCARTAR
+        document.getElementById('aceptar-descartar').classList.remove('oculto');
+
+        //alert(`Tarjeta seleccionada: ${userName}`);
+    }
 
     function transferData() {
         // Obtener los datos seleccionados del modal

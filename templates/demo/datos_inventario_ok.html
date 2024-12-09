@@ -84,15 +84,19 @@
 <body>
 
 
-{% set dato = datos[0][0] %}
+{% if datos %}
+{% set dato = datos[0] %}
+{% set estado = 'HALLADO' if dato.faltante else 'FALTANTE' %}
+{% set tipo_propietario = 'SIS' if dato.propietario == 'SIS' else 'ALQUILADO' %}
 <section id="form-section" hx-swap="outerHTML" hx-on::after-settle="limpiarFotosProcessadas()">
         <div class="form-layout">
             <div class="form-group message-group">
                 <h3>Situación del Bien</h3>
                 <div class="form-grid">
                     <div class="form-field">
-                        <div class="field-header">Según SIS !</div>
-                        <input type="text" id="situacion_sis" maxlength="30" readonly value="{{ dato.situacion_sis }}">
+                        <div class="field-header">Situación <i>según SIS</i> !</div>
+                        <input type="text" id="situacion_sis" maxlength="30" readonly value="{{ estado ~ ' - ' ~ tipo_propietario }}"
+                        >
                     </div>
                     <div class="form-field">
                         <div class="field-header">Según Inventariador</div>
@@ -116,8 +120,10 @@
                     <div id="lista-areas" class="oculto"></div>
                 </div>
                 <div class="form-field">
-                    <div class="field-header">Ubicación actual del Bien</div>
-                    <input type="text" id="nombre_ubicacion" class="text-ancho" maxlength="300" readonly >
+                    <div class="field-header">Ubicación del Bien <i>según SIS</i></div>
+                    <textarea id="nombre_ubicacion" class="text-ancho" maxlength="300" readonly style="text-align: left;">
+                        {{ dato.sede ~ '==>' ~ (dato.ubicacion_actual if dato.ubicacion_actual else 'Ubicación no disponible') }}
+                        </textarea>
                 </div>
                 <div class="form-field">
                     <div class="field-header">Del proceso ...</div>
@@ -145,13 +151,15 @@
                         <input type="text" id="cod-2022" name="cod_2022" maxlength="10" placeholder="Cód-2022" value="{{ dato.codigo_inv_2022 }}">
                     </div>
                     <div class="form-field">
-                        <div class="field-header">Cód-2021</div>
-                        <input type="text" id="cod-2021" name="cod_2021" maxlength="10" placeholder="Cód-2021" value="{{ dato.codigo_inv_2021 }}">
+                        <div class="field-header">Cód-SBN</div>
+                        <input type="text" id="cod-2021" name="cod_2021" maxlength="15" placeholder="Cód-SBN" value="{{ dato.codigo_nacional }}">
                     </div>
+                <!--    
                     <div class="form-field">
                         <div class="field-header">Cód-2020</div>
                         <input type="text" id="cod-2020" name="cod_2020" maxlength="10" placeholder="Cód-2020" value="{{ dato.codigo_inv_2020 }}">
                     </div>
+                -->
                 </div>
             </div>
     
@@ -243,7 +251,9 @@
             </div>
         </div>
     </section>   
-
+{% else %}
+<p>No se encontraron datos disponibles.</p>
+{% endif %}
 <!--
 <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
 -->
