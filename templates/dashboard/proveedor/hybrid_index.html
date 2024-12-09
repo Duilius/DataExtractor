@@ -1,0 +1,145 @@
+{# templates/dashboard/proveedor/hybrid_index.html #}
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Dashboard Inventariador{% endblock %}
+
+{% block sidebar_menu %}
+<div class="menu-section">
+    <h3>Inventario</h3>
+    <ul>
+        <li><a href="/demo-inventario" class="menu-item active">
+            <i class="fas fa-plus-circle"></i>
+            <span>Registrar Bien</span>
+        </a></li>
+        <li><a href="/buscar-bien" class="menu-item">
+            <i class="fas fa-search"></i>
+            <span>Buscar Bien</span>
+        </a></li>
+        <li><a href="/pendientes-etiqueta" class="menu-item">
+            <i class="fas fa-tags"></i>
+            <span>Sin Etiqueta ({{ metrics.sin_etiqueta }})</span>
+        </a></li>
+    </ul>
+</div>
+
+<div class="menu-section">
+    <h3>Mi Trabajo</h3>
+    <ul>
+        <li><a href="/avance-diario" class="menu-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Avance Diario</span>
+        </a></li>
+        <li><a href="/mis-registros" class="menu-item">
+            <i class="fas fa-list"></i>
+            <span>Mis Registros</span>
+        </a></li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="location-info">
+        <h1>Panel de Control</h1>
+        <div class="sede-details">
+            <span class="sede-nombre">{{ metrics.sede_info.nombre }}</span>
+            <span class="sede-ubicacion">{{ metrics.sede_info.provincia }}</span>
+        </div>
+    </div>
+    <div class="user-info">
+        <span class="user-name">{{ user.sub }}</span>
+        <button id="logoutBtn" class="btn-logout">Salir</button>
+    </div>
+</div>
+
+<!-- Métricas Principales -->
+<div class="metrics-grid">
+    <div class="metric-card primary">
+        <div class="metric-header">Avance General</div>
+        <div class="metric-value">{{ metrics.porcentaje_avance }}%</div>
+        <div class="progress-bar">
+            <div class="progress" style="width: {{ metrics.porcentaje_avance }}%"></div>
+        </div>
+        <div class="metric-footer">
+            {{ metrics.bienes_procesados }}/{{ metrics.total_bienes }} bienes
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">Registros Hoy</div>
+        <div class="metric-value">{{ metrics.bienes_hoy }}</div>
+        <div class="metric-footer">bienes registrados</div>
+    </div>
+
+    <div class="metric-card warning">
+        <div class="metric-header">Pendientes</div>
+        <div class="metric-value">{{ metrics.sin_etiqueta }}</div>
+        <div class="metric-footer">sin etiqueta</div>
+    </div>
+</div>
+
+<!-- Estadísticas por Sede -->
+<div class="stats-section">
+    <div class="stats-card" 
+     hx-get="/dashboard/proveedor/stats/sede/{{ metrics.sede_info.id }}" 
+     hx-trigger="load">
+        <h3>Estado por Oficinas</h3>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Oficina</th>
+                        <th>Empleados</th>
+                        <th>Bienes</th>
+                    </tr>
+                </thead>
+                <tbody class="stats-content">
+                    <!-- HTMX cargará aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Últimos Registros -->
+<div class="recent-section">
+    <div class="stats-card">
+        <h3>Últimos Registros</h3>
+        <div class="table-responsive" 
+             hx-get="/api/ultimos-registros" 
+             hx-trigger="load">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                        <th>Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- HTMX cargará aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Botón Flotante para Registro -->
+<a href="/registro-bien" class="floating-action-btn">
+    <i class="fas fa-plus-circle"></i>
+</a>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('logoutBtn').addEventListener('click', function() {
+    fetch('/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+    }).then(() => {
+        window.location.href = '/auth/login';
+    });
+});
+</script>
+{% endblock %}
