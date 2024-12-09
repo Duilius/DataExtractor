@@ -1,0 +1,41 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="admin-table">
+    <h2>Gestión de Usuarios</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombres</th>
+                <th>Apellidos</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td data-label="Código">{{ usuario.codigo }}</td>
+                <td data-label="Nombres">{{ usuario.nombres }}</td>
+                <td data-label="Apellidos">{{ usuario.apellidos }}</td>
+                <td data-label="Estado" class="{% if usuario.esta_activo %}estado-activo{% else %}estado-bloqueado{% endif %}">
+                    {{ "Activo" if usuario.esta_activo else "Bloqueado" }}
+                </td>
+                <td data-label="Acciones">
+                    <button 
+                        hx-post="/admin/reset-user/{{ usuario.codigo }}"
+                        hx-confirm="¿Reiniciar contraseña para {{ usuario.codigo }}?"
+                        class="btn-reset">
+                        <span class="htmx-indicator">⌛</span>
+                        Reiniciar Clave
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
