@@ -35,6 +35,7 @@ class AnteriorSis(Base):
    sede_id = Column(Integer),
    sede =Column(String(50), nullable=True)
    ubicacion_actual =Column(String(300), nullable=True)
+   codigo_dni =Column(String(10), nullable=True)
    
    # Relaciones
    empleado_id = Column(Integer, ForeignKey('empleados.id'))
