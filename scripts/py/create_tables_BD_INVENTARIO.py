@@ -170,7 +170,7 @@ class Bien(Base):
     institucion_id = Column(Integer, ForeignKey('instituciones.id'), nullable=False)
     sede_actual_id = Column(Integer, ForeignKey('sedes.id'), nullable=True)  # Añadir esta línea
     codigo_patrimonial = Column(String(50), unique=True)
-    codigo_nacional = Column(String(50), ForeignKey('catalogo_nacional_bienes.codigo'))
+    codigo_nacional = Column(String(50), ForeignKey('catalogo_nacional_bienes.codigo'))#codigo_SBN o cod_SBN
     codigo_inv_2024 = Column(String(50))  # Añadido
     codigo_inv_2023 = Column(String(50))  # Añadido
     codigo_inv_2022 = Column(String(50))  # Añadido
@@ -196,6 +196,10 @@ class Bien(Base):
     codigo_inventariador = Column(String(50))
     custodio_bien = Column(String(50))
     codigo_oficina = Column(String(50))  # antes era ubicacion
+    acciones=Column(String(50))#Etiq-2023, Etiq-SBN, 
+    describe_area=Column(String(100))# Nombre de Área Oficial nueva
+    area_actual_id=Column(String(10))#Id de Área Oficial nueva (a la fecha)
+
 
     # Relaciones
     institucion = relationship("Institucion", back_populates="bienes")
