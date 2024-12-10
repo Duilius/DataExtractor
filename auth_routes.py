@@ -93,14 +93,14 @@ async def login(
             )
 
         # Verificar horario de acceso
-        if not auth_utils.check_access_hours(usuario.tipo_usuario):
+        """if not auth_utils.check_access_hours(usuario.tipo_usuario):
             return templates.TemplateResponse(
                 "auth/login.html",
                 {
                     "request": request,
                     "error": "Acceso no permitido en este horario"
                 }
-            )
+            )"""
 
         # Verificar sesión activa - VERIFICACIÓN ESTRICTA
         try:
