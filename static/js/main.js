@@ -235,6 +235,9 @@ async function registrarBien() {
             'codigoOficina': '#codigoOficina',
             'worker': '#worker', /* Código de Custodio */ 
             /*'situacion_prov': '#situacion-prov',*/
+            'area_actual_id':'#hiddenAreaId',
+            'describe_area':'#describe_area',
+            'acciones':'#acciones',
             'cod_patr': '#cod-patr',
             'cod_2024': '#cod-2024',
             'cod_2023': '#cod-2023',
@@ -265,6 +268,13 @@ async function registrarBien() {
             }
             formData.append(key, valor);
         }
+
+         // Mostrar alertas con los valores de los campos seleccionados
+         const hiddenAreaId = document.querySelector('#hiddenAreaId')?.value || 'No definido';
+         const describeArea = document.querySelector('#describe_area')?.value || 'No definido';
+         const acciones = document.querySelector('#acciones')?.value || 'No definido';
+         const color = document.querySelector('#color')?.value || 'No definido';
+ 
 
         const enUso = document.querySelector('input[name="enUso"]:checked')?.value || 'No';
         formData.append('enUso', enUso);
