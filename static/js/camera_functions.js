@@ -297,45 +297,76 @@ async function procesarImagenes() {
 
     try {
         const formData = new FormData();
-        const imagenesInfo = []; // Array para almacenar información de las imágenes
 
         for (const checkbox of fotosSeleccionadas) {
             const img = checkbox.closest('.miniatura-container').querySelector('img');
             if (!img) continue;
 
-            console.log(`Procesando imagen: ${img.src.substring(0, 100)}...`);
-
             try {
-                const blob = await fetch(img.src)
-                    .then(response => response.blob());
+                // Log del tamaño original
+                const originalBlob = await fetch(img.src).then(r => r.blob());
+                console.log(`Tamaño original de imagen: ${originalBlob.size / 1024}KB`);
+
+                // Procesar imagen con calidad más baja
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
                 
+                const tempImg = new Image();
+                await new Promise(resolve => {
+                    tempImg.onload = resolve;
+                    tempImg.src = img.src;
+                });
+
+                // Calcular nuevas dimensiones
+                let width = tempImg.width;
+                let height = tempImg.height;
+                const MAX_SIZE = 800; // Reducir más el tamaño máximo
+
+                if (width > MAX_SIZE || height > MAX_SIZE) {
+                    const ratio = MAX_SIZE / Math.max(width, height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(tempImg, 0, 0, width, height);
+
+                // Convertir a blob con baja calidad
+                const blob = await new Promise(resolve => 
+                    canvas.toBlob(resolve, 'image/jpeg', 0.6)
+                );
+
+                // Log del tamaño después de procesar
+                console.log(`Tamaño después de procesar: ${blob.size / 1024}KB`);
+
+                if (blob.size > 1024 * 1024) {
+                    throw new Error(`Imagen demasiado grande después de procesar: ${blob.size / 1024}KB`);
+                }
+
                 const nombreUUID = generateUUID();
                 formData.append('fotos', blob, `${nombreUUID}.jpg`);
                 formData.append('uuid', nombreUUID);
 
-                // Guardar información de la imagen
-                imagenesInfo.push({
-                    uuid: nombreUUID,
-                    data: img.src
-                });
-
-                // Crear cookie para la imagen
-                document.cookie = `image_${nombreUUID}=${img.src}; path=/`;
-                
             } catch (error) {
                 console.error('Error al procesar imagen:', error);
                 throw new Error(`Error al procesar una de las imágenes: ${error.message}`);
             }
         }
 
-        // Añadir información de imágenes al formData
-        formData.append('imagenesInfo', JSON.stringify(imagenesInfo));
-
         console.log("Enviando imágenes al servidor...");
+        
+        // Log del tamaño total del FormData
+        let totalSize = 0;
+        for (let pair of formData.entries()) {
+            if (pair[1] instanceof Blob) {
+                totalSize += pair[1].size;
+            }
+        }
+        console.log(`Tamaño total del FormData: ${totalSize / 1024}KB`);
 
         const response = await fetch('/upload_fotos', {
             method: 'POST',
-            credentials: 'include', // Para asegurar envío de cookies
             body: formData
         });
 

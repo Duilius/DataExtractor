@@ -26,9 +26,11 @@ export function updateWorkerInfo(workerData) {
     const workerName = document.getElementById('worker-name');
     const workerArea = document.getElementById('worker-area');
     const workerPhoto = document.getElementById('worker-photo');
+    const worker = document.getElementById('worker');
     
     workerName.textContent = workerData.name;
     workerArea.textContent = workerData.area;
     workerPhoto.src = workerData.photoUrl;
+    worker.value = workerData.value
     
 }
