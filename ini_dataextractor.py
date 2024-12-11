@@ -182,7 +182,7 @@ def generate_image_filename(cod_usuario: str, cod_empleado: str, tipo_imagen: st
 
 
 # Función para registrar una imagen en la base de datos
-def registrar_imagen_en_db(db: Session, bien_id: int, proceso_inventario_id: int, s3_url: str, descripcion: str):
+def registrar_imagen_en_db(db: Session, bien_id: int, s3_url: str, descripcion: str):
     try:
         if not db:
             print("Error: La sesión de la base de datos (`db`) no está definida.")
@@ -190,8 +190,8 @@ def registrar_imagen_en_db(db: Session, bien_id: int, proceso_inventario_id: int
         nueva_imagen = ImagenBien(
             bien_id=bien_id,
             url_imagen=s3_url,
-            descripcion=descripcion,
-            proceso_inventario_id=proceso_inventario_id
+            descripcion=descripcion
+            #proceso_inventario_id=proceso_inventario_id
         )
         db.add(nueva_imagen)
         db.commit()
@@ -837,7 +837,7 @@ async def process_and_store_images(imagenes: dict, datos: dict, db: Session) -> 
             # Registrar en la base de datos
             nueva_imagen = ImagenBien(
                 bien_id=datos['bien_id'],  # ID del bien recién registrado
-                proceso_inventario_id=datos['proceso_inventario_id'],
+                #proceso_inventario_id=datos['proceso_inventario_id'],
                 url=s3_url,
                 tipo=tipo
             )
@@ -1043,7 +1043,7 @@ async def registrar_bien(
             'codigo_nacional': cod_sbn,
             'codigo_inv_2024': cod_2024,
             'codigo_inv_2023': cod_2023,
-            'proceso_inventario_id': registrador_id,  # O el ID que corresponda
+            #'proceso_inventario_id': registrador_id,  # O el ID que corresponda
             'registrador': registrador_id,
             'worker': worker
         }
@@ -1056,7 +1056,7 @@ async def registrar_bien(
             codigo_patrimonial=cod_patr,
             codigo_inventariador=registrador_id,
             empleado_id=obtener_id_empleado(db,worker),
-            proceso_inventario_id=registrador_id,
+            #proceso_inventario_id=registrador_id,
             fecha_asignacion=func.now(),
             estado_confirmacion="Pendiente"
         )
