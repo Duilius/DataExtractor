@@ -908,6 +908,13 @@ async def registrar_bien(
     #Cookie de USAURIO INVENTARIADOR
     # Acceder a las cookies
     session_cookie = request.cookies.get("session_data")  # Cambia "session" por el nombre real de tu cookie
+    
+    form_data = await request.form()
+    print("Datos recibidos:", form_data)
+    
+    print("Acciones ====>",  acciones)
+    print("Area Actual ====>",  area_actual_id)
+    print("Area descrita ====>",  describe_area)
 
     if session_cookie:
         # Convertir la cookie de JSON a diccionario
@@ -951,6 +958,10 @@ async def registrar_bien(
         largo_validado = validar_dimensiones(largo)
         ancho_validado = validar_dimensiones(ancho)
         alto_validado = validar_dimensiones(alto)
+
+        print("Acciones ZZZ====>",  acciones)
+        print("Area Actual ====>",  area_actual_id)
+        print("Area descrita ====>",  describe_area)   
 
         # Registro de los datos recibidos para verificación
         datos_recibidos = {
@@ -998,6 +1009,10 @@ async def registrar_bien(
         bien_existente_2024 = db.query(Bien).filter(Bien.codigo_inv_2024 == cod_2024).first()
         if bien_existente_2024:
             raise ValueError("Código de inventario 2024 duplicado")
+
+        print("Acciones ====>",  acciones)
+        print("Area Actual ====>",  area_actual_id)
+        print("Area descrita ====>",  describe_area)
 
         # Registrar el bien
         nuevo_bien = Bien(
