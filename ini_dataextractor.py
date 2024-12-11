@@ -61,6 +61,35 @@ except ImportError:
 app = FastAPI(max_form_memory_size=50 * 1024 * 1024)  # 50 MB
 
 
+# Configurar límites de tamaño
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Configurar límite de tamaño del servidor
+import uvicorn
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        limit_concurrency=1000,
+        limit_max_requests=1000,
+        timeout_keep_alive=0,
+        http='h11',
+        loop='auto',
+        reload=True,
+        server_header=True,
+        date_header=True,
+        proxy_headers=True,
+        forwarded_allow_ips='*',
+        client_max_size=1024*1024*50  # 50MB máximo total
+    )
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
 # Configuración del límite de tamaño de solicitud
@@ -589,7 +618,12 @@ def busca_areas_oficiales(db:Session):
     
 # Modificar el endpoint upload_fotos existente
 @app.post("/upload_fotos")
-async def upload_fotos(request: Request, fotos: List[UploadFile] = File(...), uuid: List[str] = Form(...), db: Session = Depends(get_db)):
+async def upload_fotos(
+    request: Request, 
+    fotos: List[UploadFile] = File(..., max_length=1024*1024*10),  # 10MB por archivo
+    uuid: List[str] = Form(...), 
+    db: Session = Depends(get_db)
+):
     session_id = request.session.get('id', 'default')
     resultados_busqueda = []
 
