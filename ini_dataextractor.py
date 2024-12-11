@@ -50,6 +50,7 @@ from scripts.sql_alc.crea_estructura_base import crear_estructura_areas
 
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 try:
     import claves  # Solo se usará en el entorno local
@@ -59,6 +60,23 @@ except ImportError:
 
 # Configuración de FastAPI, OpenAI, y S3
 app = FastAPI(max_form_memory_size=50 * 1024 * 1024)  # 50 MB
+
+# Configuración específica para Railway
+if os.getenv('RAILWAY_ENVIRONMENT'):
+    class MaxBodySizeMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request, call_next):
+            if request.method == "POST":
+                content_length = request.headers.get("content-length")
+                if content_length and int(content_length) > 50 * 1024 * 1024:  # 50MB
+                    return JSONResponse(
+                        status_code=413,
+                        content={"detail": "File too large"}
+                    )
+            response = await call_next(request)
+            return response
+
+    app.add_middleware(MaxBodySizeMiddleware)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
 
 # Configurar límites de tamaño
