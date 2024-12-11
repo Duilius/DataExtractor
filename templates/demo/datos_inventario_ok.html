@@ -88,7 +88,7 @@ onerror="console.log('Error loading HTMX')">
                 </div>
                 <div class="form-field">
                     <div class="field-header">Acciones sugeridas</div>
-                    <select id="acciones" name="acciones" multiple style="width: 300px; height: 35px;" name="situacion-prov">
+                    <select id="acciones" name="acciones" multiple style="width: 300px; height: auto;" name="situacion-prov">
                         <option value="Nuevo">Nuevo</option>
                         <option value="Etiq-2023">Etiquetar Inv 2023</option>
                         <option value="Etiq-2022">Etiquetar Inv 2022</option>
@@ -99,8 +99,7 @@ onerror="console.log('Error loading HTMX')">
                 
                 <div class="form-field">
                     <div class="field-header">Describe Otra Área</div>
-                    <input type="text" id="describe_area" name="describe_area" maxlength="30" readonly 
-                    >
+                    <input type="text" id="describe_area" name="describe_area" maxlength="30">
                 </div>
                 <div class="form-field">
                     <div class="field-header">Áreas Oficiales</div>
@@ -111,8 +110,8 @@ onerror="console.log('Error loading HTMX')">
                             <option value="">Seleccione área</option>
                             {% for area in areas_oficiales %}
                             <option value="{{ area['id'] }}" >{{ area['nombre'] }}</option>
-                            <option value="999">Otra Área</option>
                             {% endfor %}
+                            <option value="999">Otra Área</option>
                         </select>
                 </div>
 

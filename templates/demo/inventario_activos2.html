@@ -149,20 +149,10 @@
                         
                         
                             <div class="field-header">Ubicación Real</div>
-                            <form id="area-search-form">
-                            <input type="search" id="codOficina" name="codOficina" maxlength="30" placeholder="Busca por Código o por Nombre Área" 
-                            hx-post="/busca-areas"
-                            hx-trigger="keyup changed delay:1000ms"
-                            hx-target="#lista-areas"
-                            _="on keyup 
-                                if my.value.length is greater than 2
-                                    remove .oculto from #lista-areas 
-                                else
-                                    add .oculto to #lista-areas
-                                end
-                            "/>
-                            </form>
+                            
                         </div>
+                        <input type="hidden" id="hiddenAreaId" name="area_actual_id">
+                        <input type="text" id="descripcion" name="descripcion" class="text-ancho" maxlength="300" placeholder="Descripción del bien">
                         
                         <div id="lista-areas" class="oculto"></div>
                     </div>
