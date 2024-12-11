@@ -73,7 +73,8 @@ class AuthUtils:
         # Registrar nuevo intento
         self._rate_limit_data[ip].append(now)
 
-    def check_access_hours(self, user_type: str) -> bool:
+
+    """def check_access_hours(self, user_type: str) -> bool:
         current_time = datetime.now().time()
         current_weekday = datetime.now().weekday()
         
@@ -82,7 +83,7 @@ class AuthUtils:
                 return current_time.hour >= 8 and current_time.hour < 17
             return False  # No acceso en fin de semana
         
-        return True
+        return True"""
 
     def get_current_datetime(self):
         return datetime.now()
