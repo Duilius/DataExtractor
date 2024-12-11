@@ -216,7 +216,7 @@ class ImagenBien(Base):
     __tablename__ = 'imagenes_bienes'
     id = Column(Integer, primary_key=True, autoincrement=True)
     bien_id = Column(Integer, ForeignKey('bienes.id'), nullable=False)
-    proceso_inventario_id = Column(Integer, ForeignKey('procesos_inventario.id'))  # Nuevo campo
+    #proceso_inventario_id = Column(Integer, ForeignKey('procesos_inventario.id'))  # Nuevo campo
     url = Column(String(255), nullable=False)
     tipo = Column(String(50), nullable=False)  # 'principal', 'secundaria', etc.
     fecha_registro = Column(DateTime, default=func.now())
@@ -238,7 +238,7 @@ class AsignacionBien(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     bien_id = Column(Integer, ForeignKey('bienes.id'), nullable=False)
     empleado_id = Column(Integer, ForeignKey('empleados.id'), nullable=False)
-    proceso_inventario_id = Column(Integer, ForeignKey('procesos_inventario.id'), nullable=False)
+    #proceso_inventario_id = Column(Integer, ForeignKey('procesos_inventario.id'), nullable=True)
     fecha_asignacion = Column(DateTime, default=datetime.utcnow)
     estado_confirmacion = Column(Enum('Pendiente', 'Confirmado', 'Rechazado'), default='Pendiente')
     observaciones = Column(Text)
@@ -247,7 +247,7 @@ class AsignacionBien(Base):
     codigo_inventariador = Column(String(50))
     bien = relationship("Bien", back_populates="asignaciones")
     empleado = relationship("Empleado", back_populates="asignaciones")
-    proceso_inventario = relationship("ProcesoInventario", back_populates="asignaciones")
+    #proceso_inventario = relationship("ProcesoInventario", back_populates="asignaciones")
     confirmaciones = relationship("ConfirmacionAsignacion", back_populates="asignacion")
 
 class ConfirmacionAsignacion(Base):
@@ -267,14 +267,14 @@ class InventarioBien(Base):
     __tablename__ = 'inventarios_bienes'
     id = Column(Integer, primary_key=True, autoincrement=True)
     bien_id = Column(Integer, ForeignKey('bienes.id'), nullable=False)
-    proceso_inventario_id = Column(Integer, ForeignKey('procesos_inventario.id'), nullable=False)
+    #proceso_inventario_id = Column(Integer, ForeignKey('procesos_inventario.id'), nullable=False)
     codigo_inventario = Column(String(50), nullable=False)
     observaciones = Column(Text)
     fecha_registro = Column(DateTime, nullable=False)
     inventariador_id = Column(Integer, ForeignKey('empleados.id'), nullable=False)
     es_faltante = Column(Boolean, default=False)
     bien = relationship("Bien", back_populates="inventarios")
-    proceso_inventario = relationship("ProcesoInventario", back_populates="inventarios")
+    #proceso_inventario = relationship("ProcesoInventario", back_populates="inventarios")
     inventariador = relationship("Empleado")
 
 class EmpresaExterna(Base):
@@ -324,8 +324,7 @@ class ProcesoInventario(Base):
     fecha_autorizacion = Column(Date)
     institucion = relationship("Institucion", back_populates="procesos_inventario")
     empresa_externa = relationship("EmpresaExterna")
-    asignaciones = relationship("AsignacionBien", back_populates="proceso_inventario")
-    inventarios = relationship("InventarioBien", back_populates="proceso_inventario")
+    
 
 class MovimientoBien(Base):
     __tablename__ = 'movimientos_bienes'
