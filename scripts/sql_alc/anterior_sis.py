@@ -32,7 +32,7 @@ class AnteriorSis(Base):
    procedencia = Column(String(100), nullable=True)
    propietario = Column(String(100), nullable=True)
    faltante = Column(Boolean, default=True)
-   sede_id = Column(Integer),
+   sede_id = Column(Integer)
    sede =Column(String(50), nullable=True)
    ubicacion_actual =Column(String(300), nullable=True)
    codigo_dni =Column(String(10), nullable=True)
