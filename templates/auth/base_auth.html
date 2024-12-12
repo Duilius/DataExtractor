@@ -23,54 +23,10 @@
             </div>
             {% endif %}
             
-            {% block content %}
-            
-            
-            {% endblock %}
+            {% block content %}{% endblock %}
         </div>
     </div>
     
-    {# Agregar al final de base_auth.html, en el bloque scripts #}
-{% block scripts %}
-<script>
-// Control de sesiones
-const checkSession = async () => {
-    try {
-        const response = await fetch('/auth/session-info');
-        const data = await response.json();
-        
-        if (!data.authenticated) {
-            // Sesión inválida
-            alert('Tu sesión ha sido cerrada en otro dispositivo');
-            window.location.href = '/auth/login';
-        }
-    } catch (error) {
-        console.error('Error verificando sesión:', error);
-    }
-};
-
-// Canal de comunicación entre pestañas
-const authChannel = new BroadcastChannel('auth_session');
-
-// Escuchar eventos de otras pestañas
-authChannel.onmessage = (event) => {
-    if (event.data === 'session_closed') {
-        window.location.href = '/auth/login';
-    }
-};
-
-// Al hacer login exitoso
-document.addEventListener('htmx:afterSettle', function(evt) {
-    if (evt.detail.pathInfo.requestPath === '/auth/login') {
-        // Notificar a otras pestañas
-        authChannel.postMessage('session_closed');
-    }
-});
-
-// Verificar sesión cada 30 segundos
-setInterval(checkSession, 30000);
-</script>
-{% endblock %}
-    <script src="{{ url_for('static', path='js/controla_sesion_unica.js') }}"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>
