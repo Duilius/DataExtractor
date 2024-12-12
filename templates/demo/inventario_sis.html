@@ -28,6 +28,82 @@
     <link rel="stylesheet" href="{{url_for('static', path='autenticacion_modal2.css')}}">
     <link rel="stylesheet" href="{{url_for('static', path='modal_error.css')}}">
     <link rel="stylesheet" href="{{url_for('static', path='overlayImageEditor.css')}}">
+
+    <style>
+        /* Estilos generales */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        /* Estilos para filas y celdas más altas en móvil */
+        .table th, .table td {
+            padding: 12px 8px; /* Aumentado el padding vertical */
+            border: 1px solid #ddd;
+            font-size: 14px; /* Tamaño de fuente base */
+            line-height: 1.4; /* Mejor espaciado de línea */
+        }
+        
+        /* Altura mínima para las filas en móvil */
+        .bien-row {
+            min-height: 48px; /* Altura mínima para mejor toque */
+        }
+        
+        /* Estilos para el contenedor con scroll */
+        .table-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+        
+        /* Estilos para el scroll */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        /* Estilos para las filas */
+        .bien-row:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .bien-row.selected {
+            background-color: #e0e0e0;
+        }
+        
+        /* Estilos para el mensaje de no bienes */
+        .no-bienes-message {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        
+        /* Media queries para móviles */
+        @media (max-width: 768px) {
+            .table th, .table td {
+                padding: 16px 8px; /* Aún más padding vertical en móviles */
+                font-size: 16px; /* Fuente más grande en móviles */
+            }
+        
+            .bien-row {
+                min-height: 56px; /* Altura mínima aún mayor en móviles */
+            }
+        
+            /* Ajustar el alto máximo del contenedor en móviles */
+            .table-container {
+                max-height: 350px; /* Algo más pequeño en móviles */
+            }
+        }
+        </style>
 </head>
 <body>
     <header id="main-header">
@@ -58,18 +134,24 @@
     </nav>
 
     <main>
-        <section id="worker-info">
-            <img id="worker-photo" src="{{ url_for('static', path='img/foto-no-hallado.jpeg') }}" alt="Foto del trabajador">
-            <div id="worker-details">
-                <p id="worker-name">Nombre del Trabajador</p>
-                <p id="worker-area">Área de Trabajo</p>
-                <input type="hidden" id="worker" name="worker"><!--Usuario del bien-->
-                <input type="hidden" id="codigoOficina" name="codigoOficina"><!--Area del Usuario del bien-->
-            <!--
-                <input type="hidden" id="institucion" name="institucion" value="16">
-                <input type="hidden" id="registrador" name="registrador" value="9999">
-            -->
+        <section id="worker-info" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Contenedor de información del usuario -->
+            <div id="dniUsuario" style="display: flex; align-items: left; width: 100%; margin-bottom: 20px;">
+                <span id="worker-photo" style="color:black">Bienes </span>
+                <input type="button" id="worker" name="worker" 
+                       style="width: 90px; max-width: 90px;"
+                       hx-get="/bienes-dni" 
+                       hx-trigger="click"
+                       hx-vals='js:{"el_dni": event.target.value}' 
+                       hx-target="#bienesDe">
+                <span id="worker-name">Nombre del Trabajador</span>
+                <span id="worker-area">Área de Trabajo</span>
+                <button class="toggleBienes" style="margin-left: auto;">Mostrar</button>
+                <input type="hidden" id="codigoOficina" name="codigoOficina">
             </div>
+            
+            <!-- Lista de bienes (ahora fuera del div flex) -->
+            <div id="bienesDe" style="width: 80%; height: auto; background-color: beige; display: none;"></div>
         </section>
 
         <section id="camera-section">
@@ -289,6 +371,38 @@
         }
     });
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.querySelector('.toggleBienes');
+        const bienesDiv = document.getElementById('bienesDe');
+        
+        toggleButton.addEventListener('click', function() {
+            if (bienesDiv.style.display === 'none') {
+                bienesDiv.style.display = 'block';
+                toggleButton.textContent = 'Ocultar';
+            } else {
+                bienesDiv.style.display = 'none';
+                toggleButton.textContent = 'Mostrar';
+            }
+        });
+    });
+    
+    function highlightRow(row) {
+        document.querySelectorAll('.bien-row').forEach(r => {
+            r.classList.remove('selected');
+        });
+        row.classList.add('selected');
+    }
+    
+    // Ajustar en el backend también para manejar el caso de 0 bienes
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'bienesDe' && evt.detail.target.innerHTML.trim() !== '') {
+            evt.detail.target.style.display = 'block';
+            document.querySelector('.toggleBienes').textContent = 'Ocultar';
+        }
+    });
+    </script>
 
 </body>
 </html>
