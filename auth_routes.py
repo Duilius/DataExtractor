@@ -29,25 +29,20 @@ async def login_page(request: Request):
 async def login(
     request: Request,
     codigo: str = Form(...),
-    password: str = Form(...),
     db: Session = Depends(get_db)
 ):
     try:
         print(f"Intento de login para código: {codigo}")
         
+        # Buscar usuario por código
         usuario = db.query(Usuario).filter(Usuario.codigo == codigo).first()
         if not usuario:
             return templates.TemplateResponse(
                 "auth/login.html",
-                {"request": request, "error": "Usuario o contraseña incorrectos"}
+                {"request": request, "error": "Código de usuario incorrecto"}
             )
         
-        if not auth_utils.verify_password(password, usuario.password_hash):
-            return templates.TemplateResponse(
-                "auth/login.html",
-                {"request": request, "error": "Usuario o contraseña incorrectos"}
-            )
-        
+        # Crear token y establecer cookies
         access_token = auth_utils.create_access_token(
             data={"sub": usuario.codigo, "type": usuario.tipo_usuario}
         )
@@ -71,11 +66,7 @@ async def login(
             redirect_url = "/demo-inventario"
 
         # Crear respuesta
-        if usuario.requiere_cambio_password:
-            response = RedirectResponse(url="/auth/change-password", status_code=302)
-        else:
-            response = RedirectResponse(url=redirect_url, status_code=302)
-
+        response = RedirectResponse(url=redirect_url, status_code=302)
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -84,7 +75,6 @@ async def login(
             secure=True,
             samesite="lax"
         )
-        
         response.set_cookie(
             key="session_data",
             value=json.dumps(session_data),
