@@ -18,7 +18,7 @@ from openai import OpenAIError
 import json
 import os
 from typing import List, Dict, Optional
-from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends, Body, APIRouter
+from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends, Body, APIRouter, Query
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -657,18 +657,18 @@ async def upload_fotos(
             base64_image = base64.b64encode(optimized_image).decode("utf-8")
 
             # Extraer datos de la imagen
-            datos_imagen = await procesar_imagen_individual(base64_image)
-            print("Datos extraídos de la imagen:", datos_imagen)  # Verifica que los datos están correctamente extraídos
+            #datos_imagen = await procesar_imagen_individual(base64_image)
+            #print("Datos extraídos de la imagen:", datos_imagen)  # Verifica que los datos están correctamente extraídos
 
             
             # Obtener los códigos extraídos
-            inv_2023 = datos_imagen.get("inv_2023")
-            codigo_SBN = datos_imagen.get("codigo_SBN")
-            cod_patr = datos_imagen.get("cod_patr")
-            inv_2022 = datos_imagen.get("inv_2022")
+            #inv_2023 = datos_imagen.get("inv_2023")
+            #codigo_SBN = datos_imagen.get("codigo_SBN")
+            #cod_patr = datos_imagen.get("cod_patr")
+            #inv_2022 = datos_imagen.get("inv_2022")
 
             # Priorizar búsqueda en la base de datos
-            codigos = {
+            """codigos = {
                 "inv_2023": inv_2023,
                 "codigo_SBN": codigo_SBN,
                 "cod_patr": cod_patr,
@@ -690,12 +690,12 @@ async def upload_fotos(
                     else:
                         print(f"Valor vacío para la clave: {clave}")
                 else:
-                    print(f"Clave {clave} no tiene valor asignado")
+                    print(f"Clave {clave} no tiene valor asignado")"""
 
 
 
         # Preparar los datos para la plantilla
-        datos_para_plantilla = [
+        """datos_para_plantilla = [
             {
                 "codigo_patr": dato.codigo_patrimonial or "Sin código patrimonial",
                 "codigo_inv_2023": dato.inv_2023 or "No disponible",
@@ -724,7 +724,7 @@ async def upload_fotos(
             }
             
             for dato in resultados_busqueda
-        ]
+        ]"""
 
         # Almacenar imágenes procesadas
         imagenes_procesadas = {}
@@ -751,7 +751,7 @@ async def upload_fotos(
         print("Resultados de la búsqueda:", resultados_busqueda)  # Verifica los resultados obtenidos
 
         # **Nuevo código para obtener las áreas de la base de datos**
-        areas_oficiales = []
+        """areas_oficiales = []
         try:
             areas_result = db.execute(
                 text("SELECT id, nombre FROM areas_oficiales ORDER BY id")
@@ -771,7 +771,7 @@ async def upload_fotos(
         return templates.TemplateResponse(
             "demo/datos_inventario_ok.html",
             {"request": request, "datos": datos_para_plantilla,"areas_oficiales": areas_oficiales, "nombre_empleado":nombre_empleado[0], "codigo_dni":codigo_dni}
-        )
+        )"""
 
     except Exception as e:
         print(f"Error inesperado: {e}")
@@ -1489,3 +1489,121 @@ async def chatbot_query(
 
     # Si el usuario tiene acceso permitido, procesar la pregunta
     return {"response": "Estamos trabajando en tu respuesta."}
+
+
+#**************************** BUSCA BIENES X DNI ************************************
+@app.get("/bienes-dni")
+async def bienes_dni(
+    request: Request,
+    el_dni: str = Query(None),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Verificar el DNI
+        if not el_dni:
+            return templates.TemplateResponse(
+                "bienes_por_dni.html",
+                {"request": request, "error": "DNI es requerido", "bienes": []}
+            )
+
+        # Consultar los bienes
+        bienes_dni = db.query(AnteriorSis).filter_by(codigo_dni=el_dni).all()
+        
+        # Log para debugging
+        print(f"DNI consultado: {el_dni}")
+        print(f"Bienes encontrados: {len(bienes_dni)}")
+        
+        # Retornar la plantilla con los resultados
+        return templates.TemplateResponse(
+            "bienes_por_dni.html",
+            {
+                "request": request,
+                "bienes": bienes_dni,
+                "dni": el_dni
+            }
+        )
+
+    except Exception as e:
+        print(f"Error al buscar bienes: {str(e)}")
+        return templates.TemplateResponse(
+            "bienes_por_dni.html",
+            {
+                "request": request,
+                "error": "Error al buscar bienes",
+                "bienes": []
+            }
+        )
+    #return templates.TemplateResponse("demo/usuarios_responsables.html",{"request":request,"users":users})
+            #**********************  BUSCAR UNO DE LOS BIENES DEL EMPLEADO **************************
+@app.get("/cargar-bien/{bien_id}")
+async def cargar_bien(
+    bien_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    try:
+        # Consultar el bien en la base de datos
+        bien = db.query(AnteriorSis).filter_by(id=bien_id).first()
+        print("ID :", bien_id)
+        print("Datos del bien ===> ", bien.codigo_dni)
+        
+        if not bien:
+            return {"error": "Bien no encontrado"}
+        
+        # Convertir el objeto a diccionario con los datos que necesitas
+        bien_data =[{
+                "codigo_patr": bien.codigo_patrimonial or "Sin código patrimonial",
+                "codigo_inv_2023": bien.inv_2023 or "No disponible",
+                "codigo_inv_2022": bien.inv_2022 or "No disponible",
+                "codigo_nacional": bien.codigo_nacional or "No disponible",
+                "descripcion": bien.descripcion or "Sin descripción",
+                "material": bien.material or "Material no disponible",
+                "color": bien.color or "Color no disponible",
+                "marca": bien.marca or "Marca no disponible",
+                "modelo": bien.modelo or "Modelo no disponible",
+                "largo": bien.largo or "Largo no disponible",
+                "ancho": bien.ancho or "Ancho no disponible",
+                "alto": bien.alto or "Alto no disponible",
+                "numero_serie": bien.numero_serie or "N° Serie no disponible",
+                "observaciones": bien.observaciones or "Observaciones no disponible",
+                "anio_fabricac": bien.anio_fabricac or 0,
+                "num_placa": bien.num_placa if bien.num_placa else "Placa no disponible",
+                "num_chasis": bien.num_chasis if bien.num_chasis else "N° Chasis no disponible",
+                "num_motor": bien.num_motor if bien.num_motor else "N° Serie motor no disponible",
+                "procedencia": bien.procedencia if bien.procedencia else "Sin dato",
+                "propietario": bien.propietario if bien.propietario else "Sin dato",
+                "faltante": bien.faltante if bien.faltante else "Sin dato",
+                "sede":  bien.sede if bien.sede else "Sin dato",
+                "ubicacion_actual":  bien.ubicacion_actual if bien.ubicacion_actual else "Sin dato",
+                "codigo_dni":  bien.codigo_dni if bien.codigo_dni else "Sin dato"
+            }
+        ]
+
+        areas_oficiales = []
+        try:
+            areas_result = db.execute(
+                text("SELECT id, nombre FROM areas_oficiales ORDER BY id")
+            ).fetchall()
+            areas_oficiales = [{"id": row[0], "nombre": row[1]} for row in areas_result]
+
+            codigo_dni = bien_data[0]["codigo_dni"]
+
+            nombre_empleado = db.execute(
+                text("SELECT nombre FROM empleados WHERE codigo = :codigo_dni"),
+                {"codigo_dni": codigo_dni}
+            ).fetchone()
+
+        except Exception as e:
+            print(f"Error obteniendo áreas oficiales: {e}")
+
+        # Retornar la plantilla del formulario con los datos
+        return templates.TemplateResponse(
+            "demo/datos_inventario_ok.html",
+            {
+                "request": request,
+                "datos": bien_data,"areas_oficiales": areas_oficiales, "nombre_empleado":nombre_empleado[0], "codigo_dni":codigo_dni
+            }
+        )
+    except Exception as e:
+        print(f"Error al cargar bien: {str(e)}")
+        return {"error": f"Error al cargar bien: {str(e)}"}
