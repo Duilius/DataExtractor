@@ -127,6 +127,8 @@ class Sede(Base):
     provincia = Column(String(100))
     distrito = Column(String(100))
     usuarios_actuales = relationship("Usuario", back_populates="sede_actual")
+    # Añadir relación con Dependencias
+    dependencias = relationship("Dependencia", back_populates="sede")
 
 class Oficina(Base):
     __tablename__ = 'oficinas'
@@ -360,6 +362,45 @@ class RegistroFallido(Base):
     jefe = relationship("Empleado", foreign_keys=[jefe_id])
 
 # Al final del archivo, después de definir todas las clases
+
+
+class Dependencia(Base):
+    __tablename__ = 'dependencias'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    sede_id = Column(Integer, ForeignKey('sedes.id'), nullable=False)
+    nombre = Column(String(100), nullable=False)
+    
+    # Relación con Sede
+    sede = relationship("Sede", back_populates="dependencias")
+    
+    # Relación con Unidades Funcionales
+    unidades_funcionales = relationship("UnidadFuncional", back_populates="dependencia")
+
+class UnidadFuncional(Base):
+    __tablename__ = 'unidades_funcionales'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    dependencia_id = Column(Integer, ForeignKey('dependencias.id'), nullable=False)
+    nombre = Column(String(100), nullable=False)
+    
+    # Relación con Dependencia
+    dependencia = relationship("Dependencia", back_populates="unidades_funcionales")
+    
+    # Relación con Áreas
+    areas = relationship("Area", back_populates="unidad_funcional")
+
+class Area(Base):
+    __tablename__ = 'areas'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    unidad_funcional_id = Column(Integer, ForeignKey('unidades_funcionales.id'), nullable=False)
+    nombre = Column(String(100), nullable=False)
+    
+    # Relación con Unidad Funcional
+    unidad_funcional = relationship("UnidadFuncional", back_populates="areas")
+
+
 
 mapper_registry = registry()
 
