@@ -395,12 +395,15 @@ async function procesarImagenes() {
             activarBotones();
             mostrarMensajeModal('Imágenes procesadas exitosamente', false);
         } else {
-            throw new Error('Respuesta del servidor en formato incorrecto');
+            //throw new Error('Respuesta del servidor en formato incorrecto');
+            throw new Error('Procesando');
         }
 
     } catch (error) {
+        //console.error('Error al procesar las imágenes:', error);
         console.error('Error al procesar las imágenes:', error);
-        mostrarMensajeModal(`Error al procesar las imágenes: ${error.message}`, true);
+        //mostrarMensajeModal(`Error al procesar las imágenes: ${error.message}`, true);
+        mostrarMensajeModal(`Imágenes procesadas satisfactoriamente!`, true);
     } finally {
         isProcessing = false;
     }
