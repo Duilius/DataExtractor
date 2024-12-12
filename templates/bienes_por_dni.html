@@ -1,0 +1,132 @@
+{% if error %}
+    <div class="error-message">{{ error }}</div>
+{% else %}
+    {% if bienes|length == 0 %}
+        <div class="no-bienes-message" style="text-align: center; padding: 20px; color: #666;">
+            <h3>Sin bienes asignados al 31 Dic 2023</h3>
+        </div>
+    {% else %}
+        <div class="bienes-list" style="color: black;">
+            <h3>{{ bienes|length }} Bienes encontrados para DNI: {{ dni }}</h3>
+            <div class="table-container" style="{% if bienes|length > 5 %}max-height: 350px; overflow-y: auto;{% endif %}">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Cod. SBN</th>
+                            <th>Cod. 2023</th>
+                            <th>Cod. CP</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bien in bienes %}
+                        <tr class="bien-row" 
+                            id="bien_{{ bien.id }}"
+                            data-bien-id="{{ bien.id }}"
+                            style="cursor: pointer;"
+                            hx-get="/cargar-bien/{{ bien.id }}"
+                            hx-target="#form-section"
+                            onclick="seleccionarBien(this)">
+                            <td style="padding: 16px 8px;">{{ loop.index }}</td>
+                            <td style="padding: 16px 8px;">{{ bien.codigo_nacional }}</td>
+                            <td style="padding: 16px 8px;">{{ bien.inv_2023 }}</td>
+                            <td style="padding: 16px 8px;">{{ bien.codigo_patrimonial }}</td>
+                            <td style="padding: 16px 8px;">{{ bien.descripcion }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
+
+<style>
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 16px;
+    }
+    
+    .table th {
+        padding: 16px 8px;
+        border: 1px solid #ddd;
+        background-color: #f8f9fa;
+    }
+    
+    .bien-row {
+        transition: background-color 0.3s;
+    }
+    
+    .bien-row:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .bien-row.selected {
+        background-color: #e0e0e0;
+    }
+    
+    .table-container {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        margin-top: 10px;
+    }
+    
+    .table-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .table-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    .no-bienes-message {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 10px 0;
+    }
+    </style>
+
+<script>
+
+    function seleccionarBien(row) {
+        // Resaltar la fila seleccionada
+        document.querySelectorAll('.bien-row').forEach(r => {
+            r.classList.remove('selected');
+        });
+        row.classList.add('selected');
+
+        // Obtener el ID del bien
+        const bienId = row.getAttribute('data-bien-id');
+        console.log('Bien seleccionado:', bienId);
+
+        // Hacer visible #form-section con animación
+        const formSection = document.getElementById('form-section');
+        if (formSection) {
+            formSection.style.opacity = '0';
+            formSection.style.display = 'block';
+            setTimeout(() => {
+                formSection.style.transition = 'opacity 0.3s ease-in-out';
+                formSection.style.opacity = '1';
+            }, 0);
+        }
+
+        // También puedes acceder al ID así:
+        // const bienId = row.id.replace('bien_', '');
+    }
+
+    function highlightRow(row) {
+        document.querySelectorAll('.bien-row').forEach(r => {
+            r.classList.remove('selected');
+        });
+        row.classList.add('selected');
+    }
+</script>
