@@ -98,21 +98,12 @@ onerror="console.log('Error loading HTMX')">
                 </div>
                 
                 <div class="form-field">
-                    <div class="field-header">Describe Otra Área</div>
-                    <input type="text" id="describe_area" name="describe_area" maxlength="30">
+                    <div class="field-header">Nueva Ubicación</div>
+                    <input type="text" id="describe_area" name="describe_area" maxlength="150">
                 </div>
                 <div class="form-field">
-                    <div class="field-header">Áreas Oficiales</div>
-                        <select id="selectAreaOficial" style="width: 300px; height: 35px;"
-                                onchange="
-                                document.getElementById('areaSeleccionada').value = this.options[this.selectedIndex].text; 
-                                document.getElementById('hiddenAreaId').value = this.value;">
-                            <option value="">Seleccione área</option>
-                            {% for area in areas_oficiales %}
-                            <option value="{{ area['id'] }}" >{{ area['nombre'] }}</option>
-                            {% endfor %}
-                            <option value="999">Otra Área</option>
-                        </select>
+                    <div class="field-header">Nuevo Usuario</div>
+                    <input type="text" id="nuevo_usuario" name="nuevo_usuario" maxlength="8" size="8">
                 </div>
 
                 
@@ -122,12 +113,14 @@ onerror="console.log('Error loading HTMX')">
                 
             <!--    <div id="lista-areas" class="oculto"></div> -->
         </div>
+            <!--
                 <div class="form-field">
                     <div class="field-header" style="padding-top: 15px;">Área Seleccionada:</div>
                     <input type="text" id="areaSeleccionada" class="text-ancho" style="background-color: #e9cccc ;" maxlength="300" placeholder="Área Seleccionada" readonly>
                 </div>
+            -->
                 <div class="hidden-area-id">
-                    <input type="hidden" id="hiddenAreaId" name="area_actual_id">
+                    <input type="hidden" id="hiddenAreaId" name="area_actual_id" value="99">
                 </div>
 
                 <div class="form-field">
