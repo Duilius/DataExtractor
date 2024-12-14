@@ -181,6 +181,19 @@ function validarFormulario() {
         }
     });
 
+    // Validación del campo nuevo_usuario
+    const nuevoUsuarioInput = document.querySelector('#nuevo_usuario');
+    if (nuevoUsuarioInput) {
+        const nuevoUsuario = nuevoUsuarioInput.value.trim();
+        if (nuevoUsuario.length > 0 && nuevoUsuario.length < 8) {
+            valido = false;
+            nuevoUsuarioInput.classList.add('error');
+            errores.push('El campo "Nuevo usuario" debe tener 8 caracteres');
+        } else {
+            nuevoUsuarioInput.classList.remove('error');
+        }
+    }
+
     // Validación condicional de dimensiones
     const descripcion = document.querySelector('#descripcion').value.toLowerCase();
     const muebles = ['escritorio', 'mueble', 'mesa', 'repostero', 'estante', 
@@ -232,11 +245,12 @@ async function registrarBien() {
     try {
         const formData = new FormData();
         const campos = {
-            'codigoOficina': '#codigoOficina',
+            /*'codigoOficina': '#codigoOficina',*/
             'worker': '#worker', /* Código de Custodio */ 
             /*'situacion_prov': '#situacion-prov',*/
             'area_actual_id':'#hiddenAreaId',
             'describe_area':'#describe_area',
+            'nuevo_usuario':'#nuevo_usuario',
             'acciones':'#acciones',
             'cod_patr': '#cod-patr',
             'cod_2024': '#cod-2024',

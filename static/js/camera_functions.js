@@ -92,7 +92,7 @@ async function capturePhoto() {
             height: canvas.height
         });
 
-        alert("Resolución del Dispositivo:  \nAncho:" + canvas.width + "\nAlto: " + canvas.height);
+        //alert("Resolución del Dispositivo:  \nAncho:" + canvas.width + "\nAlto: " + canvas.height);
 
         console.log("Añadiendo foto a la galería");
         await addPhotoToGallery(processedImageData);
