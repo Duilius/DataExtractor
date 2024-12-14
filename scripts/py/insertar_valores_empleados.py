@@ -22,14 +22,14 @@ from sqlalchemy import inspect
 
 from sqlalchemy import text
 
-def modificar_columna_rol():
+"""def modificar_columna_rol():
     try:
         with engine.connect() as conn:
             conn.execute(text("ALTER TABLE empleados MODIFY COLUMN rol VARCHAR(10)"))
             conn.commit()
             print("Columna rol modificada exitosamente")
     except Exception as e:
-        print(f"Error al modificar columna: {e}")
+        print(f"Error al modificar columna: {e}")"""
 
 def cargar_empleados(csv_path):
     # Primero modificamos la columna
@@ -62,4 +62,4 @@ def cargar_empleados(csv_path):
         print(f"Error: {e}")
 
 if __name__ == "__main__":
-    cargar_empleados("empleados-sis.csv")
+    cargar_empleados("empleados-sis2.csv")
