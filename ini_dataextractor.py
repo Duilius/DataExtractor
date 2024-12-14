@@ -1289,14 +1289,14 @@ async def get_dashboard_kpis(db: Session = Depends(get_db)):
     .group_by(Bien.tipo)\
     .all()
     
-    """# 4. Bienes faltantes en último inventario
-    faltantes = db.query(func.count(InventarioBien.id))\
+    # 4. Bienes faltantes en último inventario
+    """faltantes = db.query(func.count(Bien.id))\
         .join(ProcesoInventario)\
         .filter(
-            ProcesoInventario.anio == current_year,
-            InventarioBien.es_faltante == True
+            ProcesoInventario.anio == current_year
         )\
         .scalar() or 0"""
+    faltantes = db.query(func.count(Bien.id)).scalar() or 0
     
     # 5. Asignaciones pendientes
     asignaciones_pendientes = db.query(func.count(AsignacionBien.id))\
@@ -1343,9 +1343,9 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
         ).first() if asignacion else None
 
         # Obtener la oficina del empleado/custodio
-        oficina = db.query(Oficina).filter(
+        """oficina = db.query(Oficina).filter( 
             Oficina.id == empleado.oficina_id
-        ).first() if empleado else None
+        ).first() if empleado else None"""
 
         # Obtener las imágenes del bien, ordenando para que la de tipo "PANOR" sea la primera
         image_priority = ["PANOR", "SERIE", "CODIG"]
@@ -1383,8 +1383,8 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
                 "marca": latest_item.marca,
                 "modelo": latest_item.modelo,
                 "estado": latest_item.estado,
-                "codigo_patrimonial": latest_item.codigo_patrimonial,
-                "area": oficina.nombre if oficina else "No asignada"
+                "codigo_patrimonial": latest_item.codigo_patrimonial
+                #"area": oficina.ambiente if oficina else "No asignada"
             },
             "custodian": {
                 "nombre": empleado.nombre if empleado else None,
