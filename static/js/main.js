@@ -182,17 +182,17 @@ function validarFormulario() {
     });
 
     // Validación del campo nuevo_usuario
-    const nuevoUsuarioInput = document.querySelector('#nuevo_usuario');
-    if (nuevoUsuarioInput) {
-        const nuevoUsuario = nuevoUsuarioInput.value.trim();
-        if (nuevoUsuario.length > 0 && nuevoUsuario.length < 8) {
-            valido = false;
-            nuevoUsuarioInput.classList.add('error');
-            errores.push('El campo "Nuevo usuario" debe tener 8 caracteres');
-        } else {
-            nuevoUsuarioInput.classList.remove('error');
-        }
-    }
+    //const nuevoUsuarioInput = document.querySelector('#nuevo_usuario');
+    //if (nuevoUsuarioInput) {
+    //    const nuevoUsuario = nuevoUsuarioInput.value.trim();
+    //    if (nuevoUsuario.length > 0 && nuevoUsuario.length < 8) {
+    //        valido = false;
+    //        nuevoUsuarioInput.classList.add('error');
+    //        errores.push('El campo "Nuevo usuario" debe tener 8 caracteres');
+   //     } else {
+    //        nuevoUsuarioInput.classList.remove('error');
+    //    }
+   // }
 
     // Validación condicional de dimensiones
     const descripcion = document.querySelector('#descripcion').value.toLowerCase();
