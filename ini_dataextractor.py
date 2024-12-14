@@ -7,7 +7,6 @@ from pyzbar.pyzbar import decode
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 import io
 import base64
-
 import boto3
 from botocore.config import Config
 import traceback
@@ -46,11 +45,14 @@ from starlette.requests import Request
 from scripts.py.utils import obtener_id_usuario, obtener_id_empleado
 from proveedor_routes import proveedor_router
 from area_routes import area_router
-from scripts.sql_alc.crea_estructura_base import crear_estructura_areas
+#from scripts.sql_alc.crea_estructura_base import crear_estructura_areas
 
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+
+from routers import ubicaciones  # Importación del router
+
 
 try:
     import claves  # Solo se usará en el entorno local
@@ -60,6 +62,9 @@ except ImportError:
 
 # Configuración de FastAPI, OpenAI, y S3
 app = FastAPI(max_form_memory_size=50 * 1024 * 1024)  # 50 MB
+
+# Incluir router
+app.include_router(ubicaciones.router, prefix="/api/ubicaciones", tags=["ubicaciones"])
 
 # Configuración específica para Railway
 if os.getenv('RAILWAY_ENVIRONMENT'):
@@ -619,7 +624,7 @@ def obtener_valores_inventario(resultado):
 @app.get("/get-area-nombre/{area_id}")
 async def get_area_nombre(area_id: str, db: Session = Depends(get_db)):
     result = db.execute(
-        text("SELECT nombre FROM areas_oficiales WHERE id = :area_id"),
+        text("SELECT nombre FROM areas_oficiales WHERE id = :area_id"), #:area_id
         {"area_id": area_id}
     ).first()
     return result[0] if result else ""
@@ -627,8 +632,9 @@ async def get_area_nombre(area_id: str, db: Session = Depends(get_db)):
 def busca_areas_oficiales(db:Session):
     #@app.get("/areas-oficiales", response_class=HTMLResponse)
     #async def get_areas_oficiales(request:Request,db: Session = Depends(get_db)):
-        #result = db.execute(text("SELECT id, nombre FROM areas_oficiales ORDER BY id")).fetchall()
-        areas_oficiales = db.query(crear_estructura_areas)
+        areas_oficiales = db.execute(text("SELECT id, nombre FROM areas_oficiales ORDER BY id")).fetchall()
+        #areas_oficiales = db.query(crear_estructura_areas)
+        #areas_oficiales = ["NINGUNA1","NINGUNA2"]
         
         print("AREAS OFICIALES 111 =========>", areas_oficiales)
         return areas_oficiales
@@ -751,7 +757,7 @@ async def upload_fotos(
         print("Resultados de la búsqueda:", resultados_busqueda)  # Verifica los resultados obtenidos
 
         # **Nuevo código para obtener las áreas de la base de datos**
-        """areas_oficiales = []
+        """areas_oficiales = []    
         try:
             areas_result = db.execute(
                 text("SELECT id, nombre FROM areas_oficiales ORDER BY id")
@@ -839,7 +845,9 @@ async def process_and_store_images(imagenes: dict, datos: dict, db: Session) -> 
                 bien_id=datos['bien_id'],  # ID del bien recién registrado
                 #proceso_inventario_id=datos['proceso_inventario_id'],
                 url=s3_url,
-                tipo=tipo
+                tipo=tipo,
+                codigo_inventariador=datos['registrador'],
+                codigo_custodio=datos['worker']
             )
             db.add(nueva_imagen)
             
@@ -876,7 +884,7 @@ async def registrar_bien(
     request: Request,
     db: Session = Depends(get_db),
     worker: str = Form(...),
-    codigoOficina: str = Form(...),  # antes ubicacion
+    codigoOficina: str = "0",  # antes ubicacion
     cod_patr: str = Form(None),
     cod_2024: str = Form(...),
     cod_2023: str = Form(None),
@@ -901,9 +909,10 @@ async def registrar_bien(
     observaciones: str = Form(None),
     enUso: str = Form(...),
     estado: str = Form(...),
-    acciones: str = Form(None),
+    acciones: List[str] = Form([]),
     describe_area: str = Form(None),
-    area_actual_id: str = Form(None)
+    #area_actual_id: str = Form(None),
+    nuevo_usuario: str = Form(None)
 ):
     #Cookie de USAURIO INVENTARIADOR
     # Acceder a las cookies
@@ -913,8 +922,9 @@ async def registrar_bien(
     print("Datos recibidos:", form_data)
     
     print("Acciones ====>",  acciones)
-    print("Area Actual ====>",  area_actual_id)
+    #print("Area Actual ====>",  area_actual_id)
     print("Area descrita ====>",  describe_area)
+    print("Nuevo Usuario ====>",  nuevo_usuario)
 
     if session_cookie:
         # Convertir la cookie de JSON a diccionario
@@ -960,8 +970,9 @@ async def registrar_bien(
         alto_validado = validar_dimensiones(alto)
 
         print("Acciones ZZZ====>",  acciones)
-        print("Area Actual ====>",  area_actual_id)
-        print("Area descrita ====>",  describe_area)   
+        #print("Area Actual ====>",  area_actual_id)
+        print("Area descrita ====>",  describe_area)
+        print("Nuevo USUARIO ====>",  nuevo_usuario)   
 
         # Registro de los datos recibidos para verificación
         datos_recibidos = {
@@ -994,8 +1005,9 @@ async def registrar_bien(
             "enUso": enUso,
             "estado": estado,
             "acciones":acciones,
-            "area_actual_id":area_actual_id,
-            "describe_area":describe_area
+            #"area_actual_id":area_actual_id,
+            "describe_area":describe_area,
+            "nuevo_usuario":nuevo_usuario
         }
 
 
@@ -1011,7 +1023,7 @@ async def registrar_bien(
             raise ValueError("Código de inventario 2024 duplicado")
 
         print("Acciones ====>",  acciones)
-        print("Area Actual ====>",  area_actual_id)
+        #print("Area Actual ====>",  area_actual_id)
         print("Area descrita ====>",  describe_area)
 
         # Registrar el bien
@@ -1045,11 +1057,20 @@ async def registrar_bien(
             en_uso=(enUso == 'Sí'),
             observaciones=observaciones,
             acciones=acciones,
-            area_actual_id=area_actual_id,
-            describe_area=describe_area
+            #area_actual_id=area_actual_id,
+            describe_area=describe_area,
+            nuevo_usuario=nuevo_usuario
         )
         db.add(nuevo_bien)
         db.flush()  # Para obtener el ID del bien
+
+        if 'nuevo_usuario' in locals() and nuevo_usuario is not None:
+            # Grabar nuevo_usuario
+            worker= nuevo_usuario
+        else:
+            # Grabar worker
+            worker = worker
+
 
         # Procesar y guardar imágenes
         datos_imagenes = {
@@ -1064,6 +1085,13 @@ async def registrar_bien(
         }
         print("DATOS PARA IMAGEN ===>", datos_imagenes)
         resultados_imagenes = await process_and_store_images(imagenes, datos_imagenes, db)
+
+        if 'nuevo_usuario' in locals() and nuevo_usuario is not None:
+            # Grabar nuevo_usuario
+            worker= nuevo_usuario
+        else:
+            # Grabar worker
+            worker = worker
 
         # Registro de asignación
         asignacion = AsignacionBien(
@@ -1098,7 +1126,7 @@ async def registrar_bien(
             inventariador_id=registrador_id,
             institucion_id=institucion_id,
             sede_id=sede_actual_id,
-            oficina_id=area_actual_id, #codigoOficina
+            oficina_id=0, #codigoOficina
             responsable_id=worker
         )
         db.add(registro_fallido)
@@ -1120,7 +1148,7 @@ async def registrar_bien(
             inventariador_id=registrador_id,
             institucion_id=institucion_id,
             sede_id=sede_actual_id,
-            oficina_id=area_actual_id, #codigoOficina
+            oficina_id=0, #codigoOficina
             responsable_id=worker
         )
         db.add(registro_fallido)
@@ -1261,14 +1289,14 @@ async def get_dashboard_kpis(db: Session = Depends(get_db)):
     .group_by(Bien.tipo)\
     .all()
     
-    # 4. Bienes faltantes en último inventario
+    """# 4. Bienes faltantes en último inventario
     faltantes = db.query(func.count(InventarioBien.id))\
         .join(ProcesoInventario)\
         .filter(
             ProcesoInventario.anio == current_year,
             InventarioBien.es_faltante == True
         )\
-        .scalar() or 0
+        .scalar() or 0"""
     
     # 5. Asignaciones pendientes
     asignaciones_pendientes = db.query(func.count(AsignacionBien.id))\
@@ -1579,7 +1607,7 @@ async def cargar_bien(
             }
         ]
 
-        areas_oficiales = []
+        #areas_oficiales = []
         try:
             areas_result = db.execute(
                 text("SELECT id, nombre FROM areas_oficiales ORDER BY id")
@@ -1596,14 +1624,43 @@ async def cargar_bien(
         except Exception as e:
             print(f"Error obteniendo áreas oficiales: {e}")
 
+        """ubicaciones = []
+        try:
+            ubicaciones_result = db.execute(
+                text(
+                SELECT d.id, s.nombre AS sede, d.nombre AS dependencia 
+                FROM dependencias d
+                JOIN sedes s ON d.sede_id = s.id
+                ORDER BY s.nombre, d.nombre
+                )
+            ).fetchall()
+            
+            ubicaciones = [
+                {
+                    "id": row[0], 
+                    "sede": row[1], 
+                    "dependencia": row[2]
+                } for row in ubicaciones_result
+            ]
+
+        except Exception as e:
+            print(f"Error obteniendo ubicaciones: {e}")"""
+        
+
+
         # Retornar la plantilla del formulario con los datos
         return templates.TemplateResponse(
             "demo/datos_inventario_ok.html",
             {
                 "request": request,
-                "datos": bien_data,"areas_oficiales": areas_oficiales, "nombre_empleado":nombre_empleado[0], "codigo_dni":codigo_dni
+                "datos": bien_data,
+                #"areas_oficiales": areas_oficiales, 
+                "nombre_empleado": nombre_empleado[0], 
+                "codigo_dni": codigo_dni,
+                #"ubicaciones": ubicaciones
             }
         )
     except Exception as e:
         print(f"Error al cargar bien: {str(e)}")
         return {"error": f"Error al cargar bien: {str(e)}"}
+          
