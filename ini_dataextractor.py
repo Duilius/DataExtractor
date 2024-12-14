@@ -952,7 +952,7 @@ async def registrar_bien(
     uuid_imagen = request.cookies.get("imagen_procesada")
     if uuid_imagen:
         # Obtener imágenes del estado de la aplicación
-        session_id = request.session.get('id', 'default')
+        session_id = request.session.get('id', 'default')   
         imagenes = app.state.imagenes_procesadas.get(session_id, {})
 
         if not imagenes:
@@ -1064,12 +1064,15 @@ async def registrar_bien(
         db.add(nuevo_bien)
         db.flush()  # Para obtener el ID del bien
 
-        if 'nuevo_usuario' in locals() and nuevo_usuario is not None:
-            # Grabar nuevo_usuario
-            worker= nuevo_usuario
+        if 'nuevo_usuario' in locals() and nuevo_usuario not in (None, ''):
+            worker = nuevo_usuario
         else:
-            # Grabar worker
             worker = worker
+
+
+        print("Valor de nuevo_usuario:", nuevo_usuario if 'nuevo_usuario' in locals() else "No definido")
+        print("Valor de worker antes del diccionario:", worker)
+
 
 
         # Procesar y guardar imágenes
@@ -1086,12 +1089,11 @@ async def registrar_bien(
         print("DATOS PARA IMAGEN ===>", datos_imagenes)
         resultados_imagenes = await process_and_store_images(imagenes, datos_imagenes, db)
 
-        if 'nuevo_usuario' in locals() and nuevo_usuario is not None:
-            # Grabar nuevo_usuario
-            worker= nuevo_usuario
+        if 'nuevo_usuario' in locals() and nuevo_usuario not in (None, ''):
+            worker = nuevo_usuario
         else:
-            # Grabar worker
             worker = worker
+
 
         # Registro de asignación
         asignacion = AsignacionBien(
