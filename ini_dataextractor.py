@@ -1127,7 +1127,7 @@ async def registrar_bien(
             institucion_id=institucion_id,
             sede_id=sede_actual_id,
             oficina_id=0, #codigoOficina
-            responsable_id=worker
+            #responsable_id=worker
         )
         db.add(registro_fallido)
         db.commit()
@@ -1149,7 +1149,7 @@ async def registrar_bien(
             institucion_id=institucion_id,
             sede_id=sede_actual_id,
             oficina_id=0, #codigoOficina
-            responsable_id=worker
+            #responsable_id=worker
         )
         db.add(registro_fallido)
         db.commit()
