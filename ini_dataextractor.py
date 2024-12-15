@@ -30,7 +30,7 @@ from datetime import datetime
 from utils.dispositivo import determinar_tipo_dispositivo
 from database import SessionLocal
 from scripts.py.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, HistorialCodigoInventario, AsignacionBien, InventarioBien, TipoBien, TipoMovimiento, ProcesoInventario, Empleado, Oficina)
-from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area
+from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area, consulta_codigo
 import logging
 #from create_tabla_inventario_anterior import InventarioAnterior
 from scripts.sql_alc.anterior_sis import AnteriorSis
@@ -284,6 +284,54 @@ async def busca_areas(request: Request):
         response = templates.TemplateResponse(
             "demo/areas_ubicadas.html",
             {"request": request, "areas": areas},
+            headers={"X-Debug": "Response-Sent"}
+        )
+        return response
+        
+    except Exception as e:
+        print("Error completo:", str(e))
+        import traceback
+        print("Traceback:", traceback.format_exc())
+        return JSONResponse(
+            {"error": str(e), "traceback": traceback.format_exc()},
+            status_code=500
+        )
+
+
+#################################################
+# /busca-por Código : Cód-Patr, Cód-SBN, Cód-2023
+#################################################
+@app.post('/busca-codigo')
+async def busca_codigo(request: Request):
+    try:
+        # Primero leemos el body completo
+        body = await request.body()
+        print("Body recibido:", body)
+        
+        # Intentamos obtener el form data
+        form = await request.form()
+        print("Form data:", dict(form))
+        
+        # Obtenemos ubicacion
+        num_codigo = form.get('codigo_busqueda', '')
+        campo      = form.get('campo_busqueda', '')
+
+        print("Código a buscar:", num_codigo)
+        print("Campo seleccionado:", campo if campo else "No se recibió campo_busqueda")
+
+        print("Código a buscar:", num_codigo, campo)
+        
+        if not num_codigo:
+            return JSONResponse({"error": "No se recibió ningún código"}, status_code=400)
+            
+        datos_bien, nombre_dni = consulta_codigo(num_codigo, campo)
+
+        print("Áreas encontradas:", datos_bien)
+        
+        # Agregamos un header para debug
+        response = templates.TemplateResponse(
+            "demo/bien_por_codigo_hallado.html",
+            {"request": request, "datos_bien": datos_bien, "nombre_dni": nombre_dni},
             headers={"X-Debug": "Response-Sent"}
         )
         return response
@@ -909,7 +957,7 @@ async def registrar_bien(
     observaciones: str = Form(None),
     enUso: str = Form(...),
     estado: str = Form(...),
-    acciones: List[str] = Form([]),
+    acciones: List[str] = Form(None),
     describe_area: str = Form(None),
     #area_actual_id: str = Form(None),
     nuevo_usuario: str = Form(None)
