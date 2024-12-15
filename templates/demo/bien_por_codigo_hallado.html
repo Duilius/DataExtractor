@@ -4,29 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modal de Selección</title>
-    <link rel="stylesheet" href="tu-estilo.css">
-
+    
     <style>
 /* Estilos para dispositivos móviles */
 @media (max-width: 768px) {
     .modal-container {
         width: 100%;
-        /*height: 100%;*/
-        min-height: 1900px;
+        min-height: 600px;
+        height: 900px;
         display: flex;
         justify-content: center;
         align-items: center;
         background-color: rgba(0, 0, 0, 0.5);
+        margin-top: -10px;
     }
 
     .modal-content {
+        margin-top: -15px;
         background-color: white;
-        padding: 20px;
+        padding: 10px;
         border-radius: 8px;
-        width: 90%;
-        min-height: 1800px;
-        max-height: 1800px;
-        overflow-y: auto;
+        width: 98%;
+        max-height: 100%;
+        /*overflow-y: auto;*/
+        min-height: 900px;
     }
 
     .responsible-title {
@@ -36,26 +37,28 @@
     }
 
     .data-section {
-        margin-bottom: 20px;
+        margin-top: -10px;
+        margin-bottom: 10px;
     }
 
     .data-row {
-        display: flex;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 15px;
         margin-bottom: 15px;
     }
 
     .data-row label {
-        width: 100px;
         font-weight: bold;
-        margin-right: 10px;
+        grid-column: 1 / 2;
     }
 
     .data-row input {
-        flex: 1;
+        grid-column: 2 / 3;
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 4px;
+        max-width: 30px;
     }
 
     .description-row {
@@ -94,6 +97,7 @@
         display: none;
     }
 }
+
     </style>
 
 
@@ -103,8 +107,8 @@
     <div class="modal-container">
         <div class="modal-content">
             <div class="responsible-title">
-                <p><strong>Responsable del Bien:</strong></p>
-                <p>{{ datos_bien.dni }} {{ nombre_dni }}</p>
+                <!--<p><strong>Responsable del Bien:</strong></p>-->
+                <p>{{ datos_bien.codigo_dni }} {{ nombre_dni }}</p>
             </div>
     
             <div class="data-section">
@@ -120,17 +124,21 @@
                     <label for="cod_2023">Cod.-2023:</label>
                     <input type="text" id="cod_2023" value="{{ datos_bien.inv_2023 }}" readonly>
                 </div>
+                
                 <div class="data-row">
                     <label for="cod_2022">Cod.-2022:</label>
                     <input type="text" id="cod_2022" value="{{ datos_bien.inv_2022 }}" readonly>
                 </div>
+                
             </div>
     
             <div class="data-section">
+                
                 <div class="data-row">
                     <label for="nro_serie">N° Serie:</label>
-                    <input type="text" id="nro_serie" value="{{ datos_bien.numero_serie }}" readonly>
+                    <input type="text" id="nro_serie" value="{{ datos_bien.numero_serie }}" readonly size="20">
                 </div>
+                
                 <div class="data-row">
                     <label for="ubicacion">Ubicación:</label>
                     <input type="text" id="ubicacion" value="{{ datos_bien.ubicacion_actual }}" readonly>
@@ -140,27 +148,64 @@
             <div class="data-section">
                 <div class="description-row">
                     <label for="descripcion">Descripción:</label>
-                    <textarea id="descripcion" rows="6" readonly>{{ datos_bien.descripcion }}</textarea>
+                    <textarea id="descripcion" rows="3" readonly>{{ datos_bien.descripcion }}</textarea>
                 </div>
             </div>
-    
+        <!--
             <div class="modal-buttons">
+                
                 <div id="aceptar-descartar" class="hidden">
                     <button id="aceptar" onclick="transferData()">Aceptar</button>
                     <button id="descartar" onclick="resetSelection()">Descartar</button>
                 </div>
-                <button class="accept-button" onclick="window.close();">Aceptar</button>
+                
+                <button class="accept-button" onclick="window.close(); transferData()">Aceptar</button>
+                <button id="descartar" onclick="resetSelection()">Descartar</button>
             </div>
+        -->
         </div>
+        <div id="aceptar-descartar">
+            <button id="aceptar"
+            hx-get="/cargar-bien/{{ datos_bien.id }}"
+            hx-target="#form-section"
+            onclick="transferData(this)"
+            
+            >Aceptar</button>
     </div>
 
-<input type="hidden" id="codigo-seleccionado">
+<input type="hidden" id="id-bien-seleccionado" value="{{datos_bien.id}}">
 <input type="hidden" id="nombres-seleccionado">
 <input type="hidden" id="gerencia-seleccionado">
 <input type="hidden" id="foto-seleccionado">
 <input type="hidden" id="oficina-seleccionado">
 
 <script>
+
+function transferData() {
+
+// Obtener el ID del bien
+//const bienId = row.getAttribute('data-bien-id');
+//console.log('Bien seleccionado:', bienId);
+
+// Hacer visible #form-section con animación
+const formSection = document.getElementById('form-section');
+if (formSection) {
+    formSection.style.opacity = '0';
+    formSection.style.display = 'block';
+    setTimeout(() => {
+        formSection.style.transition = 'opacity 0.3s ease-in-out';
+        formSection.style.opacity = '1';
+    }, 0);
+}
+
+document.getElementById("worker").value="";
+document.getElementById("worker-name").textContent="";
+modal.style.display = "none";
+
+// También puedes acceder al ID así:
+// const bienId = row.id.replace('bien_', '');
+}
+
     // Definición de las funciones
     function selectUser(userId) {
     document.getElementById('codigo-seleccionado').value = userId;
@@ -175,6 +220,7 @@
     document.getElementById('aceptar-descartar').classList.remove('oculto');
 }
 
+ /*
     function transferData() {
         // Obtener los datos seleccionados del modal
 
@@ -193,7 +239,7 @@
 
         closeModal();
     }
-
+*/
     function resetSelection() {
         // Resetea la selección de usuario y oculta los botones
         document.getElementById('aceptar-descartar').classList.add('oculto');

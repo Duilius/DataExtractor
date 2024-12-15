@@ -6,9 +6,21 @@
     <title>Ventana Modal</title>
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
     <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
-    <link rel="stylesheet" href="{{url_for('static', path='worker_search.css')}}">
+    <!--<link rel="stylesheet" href="{{url_for('static', path='worker_search.css')}}">-->
     <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
 <style>
+
+#modal-busqueda{
+    margin-top: 20px;
+    height: auto;
+    max-height: 70vh;
+}
+
+.search-results{
+    height: 400px;
+    min-height: 40vh;
+    max-height: 90vh;
+}
 
 label{
     color:#000;
@@ -29,19 +41,19 @@ label{
         <!-- Opciones de selección -->
         <div class="radio-container" style="display: flex; justify-content: space-around; gap: 1rem; margin-bottom: 1.5rem;">
             <label for="codigo_patrimonial" style="display: flex; flex-direction: column; align-items: center;">
-                Cód.-Patr.
+                Patr.
                 <input type="radio" id="codigo_patrimonial" name="campo_busqueda" value="codigo_patrimonial">
             </label>
             <label for="codigo_nacional" style="display: flex; flex-direction: column; align-items: center;">
-                Cód.-SBN
+                SBN
                 <input type="radio" id="codigo_nacional" name="campo_busqueda" value="codigo_nacional">
             </label>
             <label for="inv_2023" style="display: flex; flex-direction: column; align-items: center;">
-                Cód.-2023
+                2023
                 <input type="radio" id="inv_2023" name="campo_busqueda" value="inv_2023">
             </label>
             <label for="inv_2022" style="display: flex; flex-direction: column; align-items: center;">
-                Cód.-2022
+                2022
                 <input type="radio" id="inv_2022" name="campo_busqueda" value="inv_2022">
             </label>
         </div>
@@ -64,14 +76,13 @@ label{
         </div>
         <div id="lista-oficinas" class="search-results"></div>
 
-        <!-- Botón Aceptar -->
+        <!-- Botón Aceptar 
         <div id="aceptar-descartar">
             <button id="aceptar">Aceptar</button>
         </div>
+        --> 
     </form>
     </div>
 </div>
-
-
 </body>
 </html>
