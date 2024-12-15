@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Enum, Boolean, Date, or_, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Enum, Boolean, Date, or_, DateTime, Float, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, aliased
 from sqlalchemy.sql import select
@@ -86,6 +86,46 @@ class Empleado(Base):
     oficina = relationship("Oficina", back_populates="empleados", foreign_keys=[oficina_id])
     oficina_dirigida = relationship("Oficina", back_populates="jefe", foreign_keys="Oficina.jefe_id")
 
+class AnteriorSis(Base):
+   __tablename__ = 'anterior_sis'
+   id = Column(Integer, primary_key=True, autoincrement=True)
+   institucion_id = Column(Integer, nullable=True)
+   item = Column(String(20))
+   inv_2023 = Column(String(20))
+   inv_2022 = Column(String(20))
+   codigo_patrimonial = Column(String(20), unique=True)
+   codigo_nacional = Column(String(20))
+   descripcion = Column(String(200))
+   marca = Column(String(100))
+   modelo = Column(String(100))
+   tipo = Column(String(100))
+   material = Column(String(50), nullable=True)
+   color = Column(String(50))
+   numero_serie = Column(String(50))
+   largo = Column(Float, nullable=True)
+   ancho = Column(Float, nullable=True)
+   alto = Column(Float, nullable=True)
+   estado = Column(String(20))
+   en_uso = Column(String(20))
+   observaciones = Column(Text)
+   num_placa = Column(String(50), nullable=True)
+   anio_fabricac = Column(Integer, nullable=True)
+   num_chasis = Column(String(100), nullable=True)
+   num_motor = Column(String(100), nullable=True)
+   procedencia = Column(String(100), nullable=True)
+   propietario = Column(String(100), nullable=True)
+   faltante = Column(Boolean, default=True)
+   sede_id = Column(Integer)
+   sede =Column(String(50), nullable=True)
+   ubicacion_actual =Column(String(300), nullable=True)
+   codigo_dni =Column(String(10), nullable=True)
+   
+   # Relaciones
+   empleado_id = Column(Integer, ForeignKey('empleados.id'))
+   ubicacion_fisica_id = Column(Integer, ForeignKey('ubicaciones_fisicas.id'), nullable=True)
+   
+   empleado = relationship("Empleado")
+
 #CONSULTA REGISTRO
 def consulta_registro(valor):
     db = Session()
@@ -169,5 +209,55 @@ def consulta_area(valor):
 
         return oficinas
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en la consulta: {str(e)}")
+    
+
+
+
+#####################CONSULTA AREAS u OFICINAS #########################################
+def consulta_codigo(valor, campo):
+    """
+    Consulta por código: Cod-Patr, Cod-SBN, Cod-2023
+    """
+    db = Session()
+    try:
+        # Base del query para la tabla oficinas
+        stmt = select(
+            AnteriorSis.id,
+            AnteriorSis.item,
+            AnteriorSis.inv_2023,
+            AnteriorSis.codigo_patrimonial,
+            AnteriorSis.codigo_nacional,
+            AnteriorSis.descripcion,
+            AnteriorSis.observaciones,
+            AnteriorSis.numero_serie,
+            AnteriorSis.inv_2022,
+            AnteriorSis.ubicacion_actual,
+            AnteriorSis.codigo_dni
+        )
+
+        num_dni = AnteriorSis.codigo_dni
+
+        nombres_dni = db.query(Empleado).filter_by(codigo=num_dni).first().nombre
+
+        try:
+            if campo == "inv_2023":
+                print("que hay ====>", db.query(AnteriorSis).filter_by(inv_2023=valor).first().codigo_dni)
+                datos_bien = db.query(AnteriorSis).filter_by(inv_2023=valor).first()
+            elif campo == "codigo_nacional":
+                datos_bien = db.query(AnteriorSis).filter_by(codigo_nacional=valor).first()
+            elif campo == "codigo_patrimonial":
+                datos_bien = db.query(AnteriorSis).filter_by(codigo_patrimonial=valor).first()
+            elif campo == "inv_2022":
+                datos_bien = db.query(AnteriorSis).filter_by(inv_2022=valor).first()
+            else:
+                return None
+        except Exception as e:
+            print(f"Error en la búsqueda: {e}")
+            return None
+
+        return datos_bien, nombres_dni
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en la consulta: {str(e)}")
