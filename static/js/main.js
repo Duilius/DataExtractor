@@ -175,7 +175,14 @@ function validarFormulario() {
         if (!valor || valor.trim() === '' || valor === 'No disponible') {
             valido = false;
             elemento.classList.add('error');
-            errores.push(`Campo ${campo.id} es obligatorio`);
+            alert("Campo es: " + campo.id);    
+            if (campo.id === 'worker'){
+                errores.push(`Campo Trabajador es obligatorio`);    
+            } else{
+
+                errores.push(`Campo ${campo.id} es obligatorio`);
+            }
+
         } else {
             elemento.classList.remove('error');
         }
