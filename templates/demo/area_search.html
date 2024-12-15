@@ -1,24 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
+    <title>Ventana Modal</title>
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
     <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
     <link rel="stylesheet" href="{{url_for('static', path='worker_search.css')}}">
     <script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
+<style>
+
+label{
+    color:#000;
+}
+
+</style>
+
 </head>
 <body>
+<!-- Modal de búsqueda por código -->
+<div id="modal-busqueda" class="empleado" style="background-color: #f4f4f4;">
+    <!-- Contenedor de datos -->
+    <div class="datos-empleado">
+        <h3 class="datos-usuario" style="text-decoration: underline; color: #dc3545; margin-bottom: 1rem;">
+            Búsqueda por Código
+        </h3>
+    <form id="busqueda-form" style="margin-bottom: 1.5rem;">    
+        <!-- Opciones de selección -->
+        <div class="radio-container" style="display: flex; justify-content: space-around; gap: 1rem; margin-bottom: 1.5rem;">
+            <label for="codigo_patrimonial" style="display: flex; flex-direction: column; align-items: center;">
+                Cód.-Patr.
+                <input type="radio" id="codigo_patrimonial" name="campo_busqueda" value="codigo_patrimonial">
+            </label>
+            <label for="codigo_nacional" style="display: flex; flex-direction: column; align-items: center;">
+                Cód.-SBN
+                <input type="radio" id="codigo_nacional" name="campo_busqueda" value="codigo_nacional">
+            </label>
+            <label for="inv_2023" style="display: flex; flex-direction: column; align-items: center;">
+                Cód.-2023
+                <input type="radio" id="inv_2023" name="campo_busqueda" value="inv_2023">
+            </label>
+            <label for="inv_2022" style="display: flex; flex-direction: column; align-items: center;">
+                Cód.-2022
+                <input type="radio" id="inv_2022" name="campo_busqueda" value="inv_2022">
+            </label>
+        </div>
 
-<!--<div class="search-modal"></div>-->
-    <h2>Búsqueda por Área</h2>
-    
-    <div class="search-container">
-        <form id="oficinas-search-form">
-            <input type="search" name="area_search" id="area-search" size="30" placeholder="Buscar área..." minlength="3"
-            hx-post="/busca-areas"
+        <!-- Campo de texto -->
+        <div style="margin-bottom: 1.5rem;">
+            <input type="search" name="codigo_busqueda" id="codigo_busqueda" type="text" placeholder="Ingrese el dato" 
+            style="width: 100%; padding: 0.8rem; font-style: italic; border: 1px solid #ccc; border-radius: 5px;" size="30" placeholder="Buscar área..." minlength="3"
+            hx-post="/busca-codigo"
             hx-trigger="keyup changed delay:1000ms"
             hx-target="#lista-oficinas"
             _="on keyup 
@@ -28,56 +60,18 @@
                     add .oculto to #lista-oficinas
                 end
             "/>
-        </form>
-    </div>
-    <div id="lista-oficinas" class="search-results"></div>
     
-    
-    <div class="selected-item">
-        <strong>Área seleccionada:</strong>
-        <span id="selected-area">Ninguna</span>
-    </div>
-    
-    <button id="show-dependencies" class="btn" disabled>Mostrar Dependencias</button>
-    
-    <div class="search-container">
-        <div id="sub-area-results" class="search-results"></div>
-    </div>
-    
-    <div class="selected-item">
-        <strong>Sub-área seleccionada:</strong>
-        <span id="selected-sub-area">Ninguna</span>
-    </div>
-    
-    <button id="show-sub-dependencies" class="btn" disabled>Mostrar Sub-Dependencias</button>
-    
-    <div class="search-container">
-        <div id="sub-sub-area-results" class="search-results"></div>
-    </div>
-    
-    <div class="selected-item">
-        <strong>Sub-sub-área seleccionada:</strong>
-        <span id="selected-sub-sub-area">Ninguna</span>
-    </div>
-    
-    <h3>Empleados</h3>
-    <div id="employees-list" class="employees-container"></div>
+        </div>
+        <div id="lista-oficinas" class="search-results"></div>
 
-    <button type="submit">Buscar</button>
+        <!-- Botón Aceptar -->
+        <div id="aceptar-descartar">
+            <button id="aceptar">Aceptar</button>
+        </div>
+    </form>
+    </div>
 </div>
 
 
-<script>
-document.getElementById('area-search-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const area = document.getElementById('area-select').value;
-    // Aquí irá la lógica para buscar y mostrar los resultados
-    document.getElementById('area-search-results').innerHTML = `Mostrando resultados para: ${area}`;
-});
-</script>
-
-
-<script type="text/script" src="{{url_for('static', path='js/prueba_scripts.js')}}" defer></script>
-<script type="text/script" src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}"></script>
 </body>
 </html>
