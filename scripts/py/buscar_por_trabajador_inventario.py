@@ -237,20 +237,22 @@ def consulta_codigo(valor, campo):
             AnteriorSis.codigo_dni
         )
 
-        num_dni = AnteriorSis.codigo_dni
-
-        nombres_dni = db.query(Empleado).filter_by(codigo=num_dni).first().nombre
+        #num_dni = AnteriorSis.codigo_dni
 
         try:
             if campo == "inv_2023":
                 print("que hay ====>", db.query(AnteriorSis).filter_by(inv_2023=valor).first().codigo_dni)
                 datos_bien = db.query(AnteriorSis).filter_by(inv_2023=valor).first()
+                nombres_dni = db.query(Empleado).filter_by(codigo=datos_bien.codigo_dni).first().nombre
             elif campo == "codigo_nacional":
                 datos_bien = db.query(AnteriorSis).filter_by(codigo_nacional=valor).first()
+                nombres_dni = db.query(Empleado).filter_by(codigo=datos_bien.codigo_dni).first().nombre
             elif campo == "codigo_patrimonial":
                 datos_bien = db.query(AnteriorSis).filter_by(codigo_patrimonial=valor).first()
+                nombres_dni = db.query(Empleado).filter_by(codigo=datos_bien.codigo_dni).first().nombre
             elif campo == "inv_2022":
                 datos_bien = db.query(AnteriorSis).filter_by(inv_2022=valor).first()
+                nombres_dni = db.query(Empleado).filter_by(codigo=datos_bien.codigo_dni).first().nombre
             else:
                 return None
         except Exception as e:
