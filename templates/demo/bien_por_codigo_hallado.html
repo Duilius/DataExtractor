@@ -198,8 +198,8 @@ if (formSection) {
     }, 0);
 }
 
-document.getElementById("worker").value="";
-document.getElementById("worker-name").textContent="";
+document.getElementById("worker").value="{{ datos_bien.codigo_dni }}";
+document.getElementById("worker-name").textContent="{{ nombre_dni }}";
 modal.style.display = "none";
 
 // También puedes acceder al ID así:
