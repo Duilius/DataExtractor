@@ -1713,4 +1713,3 @@ async def cargar_bien(
     except Exception as e:
         print(f"Error al cargar bien: {str(e)}")
         return {"error": f"Error al cargar bien: {str(e)}"}
-          
