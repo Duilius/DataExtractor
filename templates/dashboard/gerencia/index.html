@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Generación de Fichas</title>
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <h1>Panel de Generación de Fichas</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Responsable</th>
+                <th>Bienes Asignados</th>
+                <th>Páginas</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="responsables-table">
+            <!-- Filas dinámicas cargadas desde el servidor -->
+        </tbody>
+    </table>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

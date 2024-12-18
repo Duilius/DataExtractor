@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Levantamiento</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+    
+        .container {
+            width: 210mm; /* Ancho A4 */
+            margin: 0 auto;
+            padding: 10mm;
+            box-sizing: border-box;
+            border: 1px solid #000;
+        }
+    
+        table {
+            width: 100%;
+            table-layout: fixed; /* Ajusta uniformemente el ancho de columnas */
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+    
+        th, td {
+            border: 1px solid #000;
+            text-align: left; /* Alinear contenido de las celdas a la izquierda */
+            padding: 4px;
+            word-wrap: break-word; /* Evita que el texto desborde la celda */
+        }
+    
+        th {
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+    
+        .header {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    
+        .header p {
+            margin: 0;
+            text-align: left; /* Datos alineados a la izquierda */
+            line-height: 1.5;
+        }
+    
+        /* Ajustar salto de página para tabla en impresión */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+    
+            .container {
+                width: 297mm; /* Ancho para A4 horizontal */
+                padding: 5mm;
+                border: none;
+            }
+    
+            table {
+                page-break-before: auto;
+                word-wrap: break-word;
+            }
+    
+            tr, td {
+                page-break-inside: avoid; /* Evita que filas se dividan */
+            }
+    
+            .no-print {
+                display: none; /* Ocultar elementos no imprimibles */
+            }
+        }
+    
+        .print-button {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+    
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>ANEXO 2</h2>
+            <h3>FICHA DE LEVANTAMIENTO DE INFORMACIÓN - INVENTARIO PATRIMONIAL 2024</h3>
+            <p><strong>Código y Nombre del Local:</strong> {{ empleado.local or '_____________________________' }}</p>
+            <p><strong>Cod. y Nombre de la Unidad Organizacional:</strong> {{ empleado.unidad or '_____________________________' }}</p>
+            <p><strong>Nombre del Usuario:</strong> {{ empleado.nombre }}</p>
+            <p><strong>Cargo:</strong> {{ empleado.puesto }}</p>
+            <p><strong>Área:</strong> {{ empleado.area or '_____________________________' }}</p>
+            <p><strong>Ambiente:</strong> {{ empleado.ambiente or '_____________________________' }}</p>
+            <p><strong>Piso de Ubicación:</strong> {{ empleado.piso or '_____________________________' }}</p>
+            <p><strong>Página:</strong> 1 <strong>Fecha:</strong> {{ fecha_actual }}</p>
+        </div>
+
+        <a href="#" class="print-button no-print" onclick="window.print()">Imprimir Ficha</a>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>INV-2024</th>
+                    <th>INV-2023</th>
+                    <th>Cod-Patr</th>
+                    <th>Cod-SBN</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Tipo-Modelo</th>
+                    <th>Dimensiones</th>
+                    <th>Color</th>
+                    <th>Detalles</th>
+                    <th>Estado</th>
+                    <th>Situación</th>
+                    <th>Procedencia</th>
+                    <th>Ambiente</th>
+                    <th>Propietario</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in asignaciones %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.codigo_inv_2024 or '' }}</td>
+                    <td>{{ item.codigo_inv_2023 or '' }}</td>
+                    <td>{{ item.codigo_patrimonial or '' }}</td>
+                    <td>{{ item.codigo_nacional or '' }}</td>
+                    <td>{{ item.marca or '' }}</td>
+                    <td>{{ item.modelo or '' }}</td>
+                    <td>{{ item.tipo or '' }}</td>
+                    <td>{{ item.largo or '' }}x{{ item.ancho or '' }}x{{ item.alto or '' }}</td>
+                    <td>{{ item.color or '' }}</td>
+                    <td>{{ item.detalles or '' }}</td>
+                    <td>{{ item.estado or '' }}</td>
+                    <td>{{ item.situacion or '' }}</td>
+                    <td>{{ item.procedencia or '' }}</td>
+                    <td>{{ item.ambiente or '' }}</td>
+                    <td>{{ item.propietario or '' }}</td>
+                    <td>{{ item.observaciones or '' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="17" style="text-align: center;">No hay bienes asignados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p><strong>NOTA:</strong> El usuario declara haber tomado bienes patrimoniales que se encuentran bajo uso del usuario y es responsable directo de la existencia, permanencia, conservación y buen uso de cada uno de los bienes descritos.</p>
+        </div>
+
+        <div class="signature">
+            <div>
+                <p>___________________________</p>
+                <p>Firma del Usuario Responsable</p>
+            </div>
+            <div>
+                <p>___________________________</p>
+                <p>Firma del Inventariador</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

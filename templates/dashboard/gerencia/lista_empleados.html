@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal de Selección</title>
+
+    
+</head>
+<body>
+
+    <div id="aceptar-descartar" class="oculto">
+        <button id="aceptar" onclick="transferData()">Aceptar</button>
+        <button id="descartar" onclick="resetSelection()">Descartar</button>
+    </div>
+<!--
+<input type="text" id="busca_usuario">
+-->
+<div id="lista-empleados" class="contenedor-scroll">
+    {% for user in users %}
+    <!--<div class="fila-empleado" onclick="window.location.href='/dashboard/gerencia/fichaLevInf/{{ user[0] }}'">-->
+    <div class="fila-empleado" onclick="window.open('/dashboard/gerencia/fichaLevInf/{{ user[0] }}', '_blank')">
+
+        <span class="codigo">{{ user[1] }}</span>
+        <span class="nombres">{{ user[2] }}</span>
+        <span class="puesto">{{ user[5] }}</span>
+    </div>
+    {% endfor %}
+</div>
+
+
+
+<input type="hidden" id="codigo-seleccionado">
+<input type="hidden" id="nombres-seleccionado">
+<input type="hidden" id="gerencia-seleccionado">
+<input type="hidden" id="foto-seleccionado">
+<input type="hidden" id="oficina-seleccionado">
+
+<script>
+    // Definición de las funciones
+    function selectUser(userId) {
+    document.getElementById('codigo-seleccionado').value = userId;
+    document.getElementById('nombres-seleccionado').value = document.getElementById(`nombres-${userId}`).value;
+
+    // Ocultar todas las tarjetas
+    //const empleados = document.querySelectorAll('#lista-usuarios .empleado');
+    //empleados.forEach(emp => emp.style.display = 'none');
+    
+    // Mostrar solo el seleccionado
+    //document.getElementById(`empleado-${userId}`).style.display = '';
+    //document.getElementById('aceptar-descartar').classList.remove('oculto');
+}
+
+    function transferData() {
+        // Obtener los datos seleccionados del modal
+
+        const selectedCodigo = document.getElementById('codigo-seleccionado').value;
+        const selectedPhoto = document.getElementById('foto-seleccionado').value;
+        const selectedName = document.getElementById('nombres-seleccionado').value;
+        const selectedArea = document.getElementById('gerencia-seleccionado').value;
+        const oficinaId = document.getElementById('oficina-seleccionado').value;
+
+        // Asignar los valores a los elementos correspondientes en la página principal
+        document.getElementById('worker-photo').src = selectedPhoto;
+        document.getElementById('worker-name').textContent = selectedName;
+        document.getElementById('worker-area').textContent = selectedArea;
+        document.getElementById('worker').value = selectedCodigo;
+        document.getElementById('codigoOficina').value = oficinaId;
+
+        closeModal();
+    }
+
+    function resetSelection() {
+        // Resetea la selección de usuario y oculta los botones
+        document.getElementById('aceptar-descartar').classList.add('oculto');
+        const empleados = document.querySelectorAll('#lista-usuarios .empleado');
+        empleados.forEach(emp => emp.style.display='');
+    }
+
+
+    // Función para cerrar el modal
+    function closeModal() {
+   Yo     const modal = document.getElementById('modal');
+        modal.style.display = 'none'; // Ocultar el modal
+    }
+</script>
+
+</body>
+</html>

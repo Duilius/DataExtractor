@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Levantamiento</title>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    font-size: 12px;
+}
+.container {
+    width: 80%;
+    margin: 0 auto;
+    border: 1px solid #000;
+    padding: 10px;
+    position: relative;
+    padding-top: 80px; /* Aumentado para dar más espacio */
+}
+.cabecera {
+    text-align: left;
+    margin-bottom: 15px;
+    position: absolute;
+    top: 25px; /* Ajusta este valor según sea necesario */
+    left: 10px;
+    margin-top: 0;
+    font-size: 60%;
+}
+.bloques {
+    margin-top: 20px; /* Añadido para separar del encabezado */
+}
+
+.logo {
+    width: 50px;
+    height: auto;
+    display: inline-block;
+    vertical-align: middle;
+}
+.titulo {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+.titulo h1 {
+    font-size: 12px;
+    margin: 0;
+    font-weight: bold;
+}
+.titulo p {
+    margin: 0;
+    font-size: 6px;
+}
+.anexo {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    top: 10px;
+}
+.anexo h2, .anexo h3 {
+    margin: 0;
+}
+.info-derecha {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    text-align: right;
+    top: 10px; /* Ajustado para alinear con la cabecera */
+}
+.bloques {
+    display: flex;
+    justify-content: space-between;
+}
+.bloque {
+    width: 48%;
+}
+.campo {
+    margin-bottom: 5px;
+}
+.campo label {
+    display: inline-block;
+    width: 150px;
+    font-weight: bold;
+}
+.campo span {
+    border-bottom: 1px solid #000;
+    display: inline-block;
+    width: calc(100% - 155px);
+}
+.mayusculas {
+    text-transform: uppercase;
+    font-size: 75%;
+}
+.negrita {
+    font-weight: bold;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 10px;
+    table-layout: fixed;
+}
+th, td {
+    border: 1px solid #000;
+    padding: 2px;
+    text-align: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+th {
+    background-color: #f2f2f2;
+}
+table th:last-child,
+table td:last-child {
+    border-right: 1px solid #000;
+}
+.note {
+    margin-top: 20px;
+    font-size: 10px;
+}
+.signature {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+.signature div {
+    text-align: center;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.print-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    min-width: 120px;
+    text-align: center;
+}
+
+
+@media print {
+    body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        width: 100%;
+        border: none;
+    }
+    table {
+        width: 99%;
+        table-layout: fixed;
+        font-size: 8px;
+        page-break-inside: auto;
+    }
+    table th:last-child,
+    table td:last-child {
+        border-right: 1px solid #000 !important; /* Fuerza el borde derecho */
+    }
+    th, td {
+        padding: 1px;
+    }
+    .no-print {
+        display: none;
+    }
+}
+
+@page {
+    size: landscape;
+}
+
+/* Ajustar anchos de columnas específicas */
+table th:nth-child(1), table th:nth-child(2), table th:nth-child(3),
+table th:nth-child(4), table th:nth-child(5) {
+    width: 5%;
+}
+
+table th:nth-child(6), table th:nth-child(7), table th:nth-child(8),
+table th:nth-child(9), table th:nth-child(10), table th:nth-child(11),
+table th:nth-child(12), table th:nth-child(13), table th:nth-child(14),
+table th:nth-child(15), table th:nth-child(16) {
+    width: 6%;
+}
+
+table th:nth-child(17) {
+    width: 10%;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="cabecera">
+            <img src="/api/placeholder/50/50" alt="Logo SIS" class="logo">
+            <div class="titulo">
+                <h1>Seguro Integral de Salud</h1>
+                <p>OFICINA DE ADMINISTRACIÓN</p>
+                <p>CONTROL DE INVENTARIO DE BIENES PATRIMONIALES AL 31.12.2024</p>
+            </div>
+        </header>
+        
+        <div class="anexo">
+            <h2>ANEXO 2</h2>
+            <h3>FICHA DE LEVANTAMIENTO DE INFORMACIÓN - INVENTARIO PATRIMONIAL 2024</h3>
+        </div>
+        <div class="info-derecha">
+            <p>N° Hoja: _________</p>
+            <p>Fecha: _________</p>
+        </div>
+
+        <div class="bloques">
+            <div class="bloque">
+                <div class="campo">
+                    <label class="mayusculas negrita">OFICINA:</label>
+                    <span>SEDE CENTRAL [ ] UDR  [  ]   GMR [ ]</span>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas negrita"><u>USUARIO RESPONSABLE</u></label>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas">APELLIDOS Y NOMBRES:</label>
+                    <span> {{ empleado.nombre }}</span>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas">CARG&#79;:</label>
+                    <span> {{ empleado.puesto }}</span>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas">DEPENDENCIA:</label>
+                    <span></span>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas">MODALIDAD FUNCIONARIO:</label>
+                    <span></span>
+                </div>
+            </div>
+            <div class="bloque">
+                <div class="campo">
+                    <label class="mayusculas negrita"><u>PERSONAL INVENTARIADOR</u></label>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas">APELLIDOS Y NOMBRES:</label>
+                    <span></span>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas">EQUIPO:</label>
+                    <span></span>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas">DEPENDENCIA UDT/GMR:</label>
+                    <span></span>
+                </div>
+                <div class="campo">
+                    <label class="mayusculas">LOCAL: CENTRAL {     } ARCHIVO CENTRAL  {      }</label>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>INV-2024</th>
+                    <th>INV-2023</th>
+                    <th>Código-Patr</th>
+                    <th>Código-SBN</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Tipo-Modelo</th>
+                    <th>Dimensiones</th>
+                    <th>Color</th>
+                    <th>Detalles</th>
+                    <th>Estado</th>
+                    <th>Situación</th>
+                    <th>Procedencia</th>
+                    <th>Ambiente</th>
+                    <th>Propietario</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in asignaciones %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.cod_inv_2024 or '' }}</td>
+                    <td>{{ item.cod_inv_2023 or '' }}</td>
+                    <td>{{ item.codigo_patrimonial or '' }}</td>
+                    <td>{{ item.codigo_nacional or '' }}</td>
+                    <td>{{ item.descripcion or '' }}</td>
+                    <td>{{ item.marca or '' }}</td>
+                    <td>{{ item.modelo or '' }}</td>
+                    <td>{{ item.numero_serie or '' }}</td>
+                    <!--<td>{{ item.largo or '' }}x{{ item.ancho or '' }}x{{ item.alto or '' }}</td>-->
+                    <td>{{ item.color or '' }}</td>
+                    <td>{{ item.observaciones or '' }}</td>
+                    <td>{{ item.estado or '' }}</td>
+                    <td>{{ item.en_uso or '' }}</td>
+                    <td>{{ item.ambiente or '' }}</td>
+                    <td>{{ item.acciones or '' }}</td>
+                    <td>{{ item.acciones or '' }}</td>
+                    <td>{{ item.acciones or '' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="17" style="text-align: center;">No hay bienes asignados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p><strong>NOTA:</strong> El usuario declara haber tomado bienes patrimoniales que se encuentran bajo uso del usuario y es responsable directo de la existencia, permanencia, conservación y buen uso de cada uno de los bienes descritos.</p>
+        </div>
+
+        <div class="signature">
+            <div>
+                <p>___________________________</p>
+                <p>Firma del Usuario Responsable</p>
+            </div>
+            <div>
+                <p>___________________________</p>
+                <p>Firma del Inventariador</p>
+            </div>
+        </div>
+    </div>
+    <div class="button-container no-print">
+        <a href="#" class="print-button" onclick="window.print()">Imprimir Ficha</a>
+    </div>
+</body>
+</html>

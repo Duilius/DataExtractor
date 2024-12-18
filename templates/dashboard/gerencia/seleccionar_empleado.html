@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleccionar Empleado</title>
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+
+    <style>
+        /* Contenedor principal */
+        #lista-empleados {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-y: auto;
+            max-height: 400px;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            scroll-behavior: smooth; /* Scroll suave */
+        }
+        
+        /* Fila de empleado */
+        .fila-empleado {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 8px 15px;
+            border-bottom: 1px solid #eaeaea; /* Línea separadora */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 14px; /* Tamaño reducido */
+        }
+        
+        .fila-empleado:hover {
+            background-color: #f9f9f9;
+            transform: translateY(-1px);
+        }
+        
+        /* Código */
+        .codigo {
+            font-weight: bold;
+            color: #007bff;
+            margin-right: 15px; /* Espaciado entre código y nombres */
+            flex-shrink: 0; /* Evita que el código se reduzca */
+        }
+        
+        /* Nombres */
+        .nombres {
+            color: #333333;
+            font-weight: 400;
+            flex-grow: 1; /* Permite que los nombres ocupen el espacio restante */
+            margin-right: 15px; /* Espaciado entre código y nombres */
+            text-align: left;
+        }
+
+        /* Nombres */
+        .puesto {
+            color: #555555;
+            font-weight: 400;
+            font-size: 75%;
+            flex-grow: 1; /* Permite que los nombres ocupen el espacio restante */
+            text-align: right;
+        }
+        
+        /* Scroll personalizado */
+        #lista-empleados::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #lista-empleados::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+        
+        #lista-empleados::-webkit-scrollbar-thumb {
+            background: #c4c4c4;
+            border-radius: 8px;
+        }
+        
+        #lista-empleados::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Responsivo: Ajustes para pantallas pequeñas */
+        @media (max-width: 768px) {
+            .fila-empleado {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        
+            .codigo {
+                margin-right: 0;
+                margin-bottom: 4px; /* Espacio entre código y nombres en mobile */
+            }
+        }
+        </style>
+
+
+    <style>
+
+        /* Variables para modo oscuro y claro */
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --card-bg: #1e1e1e;
+            --border-color: #333333;
+            --btn-bg: #007bff;
+            --btn-text: #ffffff;
+            --hover-bg: #0056b3;
+        }
+
+        /* Modo claro */
+        .light-mode {
+            --bg-color: #f4f4f4;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --border-color: #dddddd;
+            --btn-bg: #28a745;
+            --btn-text: #ffffff;
+            --hover-bg: #218838;
+        }
+
+        /* Estilos Generales */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+
+        /* Estilos para botones */
+        .btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--hover-bg);
+        }
+
+        /* Estilo para el switch modo claro/oscuro */
+        .mode-switch {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .mode-switch button {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .mode-switch button:hover {
+            background-color: var(--hover-bg);
+        }
+
+        /* Mobile-First: Inputs y Select */
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 30px;
+            }
+        }
+
+        .oculto{
+            display: none;
+            height: 400px;
+            min-height: 40vh;
+            max-height: 90vh;
+        }
+    </style>
+</head>
+<body>
+    <!-- Switch Modo Oscuro/Claro -->
+    <div class="mode-switch">
+        <button id="mode-toggle">Modo Claro</button>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="container">
+        <h1>Seleccionar Empleado</h1>
+
+        <!-- Opción 1: Búsqueda -->
+        <h2>Búsqueda por DNI o Apellidos</h2>
+        <form>
+        <input type="text" placeholder="Ingrese DNI o Apellidos..." id="searchInput" name="busca_usuario"
+        hx-post="/dashboard/gerencia/buscar-empleado"
+        hx-trigger="keyup changed delay:1000ms"
+        hx-target="#lista-empleados"
+        _="on keyup 
+            if my.value.length is greater than 2
+                remove .oculto from #lista-empleados 
+            else
+                add .oculto to #lista-empleados
+            end
+        "/>
+        <div id="lista-empleados" class="oculto"></div>
+
+        <!-- Opción 2: Select Sedes -->
+        <h2>Buscar por Sede</h2>
+        <select id="sedeSelect">
+            <option value="">Seleccione una Sede</option>
+            <option value="1">Sede Central</option>
+            <option value="2">Sede Norte</option>
+            <option value="3">Sede Sur</option>
+        </select>
+    </form>
+        <!-- Botón de Acción -->
+        <a href="#" class="btn">Buscar Empleado</a>
+
+        <!-- Tabla de Resultados (placeholder) -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>DNI</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Empleado 1</td>
+                    <td>12345678</td>
+                    <td><a href="#" class="btn">Seleccionar</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Script Modo Claro/Oscuro -->
+    <script>
+        const modeToggle = document.getElementById('mode-toggle');
+        const body = document.body;
+
+        modeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            if (body.classList.contains('light-mode')) {
+                modeToggle.textContent = 'Modo Oscuro';
+            } else {
+                modeToggle.textContent = 'Modo Claro';
+            }
+        });
+    </script>
+</body>
+</html>
