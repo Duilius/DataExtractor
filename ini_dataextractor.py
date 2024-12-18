@@ -52,6 +52,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from routers import ubicaciones  # Importación del router
+from routers import dashboards, gerencia, comision, inventariador
 
 
 try:
@@ -136,12 +137,18 @@ app.add_middleware(
 )
 
 # Finalmente los routers
-app.include_router(office_router)
-app.include_router(auth_router)
-app.include_router(dashboard_router)
-app.include_router(admin_router)
-app.include_router(proveedor_router)  # Añadimos el nuevo router
-app.include_router(area_router)
+#app.include_router(office_router)
+#app.include_router(auth_router)
+#app.include_router(dashboard_router)
+#app.include_router(admin_router)
+#app.include_router(proveedor_router)  # Añadimos el nuevo router
+#app.include_router(area_router)
+
+# Incluir routers Dashboards/KPIs
+#app.include_router(dashboards.router)
+app.include_router(gerencia.router)
+#app.include_router(comision.router)
+#app.include_router(inventariador.router)
 
 s3_client = boto3.client(
     's3',
