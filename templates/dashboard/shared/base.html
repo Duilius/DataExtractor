@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/dashboards.css') }}">
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
+        }
+        window.onload = function() {
+            if (localStorage.getItem('dark-mode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+        };
+    </script>
+    <style>
+        /* Estilos Base */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+        }
+        .container {
+            width: 95%;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+        .content {
+            margin: 20px 0;
+        }
+        footer {
+            text-align: center;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .btn-toggle {
+            background-color: #fff;
+            border: none;
+            color: #007BFF;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .dark-mode .btn-toggle {
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{% block header %}Panel de Control{% endblock %}</h1>
+        <button class="btn-toggle" onclick="toggleDarkMode()">Modo Claro/Oscuro</button>
+    </header>
+
+    <div class="container">
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <footer>
+        &copy; {{ year }} Sistema de Inventario. Todos los derechos reservados.
+    </footer>
+</body>
+</html>
