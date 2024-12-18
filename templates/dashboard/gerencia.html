@@ -1,0 +1,187 @@
+{% extends "dashboard/shared/base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- KPIs -->
+    <div class="kpi-section">
+        <div class="kpi-card">Bienes Inventariados: {{ total_bienes }}</div>
+        <div class="kpi-card">Bienes Faltantes: {{ bienes_faltantes }}</div>
+        <div class="kpi-card">Bienes en Buen Estado: {{ bienes_buen_estado }}</div>
+    </div>
+
+    <!-- Nueva Sección: Generar Fichas -->
+    <div class="actions-section">
+        <h2>Generar Fichas de Levantamiento</h2>
+        <p>Seleccione un empleado para imprimir la ficha de levantamiento de información.</p>
+        <a href="/dashboard/gerencia/seleccionar-empleado" class="btn">Ir a Seleccionar Empleado</a>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="chart-section">
+        <canvas id="bienesChart"></canvas>
+    </div>
+
+    <!-- Tabla de Detalles -->
+    <div class="table-section">
+        <table>
+            <thead>
+                <tr>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Ubicación</th>
+                    <th>Custodio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bien in bienes_detalle %}
+                <tr>
+                    <td>{{ bien.descripcion }}</td>
+                    <td>{{ bien.estado }}</td>
+                    <td>{{ bien.ubicacion }}</td>
+                    <td>{{ bien.custodio }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('bienesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ labels | safe }},
+            datasets: [{
+                label: 'Comparativa de Bienes',
+                data: {{ data | safe }},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: { responsive: true }
+    });
+</script>
+
+<!-- Estilos Mobile-First -->
+<style>
+    /* Estilos Generales */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    .dashboard-container {
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    p {
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    /* KPI Section */
+    .kpi-section {
+        display: flex;
+        flex-direction: column; /* Mobile-first: Stack vertically */
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .kpi-card {
+        background-color: #007bff;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Acciones */
+    .actions-section {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+        background-color: #218838;
+    }
+
+    /* Tabla */
+    .table-section table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-section th, .table-section td {
+        padding: 8px;
+        border: 1px solid #ccc;
+        text-align: left;
+    }
+
+    .table-section th {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .table-section tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    /* Gráficos */
+    .chart-section {
+        margin: 20px 0;
+    }
+
+    /* Responsive - Desktop */
+    @media (min-width: 768px) {
+        .kpi-section {
+            flex-direction: row; /* Desktop: Alinear horizontalmente */
+            justify-content: space-between;
+        }
+
+        .kpi-card {
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 2rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+{% endblock %}
