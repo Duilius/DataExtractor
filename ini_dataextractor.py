@@ -1,5 +1,6 @@
 # Importaciones necesarias
 from pydantic import BaseModel
+from starlette.middleware.sessions import SessionMiddleware
 from middleware.auth_middleware import AuthMiddleware
 import secrets
 from io import BytesIO
@@ -35,7 +36,7 @@ import logging
 #from create_tabla_inventario_anterior import InventarioAnterior
 from scripts.sql_alc.anterior_sis import AnteriorSis
 from auth_routes import auth_router
-from scripts.sql_alc.auth_models import Usuario  # Cambiamos User por Usuario que es el nombre que usamos
+#from scripts.sql_alc.auth_models import Usuario  # Cambiamos User por Usuario que es el nombre que usamos
 from office_routes import office_router
 from scripts.py.auth_utils import AuthUtils
 from config import JWT_SECRET_KEY
@@ -67,31 +68,47 @@ app = FastAPI(max_form_memory_size=50 * 1024 * 1024)  # 50 MB
 # Incluir router
 app.include_router(ubicaciones.router, prefix="/api/ubicaciones", tags=["ubicaciones"])
 
-# Configuración específica para Railway
-if os.getenv('RAILWAY_ENVIRONMENT'):
-    class MaxBodySizeMiddleware(BaseHTTPMiddleware):
-        async def dispatch(self, request, call_next):
-            if request.method == "POST":
-                content_length = request.headers.get("content-length")
-                if content_length and int(content_length) > 50 * 1024 * 1024:  # 50MB
-                    return JSONResponse(
-                        status_code=413,
-                        content={"detail": "File too large"}
-                    )
-            response = await call_next(request)
-            return response
+# Definición del middleware para límite de tamaño en Railway
+class MaxBodySizeMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        if request.method == "POST":
+            content_length = request.headers.get("content-length")
+            if content_length and int(content_length) > 50 * 1024 * 1024:  # 50MB
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": "File too large"}
+                )
+        response = await call_next(request)
+        return response
 
-    app.add_middleware(MaxBodySizeMiddleware)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
-
-
-# Configurar límites de tamaño
+# Orden de middlewares de menos restrictivo a más restrictivo
+# 1. CORS (debe ser el primero para manejar preflight requests)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# 2. Límite de tamaño (solo en Railway)
+if os.getenv('RAILWAY_ENVIRONMENT'):
+    app.add_middleware(MaxBodySizeMiddleware)
+
+# 3. Host confiable
+app.add_middleware(
+    TrustedHostMiddleware, 
+    allowed_hosts=["*"]
+)
+
+# 4. Autenticación (después de verificaciones básicas pero antes de la sesión)
+app.add_middleware(AuthMiddleware)
+
+# 5. Sesión (último para que tenga acceso a toda la información procesada)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=secrets.token_urlsafe(32),
+    session_cookie="inventario_session"
 )
 
 # Configurar límite de tamaño del servidor
@@ -114,7 +131,7 @@ if __name__ == "__main__":
         forwarded_allow_ips='*',
         client_max_size=1024*1024*50  # 50MB máximo total
     )
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+
 
 # Configuración del límite de tamaño de solicitud
 from fastapi.middleware.cors import CORSMiddleware
@@ -126,19 +143,21 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Después de crear la app FastAPI y antes de cualquier ruta
-from starlette.middleware.sessions import SessionMiddleware
+
 
 # Después los middlewares en orden
-app.add_middleware(AuthMiddleware)
+# Agregar los middlewares en orden
+app.add_middleware(AuthMiddleware)  # Ahora es una clase
 app.add_middleware(
     SessionMiddleware,
     secret_key=secrets.token_urlsafe(32),
     session_cookie="inventario_session"
 )
 
+
 # Finalmente los routers
 #app.include_router(office_router)
-#app.include_router(auth_router)
+app.include_router(auth_router)
 #app.include_router(dashboard_router)
 #app.include_router(admin_router)
 #app.include_router(proveedor_router)  # Añadimos el nuevo router
@@ -147,7 +166,7 @@ app.add_middleware(
 # Incluir routers Dashboards/KPIs
 #app.include_router(dashboards.router)
 app.include_router(gerencia.router)
-#app.include_router(comision.router)
+app.include_router(comision.router)
 #app.include_router(inventariador.router)
 
 s3_client = boto3.client(
