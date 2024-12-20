@@ -1,11 +1,13 @@
 # Importaciones necesarias
+from pydantic import BaseModel
+from starlette.middleware.sessions import SessionMiddleware
+from middleware.auth_middleware import AuthMiddleware
 import secrets
 from io import BytesIO
 from pyzbar.pyzbar import decode
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 import io
 import base64
-
 import boto3
 from botocore.config import Config
 import traceback
@@ -15,8 +17,8 @@ from openai import OpenAI
 from openai import OpenAIError
 import json
 import os
-from typing import List, Dict
-from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends, Body, APIRouter
+from typing import List, Dict, Optional
+from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends, Body, APIRouter, Query
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -29,9 +31,30 @@ from datetime import datetime
 from utils.dispositivo import determinar_tipo_dispositivo
 from database import SessionLocal
 from scripts.py.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, HistorialCodigoInventario, AsignacionBien, InventarioBien, TipoBien, TipoMovimiento, ProcesoInventario, Empleado, Oficina)
-from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area
+from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area, consulta_codigo
 import logging
-from create_tabla_inventario_anterior import InventarioAnterior
+#from create_tabla_inventario_anterior import InventarioAnterior
+from scripts.sql_alc.anterior_sis import AnteriorSis
+from auth_routes import auth_router
+#from scripts.sql_alc.auth_models import Usuario  # Cambiamos User por Usuario que es el nombre que usamos
+from office_routes import office_router
+from scripts.py.auth_utils import AuthUtils
+from config import JWT_SECRET_KEY
+from dashboard_routes import dashboard_router
+from admin_routes import admin_router
+from starlette.requests import Request
+from scripts.py.utils import obtener_id_usuario, obtener_id_empleado
+from proveedor_routes import proveedor_router
+from area_routes import area_router
+#from scripts.sql_alc.crea_estructura_base import crear_estructura_areas
+
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from routers import ubicaciones  # Importación del router
+from routers import dashboards, gerencia, comision, inventariador
+
 
 try:
     import claves  # Solo se usará en el entorno local
@@ -40,18 +63,112 @@ except ImportError:
 
 
 # Configuración de FastAPI, OpenAI, y S3
-app = FastAPI()
-# Después de crear la app FastAPI y antes de cualquier ruta
-from starlette.middleware.sessions import SessionMiddleware
-# Después de crear la app FastAPI (app = FastAPI())
+app = FastAPI(max_form_memory_size=50 * 1024 * 1024)  # 50 MB
+
+# Incluir router
+app.include_router(ubicaciones.router, prefix="/api/ubicaciones", tags=["ubicaciones"])
+
+# Definición del middleware para límite de tamaño en Railway
+class MaxBodySizeMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        if request.method == "POST":
+            content_length = request.headers.get("content-length")
+            if content_length and int(content_length) > 50 * 1024 * 1024:  # 50MB
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": "File too large"}
+                )
+        response = await call_next(request)
+        return response
+
+# Orden de middlewares de menos restrictivo a más restrictivo
+# 1. CORS (debe ser el primero para manejar preflight requests)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 2. Límite de tamaño (solo en Railway)
+if os.getenv('RAILWAY_ENVIRONMENT'):
+    app.add_middleware(MaxBodySizeMiddleware)
+
+# 3. Host confiable
+app.add_middleware(
+    TrustedHostMiddleware, 
+    allowed_hosts=["*"]
+)
+
+# 4. Autenticación (después de verificaciones básicas pero antes de la sesión)
+app.add_middleware(AuthMiddleware)
+
+# 5. Sesión (último para que tenga acceso a toda la información procesada)
 app.add_middleware(
     SessionMiddleware,
-    secret_key=secrets.token_urlsafe(32),  # Genera una clave secreta aleatoria
+    secret_key=secrets.token_urlsafe(32),
     session_cookie="inventario_session"
 )
 
+# Configurar límite de tamaño del servidor
+import uvicorn
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        limit_concurrency=1000,
+        limit_max_requests=1000,
+        timeout_keep_alive=0,
+        http='h11',
+        loop='auto',
+        reload=True,
+        server_header=True,
+        date_header=True,
+        proxy_headers=True,
+        forwarded_allow_ips='*',
+        client_max_size=1024*1024*50  # 50MB máximo total
+    )
+
+
+# Configuración del límite de tamaño de solicitud
+from fastapi.middleware.cors import CORSMiddleware
+#from starlette.datastructures import UploadFile
+
+
+# Primero los templates y static files
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Después de crear la app FastAPI y antes de cualquier ruta
+
+
+# Después los middlewares en orden
+# Agregar los middlewares en orden
+app.add_middleware(AuthMiddleware)  # Ahora es una clase
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=secrets.token_urlsafe(32),
+    session_cookie="inventario_session"
+)
+
+
+# Finalmente los routers
+#app.include_router(office_router)
+app.include_router(auth_router)
+#app.include_router(dashboard_router)
+#app.include_router(admin_router)
+#app.include_router(proveedor_router)  # Añadimos el nuevo router
+#app.include_router(area_router)
+
+# Incluir routers Dashboards/KPIs
+#app.include_router(dashboards.router)
+app.include_router(gerencia.router)
+app.include_router(comision.router)
+#app.include_router(inventariador.router)
+
 s3_client = boto3.client(
     's3',
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
@@ -61,7 +178,7 @@ s3_client = boto3.client(
 
 client = OpenAI(api_key=os.getenv("inventario_demo_key"))
 BUCKET_NAME = "d-ex"
-MAX_IMAGE_SIZE = (1024, 1024)
+MAX_IMAGE_SIZE = (2048, 2048)
 
 # Configuración de la base de datos
 db_url = f"{os.getenv('DB_TYPE')}://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
@@ -92,11 +209,11 @@ def upload_image_to_s3(file_data: bytes, filename: str) -> str:
         raise HTTPException(status_code=500, detail=f"Error al subir la imagen a S3: {str(e)}")
 
 def generate_image_filename(cod_usuario: str, cod_empleado: str, tipo_imagen: str, inv_2024: str) -> str:
-    return f"CORPAC-{cod_usuario}-{cod_empleado}-{tipo_imagen}-{inv_2024}.jpg"
+    return f"SIS-{cod_usuario}-{cod_empleado}-{tipo_imagen}-{inv_2024}.jpg"
 
 
 # Función para registrar una imagen en la base de datos
-def registrar_imagen_en_db(db: Session, bien_id: int, proceso_inventario_id: int, s3_url: str, descripcion: str):
+def registrar_imagen_en_db(db: Session, bien_id: int, s3_url: str, descripcion: str):
     try:
         if not db:
             print("Error: La sesión de la base de datos (`db`) no está definida.")
@@ -104,8 +221,8 @@ def registrar_imagen_en_db(db: Session, bien_id: int, proceso_inventario_id: int
         nueva_imagen = ImagenBien(
             bien_id=bien_id,
             url_imagen=s3_url,
-            descripcion=descripcion,
-            proceso_inventario_id=proceso_inventario_id
+            descripcion=descripcion
+            #proceso_inventario_id=proceso_inventario_id
         )
         db.add(nueva_imagen)
         db.commit()
@@ -180,7 +297,7 @@ async def busca_areas(request: Request):
         print("Form data:", dict(form))
         
         # Obtenemos ubicacion
-        ubicacion = form.get('ubicacion', '')
+        ubicacion = form.get('area_search', '')
         print("Ubicación:", ubicacion)
         
         if not ubicacion:
@@ -193,6 +310,54 @@ async def busca_areas(request: Request):
         response = templates.TemplateResponse(
             "demo/areas_ubicadas.html",
             {"request": request, "areas": areas},
+            headers={"X-Debug": "Response-Sent"}
+        )
+        return response
+        
+    except Exception as e:
+        print("Error completo:", str(e))
+        import traceback
+        print("Traceback:", traceback.format_exc())
+        return JSONResponse(
+            {"error": str(e), "traceback": traceback.format_exc()},
+            status_code=500
+        )
+
+
+#################################################
+# /busca-por Código : Cód-Patr, Cód-SBN, Cód-2023
+#################################################
+@app.post('/busca-codigo')
+async def busca_codigo(request: Request):
+    try:
+        # Primero leemos el body completo
+        body = await request.body()
+        print("Body recibido:", body)
+        
+        # Intentamos obtener el form data
+        form = await request.form()
+        print("Form data:", dict(form))
+        
+        # Obtenemos ubicacion
+        num_codigo = form.get('codigo_busqueda', '')
+        campo      = form.get('campo_busqueda', '')
+
+        print("Código a buscar:", num_codigo)
+        print("Campo seleccionado:", campo if campo else "No se recibió campo_busqueda")
+
+        print("Código a buscar:", num_codigo, campo)
+        
+        if not num_codigo:
+            return JSONResponse({"error": "No se recibió ningún código"}, status_code=400)
+            
+        datos_bien, nombre_dni = consulta_codigo(num_codigo, campo)
+
+        print("Áreas encontradas:", datos_bien)
+        
+        # Agregamos un header para debug
+        response = templates.TemplateResponse(
+            "demo/bien_por_codigo_hallado.html",
+            {"request": request, "datos_bien": datos_bien, "nombre_dni": nombre_dni},
             headers={"X-Debug": "Response-Sent"}
         )
         return response
@@ -284,10 +449,28 @@ async def servicios(request: Request):
     #return templates.TemplateResponse("demo/inv_demo.html", {'request': request})
     return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
 
-
 @app.get('/demo-inventario')
 async def servicios(request: Request):
-    return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
+    try:
+        access_token = request.cookies.get("access_token")
+        print(f"Token recibido: {access_token}")
+        
+        if not access_token:
+            print("No hay token de acceso")
+            return RedirectResponse(url="/auth/login", status_code=302)
+        
+        auth_utils = AuthUtils(JWT_SECRET_KEY)  # Usar la constante
+        try:
+            payload = auth_utils.verify_access_token(access_token)
+            print(f"Token verificado exitosamente: {payload}")
+            return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
+        except Exception as token_error:
+            print(f"Error verificando token: {str(token_error)}")
+            return RedirectResponse(url="/auth/login", status_code=302)
+            
+    except Exception as e:
+        print(f"Error general en /demo-inventario: {str(e)}")
+        return RedirectResponse(url="/auth/login", status_code=302)
 
 @app.get('/fotos')
 async def fotos(request: Request):
@@ -303,11 +486,7 @@ async def serve_template(request: Request, path: str):
 # --------------------------------------------------------------
 # Endpoint de procesamiento de imágenes y extracción con OpenAI
 # --------------------------------------------------------------
-# Agregar nuevas funciones para manejo de imágenes optimizadas
 def optimize_image(image_data: bytes, format: str = 'webp') -> bytes:
-    """
-    Optimiza la imagen para web: redimensiona y convierte a WebP
-    """
     try:
         with Image.open(io.BytesIO(image_data)) as img:
             # Convertir a RGB si es necesario
@@ -316,11 +495,10 @@ def optimize_image(image_data: bytes, format: str = 'webp') -> bytes:
                 background.paste(img, mask=img.getchannel('A'))
                 img = background
 
-            # Redimensionar si excede límites
+            # Redimensionar si excede límites - como antes
             if img.size[0] > 1024 or img.size[1] > 1024:
-                img.thumbnail((1024, 1024))
+                img.thumbnail((1024, 1024))  # Sin LANCZOS
 
-            # Optimizar y guardar
             buffer = io.BytesIO()
             if format == 'webp':
                 img.save(buffer, format='WebP', quality=80, method=6)
@@ -340,32 +518,33 @@ async def procesar_imagen_individual(base64_image: str) -> dict:
     prompt_individual = """
     Analiza esta imagen específica y ÚNICAMENTE extrae los siguientes datos si están presentes:
 
-    - "Codigo_Patrimonial": Códigos que comienzan con "AF".
-    - "Codigo_Inventario": Códigos que empiezan con años como "2021", "2022", etc.
-    - "Anio_Inventario": Los primeros 4 dígitos de una etiqueta que no comience con "AF".
+    Si ves códigos de inventario:
+    - Extráelos usando las claves 'inv_2023', 'inv_2022', 'codigo_SBN', 'cod_patr'
+
+    - "codigo_SBN": Códigos de exactamente 12 digitos, precedido de "SBN:"
+    - "inv_2023": Códigos de exactamente 5 digitos, escrito en fondo blanco con letras negras, que tienen encima el texto "INV 2023".
+    - "inv_2022": Códigos de exactamente 5 digitos, escrito en fondo negro con letras blanca, que tienen encima el texto "INV - 2022".
+    - "cod_patr": Códigos de 4 o 5 digitos dispuestos en forma vertical y acompañado de las letras "CP", en forma horizontal o viceversa. Presentes en etiquetas con el texto "SEGURO INTEGRAL DE SALUD"
     - Si ves el objeto completo (no solo etiquetas o detalles):
-      - "Descripcion": Una breve descripción del objeto.
-      - "Color": El color principal del objeto.
-      - "Material": El material principal del objeto.
+    - "descripcion_IA": Una muy breve descripción del objeto sin comentar objetos encima ni al rededor. Incluir color principal y material.
 
     IMPORTANTE:
-    - NO describas etiquetas o superficies donde están pegadas.
+    - Si ves claramente etiquetas de inventario, NO describas la etiqueta misma ni la superficie donde están pegadas.
     - NO incluyas descripción, color o material si solo ves etiquetas o números.
     - Incluye SOLO las claves necesarias según las reglas anteriores.
     - La respuesta debe ser un JSON válido con comillas dobles.
 
     Ejemplo si solo ves etiquetas:
     {
-        "Codigo_Patrimonial": "AF12345",
-        "Codigo_Inventario": "2023-00123",
-        "Anio_Inventario": "2023"
+        "codigo_SBN": "74641240062",
+        "inv_2023": "03234",
+        "inv_2022": "05123",
+        "cod_patr": "2173"
     }
 
     Ejemplo si ves el objeto completo:
     {
-        "Descripcion": "Computadora portátil",
-        "Color": "negro",
-        "Material": "plástico"
+        "descripcion-IA": "Archivador de melamina con puertas de vidrio, color blanco"
     }
     """
 
@@ -411,74 +590,61 @@ async def procesar_imagen_individual(base64_image: str) -> dict:
 def determinar_tipo_imagen(datos_extraidos: dict) -> str:
     """
     Determina el tipo de imagen basado en los datos extraídos.
-    Prioridad: SERIE > PANOR > CODIG
+    Prioridad: codigo_SBN > inv_2024 > cod_patr > inv_2023
     """
     print(f"Determinando tipo de imagen para datos: {datos_extraidos}")
     
     # Si tiene número de serie, es SERIE
-    if 'N_Serie' in datos_extraidos and datos_extraidos['N_Serie'] != "No disponible":
-        return 'SERIE'
+    #if 'N_Serie' in datos_extraidos and datos_extraidos['N_Serie'] != "No disponible":
+    #    return 'SERIE'
     
-    # Si tiene descripción, es PANOR
-    if 'descripcion' in datos_extraidos and datos_extraidos['descripcion'] != "No disponible":
+    # Si tiene descripción-IA, es PANOR
+    if 'descripcion-IA' in datos_extraidos and datos_extraidos['descripcion-IA'] != "No disponible":
         return 'PANOR'
     
     # Si tiene algún código de inventario, es CODIG
-    inv_prefixes = ['INV_', 'codigo_inv_']
+    inv_prefixes = ['inv_', 'codigo_', 'cod_patr']
     for key in datos_extraidos:
         if any(key.startswith(prefix) for prefix in inv_prefixes):
             if datos_extraidos[key] != "No disponible":
-                return 'CODIG'
+                return 'CODIGO'
     
     return 'OTRO'
 
-def generar_nombre_imagen(cod_usuario: str, cod_empleado: str, tipo: str, inv_2024: str, num_imagen: int = None) -> str:
+
+def generar_nombre_imagen(cod_usuario: str, cod_empleado: str, tipo: str, inv_2024: str, codigo_SBN: str, inv_2023: str, codigo_patr: str, num_imagen: int = None) -> str:
     """
     Genera el nombre final de la imagen según su tipo
     """
     if tipo == 'CODIG' and num_imagen is not None:
-        return f"CORPAC-{cod_usuario}-{cod_empleado}-{tipo}-{inv_2024}-{num_imagen}.webp"
-    return f"CORPAC-{cod_usuario}-{cod_empleado}-{tipo}-{inv_2024}.webp"
+        return f"SIS-codUsuario-{cod_usuario or 'No'}-codEmpleado-{cod_empleado or 'No'}-tipo-{tipo or 'No'}-inv2023-{inv_2023 or 'No'}-inv2024-{inv_2024 or 'No'}-codigoSBN-{codigo_SBN or 'No'}-codigoPatr-{codigo_patr or 'No'}-numImagen-{num_imagen or 'N/A'}.webp"
+
+    return f"SIS-codUsuario-{cod_usuario or 'No'}-codEmpleado-{cod_empleado or 'No'}-tipo-{tipo or 'No'}-inv2023-{inv_2023 or 'No'}-inv2024-{inv_2024 or 'No'}-codigoSBN-{codigo_SBN or 'No'}-codigoPatr-{codigo_patr or 'No'}.webp"
 
 # Inicialización del estado de la aplicación para almacenar imágenes en memoria
 app.state.imagenes_procesadas = {}
 
 
-def buscar_en_inventario(db: Session, codigos: List[str]) -> Dict[str, str]:
-    resultados = {}
-    codigos = list(set(codigos))  # Elimina duplicados antes de buscar
+def buscar_en_inventario(db: Session, valor: str, campo: str):
+    """
+    Busca en la base de datos un registro basado en el campo y valor proporcionados.
+    """
+    try:
+        if campo == "inv_2023":
+            print("que hay ====>", db.query(AnteriorSis).filter_by(inv_2023=valor).first().codigo_dni)
+            return db.query(AnteriorSis).filter_by(inv_2023=valor).first()
+        elif campo == "codigo_SBN":
+            return db.query(AnteriorSis).filter_by(codigo_nacional=valor).first()
+        elif campo == "cod_patr":
+            return db.query(AnteriorSis).filter_by(codigo_patrimonial=valor).first()
+        elif campo == "inv_2022":
+            return db.query(AnteriorSis).filter_by(inv_2022=valor).first()
+        else:
+            return None
+    except Exception as e:
+        print(f"Error en la búsqueda: {e}")
+        return None
 
-    for codigo in codigos:
-        # Verificar si ya se buscó este código previamente
-        if codigo in resultados:
-            continue  # Saltar al siguiente código para evitar duplicados
-
-        # Caso 1: Código patrimonial
-        if codigo.startswith("AF"):
-            result = db.query(InventarioAnterior).filter_by(codigo_patrimonial=codigo).first()
-            resultados[codigo] = result if result else "faltante"
-
-            if result:
-                print(f"Resultado para {codigo}: id={result.id}, descripcion={result.descripcion}, marca={result.marca}")
-            else:
-                print(f"No se encontró resultado para {codigo}")
-
-        # Caso 2: Código de inventario
-        elif codigo.startswith("2023") or codigo.startswith("2022"):
-            result = db.query(InventarioAnterior).filter(
-                or_(
-                    InventarioAnterior.codigo_inv_2023 == codigo,
-                    InventarioAnterior.codigo_inv_2022 == codigo
-                )
-            ).first()
-            resultados[codigo] = result if result else "faltante"
-
-            if result:
-                print(f"Resultado para {codigo}: id={result.id}, descripcion={result.descripcion}, marca={result.marca}")
-            else:
-                print(f"No se encontró resultado para {codigo}")
-    
-    return resultados
 
 
 def determinar_mensaje(codigos: List[str], resultados: Dict[str, str]) -> str:
@@ -527,12 +693,33 @@ def obtener_valores_inventario(resultado):
 
     return codigos_inventario
 
+
+#********************* AREAS OFICIALES PARA EL SELECT *********************************
+@app.get("/get-area-nombre/{area_id}")
+async def get_area_nombre(area_id: str, db: Session = Depends(get_db)):
+    result = db.execute(
+        text("SELECT nombre FROM areas_oficiales WHERE id = :area_id"), #:area_id
+        {"area_id": area_id}
+    ).first()
+    return result[0] if result else ""
+
+def busca_areas_oficiales(db:Session):
+    #@app.get("/areas-oficiales", response_class=HTMLResponse)
+    #async def get_areas_oficiales(request:Request,db: Session = Depends(get_db)):
+        areas_oficiales = db.execute(text("SELECT id, nombre FROM areas_oficiales ORDER BY id")).fetchall()
+        #areas_oficiales = db.query(crear_estructura_areas)
+        #areas_oficiales = ["NINGUNA1","NINGUNA2"]
+        
+        print("AREAS OFICIALES 111 =========>", areas_oficiales)
+        return areas_oficiales
+        
+    
 # Modificar el endpoint upload_fotos existente
 @app.post("/upload_fotos")
 async def upload_fotos(
-    request: Request,
-    fotos: List[UploadFile] = File(...),
-    uuid: List[str] = Form(...),
+    request: Request, 
+    fotos: List[UploadFile] = File(..., max_length=1024*1024*10),  # 10MB por archivo
+    uuid: List[str] = Form(...), 
     db: Session = Depends(get_db)
 ):
     session_id = request.session.get('id', 'default')
@@ -540,6 +727,7 @@ async def upload_fotos(
 
     try:
         for foto in fotos:
+            
             # Leer y procesar la imagen
             file_content = await foto.read()
             if len(file_content) == 0:
@@ -549,74 +737,129 @@ async def upload_fotos(
             base64_image = base64.b64encode(optimized_image).decode("utf-8")
 
             # Extraer datos de la imagen
-            datos_imagen = await procesar_imagen_individual(base64_image)
+            #datos_imagen = await procesar_imagen_individual(base64_image)
+            #print("Datos extraídos de la imagen:", datos_imagen)  # Verifica que los datos están correctamente extraídos
 
-            codigo_patrimonial = datos_imagen.get("Codigo_Patrimonial")
-            codigo_inventario = datos_imagen.get("Codigo_Inventario")
+            
+            # Obtener los códigos extraídos
+            #inv_2023 = datos_imagen.get("inv_2023")
+            #codigo_SBN = datos_imagen.get("codigo_SBN")
+            #cod_patr = datos_imagen.get("cod_patr")
+            #inv_2022 = datos_imagen.get("inv_2022")
 
-            # Consultar en la base de datos utilizando buscar_en_inventario
-            if codigo_patrimonial or codigo_inventario:
-                codigos = [codigo_patrimonial, codigo_inventario]
-                resultados = buscar_en_inventario(db, codigos)
-
-                # Filtrar resultados válidos
-                for codigo, resultado in resultados.items():
-                    if isinstance(resultado, InventarioAnterior):
-                        resultados_busqueda.append(resultado)
+            # Priorizar búsqueda en la base de datos
+            """codigos = {
+                "inv_2023": inv_2023,
+                "codigo_SBN": codigo_SBN,
+                "cod_patr": cod_patr,
+                "inv_2022": inv_2022
+            }
+            print("Diccionario codigos:", codigos)  # Verifica que el diccionario tenga los datos correctos
+            for clave in ["inv_2023", "codigo_SBN", "cod_patr", "inv_2022"]:
+                print(f"Comprobando clave: {clave}, valor: {codigos[clave]}")  # Verifica el valor de cada clave
+                if codigos[clave]:  # Si el valor de la clave no es None ni vacío
+                    if codigos[clave].strip():  # Verifica que no sea una cadena vacía
+                        print(f"Buscando en la base de datos con {clave}: {codigos[clave]}")
+                        resultado = buscar_en_inventario(db, codigos[clave], clave)
+                        if resultado:
+                            print(f"Resultado encontrado para {clave}: {resultado}")
+                            resultados_busqueda.append(resultado)
+                            break  # Detenerse si se encontró un resultado
+                        else:
+                            print(f"No se encontró registro para {clave} con valor {codigos[clave]}")
                     else:
-                        print(f"No se encontró resultado para {codigo}")
+                        print(f"Valor vacío para la clave: {clave}")
+                else:
+                    print(f"Clave {clave} no tiene valor asignado")"""
 
-                # Generar los valores para el diccionario
-                for dato in resultados_busqueda:
-                    codigos_inventario = obtener_valores_inventario(dato)
 
-                    # Verificar los valores que se asignan
-                    print(f"Resultado para {dato.codigo_patrimonial}: {codigos_inventario}")
 
-        # Preparar los datos para pasar a la plantilla
-        datos_para_plantilla = [
+        # Preparar los datos para la plantilla
+        """datos_para_plantilla = [
             {
-                "mensaje": codigos_inventario.get("mensaje", "Mensaje no disponible"),
-                "situacion_sis": codigos_inventario.get("situacion_sis", "Situación no especificada"),
-                "codigo_patr": dato.codigo_patrimonial if dato.codigo_patrimonial else "Sin código patrimonial",
-                "codigo_inv_2023": dato.codigo_inv_2023 if dato.codigo_inv_2023 else "No disponible",
-                "codigo_inv_2022": dato.codigo_inv_2022 if dato.codigo_inv_2022 else "No disponible",
-                "codigo_inv_2021": dato.codigo_inv_2021 if dato.codigo_inv_2021 else "No disponible",
-                "codigo_inv_2020": dato.codigo_inv_2020 if dato.codigo_inv_2020 else "No disponible",
-                "descripcion": dato.descripcion if dato.descripcion else "Sin descripción",
-                "material": dato.material if dato.material else "Material no disponible",
-                "color": dato.color if dato.color else "Color no disponible",
-                "marca": dato.marca if dato.marca else "Marca no disponible",
-                "modelo": dato.modelo if dato.modelo else "Modelo no disponible",
-                "largo": dato.largo if dato.largo else "Largo no disponible",
-                "ancho": dato.ancho if dato.ancho else "Ancho no disponible",
-                "alto": dato.alto if dato.alto else "Alto no disponible",
-                "numero_serie": dato.numero_serie if dato.numero_serie else "N° Serie no disponible",
-                "observaciones": dato.observaciones if dato.observaciones else "Observaciones no disponible",
-                "anio_fabricac": dato.anio_fabricac if dato.anio_fabricac else "Año no disponible",
-                "estado": dato.estado if dato.estado else "Estado no disponible",
+                "codigo_patr": dato.codigo_patrimonial or "Sin código patrimonial",
+                "codigo_inv_2023": dato.inv_2023 or "No disponible",
+                "codigo_inv_2022": dato.inv_2022 or "No disponible",
+                "codigo_nacional": dato.codigo_nacional or "No disponible",
+                "descripcion": dato.descripcion or "Sin descripción",
+                "material": dato.material or "Material no disponible",
+                "color": dato.color or "Color no disponible",
+                "marca": dato.marca or "Marca no disponible",
+                "modelo": dato.modelo or "Modelo no disponible",
+                "largo": dato.largo or "Largo no disponible",
+                "ancho": dato.ancho or "Ancho no disponible",
+                "alto": dato.alto or "Alto no disponible",
+                "numero_serie": dato.numero_serie or "N° Serie no disponible",
+                "observaciones": dato.observaciones or "Observaciones no disponible",
+                "anio_fabricac": dato.anio_fabricac or 0,
                 "num_placa": dato.num_placa if dato.num_placa else "Placa no disponible",
                 "num_chasis": dato.num_chasis if dato.num_chasis else "N° Chasis no disponible",
-                "num_motor": dato.num_motor if dato.num_motor else "N° Serie motor no disponible"
+                "num_motor": dato.num_motor if dato.num_motor else "N° Serie motor no disponible",
+                "procedencia": dato.procedencia if dato.procedencia else "Sin dato",
+                "propietario": dato.propietario if dato.propietario else "Sin dato",
+                "faltante": dato.faltante if dato.faltante else "Sin dato",
+                "sede":  dato.sede if dato.sede else "Sin dato",
+                "ubicacion_actual":  dato.ubicacion_actual if dato.ubicacion_actual else "Sin dato",
+                "codigo_dni":  dato.codigo_dni if dato.codigo_dni else "Sin dato"
             }
+            
             for dato in resultados_busqueda
-        ]
+        ]"""
 
-        print(f"Datos enviados a la plantilla: {datos_para_plantilla}")
+        # Almacenar imágenes procesadas
+        imagenes_procesadas = {}
+        for foto, id_uuid in zip(fotos, uuid):
+            file_content = await foto.seek(0)
+            file_content = await foto.read()
+            imagenes_procesadas[id_uuid] = {
+                'contenido': optimize_image(file_content),
+                'tipo': 'CODIG',
+                'num_imagen': None
+            }
 
-        datos_para_plantilla = [datos_para_plantilla[:1]]
+        if not hasattr(app.state, 'imagenes_procesadas'):
+            app.state.imagenes_procesadas = {}
+        app.state.imagenes_procesadas[session_id] = imagenes_procesadas
+
+        # Almacenar información en la sesión
+        request.session['imagenes_info'] = {
+            uuid: {
+                'tipo': info['tipo'],
+                'num_imagen': info['num_imagen']
+            } for uuid, info in imagenes_procesadas.items()
+        }
+        print("Resultados de la búsqueda:", resultados_busqueda)  # Verifica los resultados obtenidos
+
+        # **Nuevo código para obtener las áreas de la base de datos**
+        """areas_oficiales = []    
+        try:
+            areas_result = db.execute(
+                text("SELECT id, nombre FROM areas_oficiales ORDER BY id")
+            ).fetchall()
+            areas_oficiales = [{"id": row[0], "nombre": row[1]} for row in areas_result]
+
+            codigo_dni = datos_para_plantilla[0]["codigo_dni"]
+
+            nombre_empleado = db.execute(
+                text("SELECT nombre FROM empleados WHERE codigo = :codigo_dni"),
+                {"codigo_dni": codigo_dni}
+            ).fetchone()
+
+        except Exception as e:
+            print(f"Error obteniendo áreas oficiales: {e}")
+        
         return templates.TemplateResponse(
             "demo/datos_inventario_ok.html",
-            {"request": request, "datos": datos_para_plantilla}
-        )
+            {"request": request, "datos": datos_para_plantilla,"areas_oficiales": areas_oficiales, "nombre_empleado":nombre_empleado[0], "codigo_dni":codigo_dni}
+        )"""
 
     except Exception as e:
         print(f"Error inesperado: {e}")
-        traceback.print_exc()
         return templates.TemplateResponse(
             "demo/datos_inventario_error.html",
             {"request": request, "error": str(e)}
         )
+
 
 
 
@@ -643,6 +886,9 @@ async def process_and_store_images(imagenes: dict, datos: dict, db: Session) -> 
     resultados = []
     contador_codig = 1
 
+    #print("Datos de la IMAGEN >====>", datos)
+    #print("Las IMAGENES<<<<<< >====>", imagenes.items())
+
     try:
         for uuid, imagen_info in imagenes.items():
             tipo = imagen_info['tipo']
@@ -651,24 +897,31 @@ async def process_and_store_images(imagenes: dict, datos: dict, db: Session) -> 
             # Generar nombre final según tipo
             nombre_final = generar_nombre_imagen(
                 cod_usuario=datos['registrador'],
-                cod_empleado=datos['worker'],
+                cod_empleado=obtener_id_empleado(db, datos['worker']),
                 tipo=tipo,
-                inv_2024=datos['cod_2024'],
+                inv_2024=datos['codigo_inv_2024'],
+                codigo_SBN=datos['codigo_nacional'],
+                inv_2023=datos['codigo_inv_2023'],
+                codigo_patr=datos['codigo_patrimonial'],
                 num_imagen=contador_codig if tipo == 'CODIG' else None
             )
+
 
             if tipo == 'CODIG':
                 contador_codig += 1
 
+            print("debe grabar )))))", datos["codigo_inv_2024"])
             # Subir a S3
             s3_url = await upload_to_s3_with_type(contenido, nombre_final)
 
             # Registrar en la base de datos
             nueva_imagen = ImagenBien(
                 bien_id=datos['bien_id'],  # ID del bien recién registrado
-                proceso_inventario_id=datos['proceso_inventario_id'],
+                #proceso_inventario_id=datos['proceso_inventario_id'],
                 url=s3_url,
-                tipo=tipo
+                tipo=tipo,
+                codigo_inventariador=datos['registrador'],
+                codigo_custodio=datos['worker']
             )
             db.add(nueva_imagen)
             
@@ -704,16 +957,14 @@ def validar_dimensiones(valor: str) -> float:
 async def registrar_bien(
     request: Request,
     db: Session = Depends(get_db),
-    institucion: str = Form(...),
     worker: str = Form(...),
-    ubicacion: str = Form(...),  # Nuevo campo
-    registrador: str = Form(...),
+    codigoOficina: str = "0",  # antes ubicacion
     cod_patr: str = Form(None),
     cod_2024: str = Form(...),
     cod_2023: str = Form(None),
     cod_2022: str = Form(None),
-    cod_2021: str = Form(None),
-    cod_2020: str = Form(None),
+    cod_sbn: str = Form(None),
+    #cod_2020: str = Form(None),
     color: str = Form(...),
     material: str = Form(...),
     largo: str = Form(None),
@@ -722,8 +973,8 @@ async def registrar_bien(
     marca: str = Form(None),
     modelo: str = Form(None),
     num_serie: str = Form(None),
-    situacion_sis: str = Form(...),  # Nuevo campo
-    situacion_prov: str = Form(...),  # Nuevo campo
+    #situacion_sis: str = Form(...),  # Nuevo campo
+    #situacion_prov: str = Form(...),  # Nuevo campo
     num_placa: str = Form(None),  # Nuevo campo
     num_chasis: str = Form(None),  # Nuevo campo
     num_motor: str = Form(None),  # Nuevo campo
@@ -731,16 +982,60 @@ async def registrar_bien(
     descripcion: str = Form(...),
     observaciones: str = Form(None),
     enUso: str = Form(...),
-    estado: str = Form(...)
+    estado: str = Form(...),
+    acciones: List[str] = Form(None),
+    describe_area: str = Form(None),
+    #area_actual_id: str = Form(None),
+    nuevo_usuario: str = Form(None)
 ):
-    session_id = request.session.get('id', 'default')
-    imagenes = app.state.imagenes_procesadas.get(session_id, {})
+    #Cookie de USAURIO INVENTARIADOR
+    # Acceder a las cookies
+    session_cookie = request.cookies.get("session_data")  # Cambia "session" por el nombre real de tu cookie
+    
+    form_data = await request.form()
+    print("Datos recibidos:", form_data)
+    
+    print("Acciones ====>",  acciones)
+    #print("Area Actual ====>",  area_actual_id)
+    print("Area descrita ====>",  describe_area)
+    print("Nuevo Usuario ====>",  nuevo_usuario)
 
-    if not imagenes:
-        return JSONResponse(
-            content={"exito": False, "error": "No hay imágenes para procesar"},
-            status_code=400
-        )
+    if session_cookie:
+        # Convertir la cookie de JSON a diccionario
+        import json
+        try:
+            session_data = json.loads(session_cookie)
+        except json.JSONDecodeError:
+            return {"error": "La cookie de sesión no es válida."}
+
+        # Usar datos de la cookie
+        registrador = session_data.get("codigo")
+        institucion_id = session_data.get("institucion_id")
+        sede_actual_id = session_data.get("sede_actual_id")
+
+        try:
+            registrador_id = obtener_id_usuario(db, registrador)
+            # Usar inventariador_id en las tablas que lo requieran
+        except ValueError as e:
+            return JSONResponse(
+                content={"exito": False, "error": str(e)},
+                status_code=400
+            )
+
+    # Obtener el UUID de la cookie
+    uuid_imagen = request.cookies.get("imagen_procesada")
+    if uuid_imagen:
+        # Obtener imágenes del estado de la aplicación
+        session_id = request.session.get('id', 'default')   
+        imagenes = app.state.imagenes_procesadas.get(session_id, {})
+
+        if not imagenes:
+            print(f"No hay imágenes en app.state para session_id: {session_id}")
+            print(f"Estado actual de app.state.imagenes_procesadas: {app.state.imagenes_procesadas}")
+            return JSONResponse(
+                content={"exito": False, "error": "No hay imágenes para procesar"},
+                status_code=400
+            )
 
     try:
         # Validar y convertir las dimensiones
@@ -748,18 +1043,25 @@ async def registrar_bien(
         ancho_validado = validar_dimensiones(ancho)
         alto_validado = validar_dimensiones(alto)
 
+        print("Acciones ZZZ====>",  acciones)
+        #print("Area Actual ====>",  area_actual_id)
+        print("Area descrita ====>",  describe_area)
+        print("Nuevo USUARIO ====>",  nuevo_usuario)   
+
         # Registro de los datos recibidos para verificación
         datos_recibidos = {
-            "institucion": institucion,
-            "worker": worker,
-            "ubicacion": ubicacion,  # Nuevo campo
-            "registrador": registrador,
+            "institucion_id": institucion_id,
+            "sede_actual_id": sede_actual_id,
+            #"situacion_prov": situacion_prov,
+            "custodio_bien": worker,
+            "codigo_oficina": codigoOficina,  # Nuevo campo
+            "codigo_inventariador": registrador_id,
             "cod_patr": cod_patr,
             "cod_2024": cod_2024,
             "cod_2023": cod_2023,
             "cod_2022": cod_2022,
-            "cod_2021": cod_2021,
-            "cod_2020": cod_2020,
+            "cod_sbn": cod_sbn,
+            #"cod_2020": cod_2020,
             "color": color,
             "material": material,
             "largo": largo_validado,
@@ -768,7 +1070,6 @@ async def registrar_bien(
             "marca": marca,
             "modelo": modelo,
             "num_serie": num_serie,
-            "ubicacion": ubicacion,  # Nuevo campo
             "num_placa": num_placa,  # Nuevo campo
             "num_chasis": num_chasis,  # Nuevo campo
             "num_motor": num_motor,  # Nuevo campo
@@ -776,7 +1077,11 @@ async def registrar_bien(
             "descripcion": descripcion,
             "observaciones": observaciones,
             "enUso": enUso,
-            "estado": estado
+            "estado": estado,
+            "acciones":acciones,
+            #"area_actual_id":area_actual_id,
+            "describe_area":describe_area,
+            "nuevo_usuario":nuevo_usuario
         }
 
 
@@ -791,15 +1096,22 @@ async def registrar_bien(
         if bien_existente_2024:
             raise ValueError("Código de inventario 2024 duplicado")
 
+        print("Acciones ====>",  acciones)
+        #print("Area Actual ====>",  area_actual_id)
+        print("Area descrita ====>",  describe_area)
+
         # Registrar el bien
         nuevo_bien = Bien(
-            institucion_id=institucion,
+            institucion_id=institucion_id,
+            sede_actual_id=sede_actual_id,
+            #situacion_prov=situacion_prov,
+            codigo_inventariador=registrador_id,
+            custodio_bien= worker, #falta programar
             codigo_patrimonial=cod_patr,
             codigo_inv_2024=cod_2024,
             codigo_inv_2023=cod_2023,
             codigo_inv_2022=cod_2022,
-            codigo_inv_2021=cod_2021,
-            codigo_inv_2020=cod_2020,
+            codigo_nacional=cod_sbn,
             descripcion=descripcion,
             tipo=TipoBien.MUEBLE,
             color=color,
@@ -810,35 +1122,60 @@ async def registrar_bien(
             marca=marca,
             modelo=modelo,
             numero_serie=num_serie,
-            ubicacion= ubicacion,  # Nuevo campo
+            codigo_oficina= codigoOficina,  # Nuevo campo
             num_placa= num_placa,  # Nuevo campo
             num_chasis= num_chasis,  # Nuevo campo
             num_motor= num_motor,  # Nuevo campo
             anio_fabricac= anio_fabricac,  # Nuevo campo
             estado=estado,
             en_uso=(enUso == 'Sí'),
-            observaciones=observaciones
+            observaciones=observaciones,
+            acciones=acciones,
+            #area_actual_id=area_actual_id,
+            describe_area=describe_area,
+            nuevo_usuario=nuevo_usuario
         )
         db.add(nuevo_bien)
         db.flush()  # Para obtener el ID del bien
+
+        if 'nuevo_usuario' in locals() and nuevo_usuario not in (None, ''):
+            worker = nuevo_usuario
+        else:
+            worker = worker
+
+
+        print("Valor de nuevo_usuario:", nuevo_usuario if 'nuevo_usuario' in locals() else "No definido")
+        print("Valor de worker antes del diccionario:", worker)
+
+
 
         # Procesar y guardar imágenes
         datos_imagenes = {
             'bien_id': nuevo_bien.id,
             'codigo_patrimonial': cod_patr,
+            'codigo_nacional': cod_sbn,
             'codigo_inv_2024': cod_2024,
-            'proceso_inventario_id': int(registrador),  # O el ID que corresponda
-            'registrador': registrador,
+            'codigo_inv_2023': cod_2023,
+            #'proceso_inventario_id': registrador_id,  # O el ID que corresponda
+            'registrador': registrador_id,
             'worker': worker
         }
-
+        print("DATOS PARA IMAGEN ===>", datos_imagenes)
         resultados_imagenes = await process_and_store_images(imagenes, datos_imagenes, db)
+
+        if 'nuevo_usuario' in locals() and nuevo_usuario not in (None, ''):
+            worker = nuevo_usuario
+        else:
+            worker = worker
+
 
         # Registro de asignación
         asignacion = AsignacionBien(
             bien_id=nuevo_bien.id,
-            empleado_id=worker,
-            proceso_inventario_id=int(registrador),
+            codigo_patrimonial=cod_patr,
+            codigo_inventariador=registrador_id,
+            empleado_id=obtener_id_empleado(db,worker),
+            #proceso_inventario_id=registrador_id,
             fecha_asignacion=func.now(),
             estado_confirmacion="Pendiente"
         )
@@ -862,9 +1199,11 @@ async def registrar_bien(
         registro_fallido = RegistroFallido(
             datos_bien=json.dumps(datos_recibidos),
             error=error_message,
-            inventariador_id=registrador,
-            institucion_id=institucion,
-            responsable_id=worker
+            inventariador_id=registrador_id,
+            institucion_id=institucion_id,
+            sede_id=sede_actual_id,
+            oficina_id=0, #codigoOficina
+            #responsable_id=worker
         )
         db.add(registro_fallido)
         db.commit()
@@ -881,10 +1220,12 @@ async def registrar_bien(
         
         registro_fallido = RegistroFallido(
             datos_bien=json.dumps(datos_recibidos),
-            error=str(e),
-            inventariador_id=registrador,
-            institucion_id=institucion,
-            responsable_id=worker
+            error=error_message,
+            inventariador_id=registrador_id,
+            institucion_id=institucion_id,
+            sede_id=sede_actual_id,
+            oficina_id=0, #codigoOficina
+            #responsable_id=worker
         )
         db.add(registro_fallido)
         db.commit()
@@ -914,58 +1255,60 @@ async def enviar_reporte():
 async def barcode_page(request: Request):
     return templates.TemplateResponse("barcode.html", {"request": request})
 
+
 @app.post("/procesar_codigo_barras")
 async def procesar_codigo_barras(file: UploadFile = File(...)):
-   try:
-       contents = await file.read()
-       imagen = Image.open(io.BytesIO(contents))
-       codigos = decode(imagen)
-       
-       if not codigos:
-           return {"success": False, "mensaje": "No se detectaron códigos de barras"}
-           
-       draw = ImageDraw.Draw(imagen)
-       resultados = []
-       
-       for codigo in codigos:
-           datos = codigo.data.decode("utf-8")
-           tipo = codigo.type
-           datos_procesados = post_procesar_codigo(tipo, datos)
-           
-           rect = codigo.rect
-           draw.rectangle(
-               [rect.left, rect.top, rect.left + rect.width, rect.top + rect.height],
-               outline="red",
-               width=5
-           )
-           
-           resultados.append({
-               "tipo": tipo,
-               "datos_originales": datos,
-               "datos_procesados": datos_procesados
-           })
-       
-       buffered = io.BytesIO()
-       imagen.save(buffered, format="JPEG")
-       img_str = base64.b64encode(buffered.getvalue()).decode()
-       
-       return {
-           "success": True,
-           "resultados": resultados,
-           "imagen_procesada": img_str
-       }
-       
-   except Exception as e:
-       print(f"Error en el procesamiento: {str(e)}")
-       return JSONResponse(
-           content={"success": False, "mensaje": f"Error al procesar la imagen: {str(e)}"},
-           status_code=400
-       )
+    try:
+        contents = await file.read()
+        imagen = Image.open(io.BytesIO(contents))
+        codigos = decode(imagen)
+        
+        if not codigos:
+            return {"success": False, "mensaje": "No se detectaron códigos de barras"}
+            
+        draw = ImageDraw.Draw(imagen)
+        resultados = []
+        
+        for codigo in codigos:
+            datos = codigo.data.decode("utf-8")
+            tipo = codigo.type
+            datos_procesados = post_procesar_codigo(tipo, datos)
+            
+            rect = codigo.rect
+            draw.rectangle(
+                [rect.left, rect.top, rect.left + rect.width, rect.top + rect.height],
+                outline="red",
+                width=5
+            )
+            
+            resultados.append({
+                "tipo": tipo,
+                "datos_originales": datos,
+                "datos_procesados": datos_procesados
+            })
+        
+        buffered = io.BytesIO()
+        imagen.save(buffered, format="JPEG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        
+        return {
+            "success": True,
+            "resultados": resultados,
+            "imagen_procesada": img_str
+        }
+    
+    except Exception as e:
+        print(f"Error en el procesamiento: {str(e)}")
+        return JSONResponse(
+            content={"success": False, "mensaje": f"Error al procesar la imagen: {str(e)}"},
+            status_code=400
+        )
 
 def post_procesar_codigo(tipo, datos):
-   if tipo == "CODE128" and len(datos) == 7 and datos.startswith("01"):
-       return f"{datos[:2]}-{datos[2:]}"
-   return datos
+    if tipo == "CODE128" and len(datos) == 7 and datos.startswith("01"):
+        return f"{datos[:2]}-{datos[2:]}"
+
+    return datos
 
 
 
@@ -1023,13 +1366,13 @@ async def get_dashboard_kpis(db: Session = Depends(get_db)):
     .all()
     
     # 4. Bienes faltantes en último inventario
-    faltantes = db.query(func.count(InventarioBien.id))\
+    """faltantes = db.query(func.count(Bien.id))\
         .join(ProcesoInventario)\
         .filter(
-            ProcesoInventario.anio == current_year,
-            InventarioBien.es_faltante == True
+            ProcesoInventario.anio == current_year
         )\
-        .scalar() or 0
+        .scalar() or 0"""
+    faltantes = db.query(func.count(Bien.id)).scalar() or 0
     
     # 5. Asignaciones pendientes
     asignaciones_pendientes = db.query(func.count(AsignacionBien.id))\
@@ -1076,9 +1419,9 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
         ).first() if asignacion else None
 
         # Obtener la oficina del empleado/custodio
-        oficina = db.query(Oficina).filter(
+        """oficina = db.query(Oficina).filter( 
             Oficina.id == empleado.oficina_id
-        ).first() if empleado else None
+        ).first() if empleado else None"""
 
         # Obtener las imágenes del bien, ordenando para que la de tipo "PANOR" sea la primera
         image_priority = ["PANOR", "SERIE", "CODIG"]
@@ -1116,8 +1459,8 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
                 "marca": latest_item.marca,
                 "modelo": latest_item.modelo,
                 "estado": latest_item.estado,
-                "codigo_patrimonial": latest_item.codigo_patrimonial,
-                "area": oficina.nombre if oficina else "No asignada"
+                "codigo_patrimonial": latest_item.codigo_patrimonial
+                #"area": oficina.ambiente if oficina else "No asignada"
             },
             "custodian": {
                 "nombre": empleado.nombre if empleado else None,
@@ -1133,12 +1476,10 @@ async def get_latest_inventoried_item(db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error al obtener el último bien inventariado: {e}")
         raise HTTPException(status_code=500, detail="Error al obtener el último bien inventariado.")
-    
+        
 
-
-
-    ################################################### SIS ################################
-    # Rutas
+################################################### SIS ################################
+# Rutas
 @app.get("/sis", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse(
@@ -1153,7 +1494,7 @@ async def register_user(user_data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="La contraseña no puede ser igual al DNI")
     
     # Crear usuario
-    db_user = User(
+    db_user = Usuario(
         email=user_data["email"],
         hashed_password=user_data["password"],  # En producción: hash la contraseña
         full_name=user_data["full_name"],
@@ -1167,9 +1508,12 @@ async def register_user(user_data: dict, db: Session = Depends(get_db)):
 
 @app.post("/api/login")
 async def login(credentials: dict, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == credentials["email"]).first()
+    user = db.query(Usuario).filter(Usuario.email == credentials["email"]).first()
     if not user or user.hashed_password != credentials["password"]:  # En producción: verificar hash
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
+    
+    print(f"Token generado: {access_token}")
+    print(f"Secret key usado: {os.getenv('JWT_SECRET_KEY')}")
     return {"message": "Login exitoso"}
 
 @app.get("/api/stats/{sede}")
@@ -1198,5 +1542,200 @@ async def get_stats(sede: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
 """
+
+
+# ******************************* CHATBOT **************************
+
+class ChatbotQuery(BaseModel):
+    question: str
+
+
+async def get_session_user(request: Request):
+    """Obtiene y valida los datos de sesión del usuario."""
+    # Recuperar la cookie de la solicitud
+    cookie_data = request.cookies.get("session_data")
+    if not cookie_data:
+        raise HTTPException(status_code=401, detail="No autorizado: sesión no encontrada.")
+
+    try:
+        # Decodificar los datos de sesión desde JSON
+        session = json.loads(cookie_data)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Error al decodificar la sesión.")
+
+    # Validar que contenga los datos requeridos
+    if "tipo_usuario" not in session:
+        raise HTTPException(status_code=401, detail="No autorizado: tipo de usuario no encontrado.")
+    
+    return session
+
+
+@app.get("/chatbot", response_class=HTMLResponse)
+async def chatbot_view(request: Request):
+    return templates.TemplateResponse("dashboard/shared/chatbot.html", {"request": request})
+
+
+# ******* CONSULTAS DINÁMICAS **************
+@app.post("/chatbot/query")
+async def chatbot_query(
+    payload: ChatbotQuery,  # Cambiamos de `question: str` a `payload: ChatbotQuery`
+    session: dict = Depends(get_session_user)
+):
+    question = payload.question  # Extraemos la pregunta desde el cuerpo JSON
+    tipo_usuario = session["tipo_usuario"]
+
+    # Restringir según el tipo de usuario
+    if tipo_usuario == "Comisión Cliente" and "estadísticas" in question.lower():
+        return {"response": "No tienes permiso para ver estadísticas."}
+    elif tipo_usuario == "Inventariador Proveedor" and "gerencial" in question.lower():
+        return {"response": "Este contenido no está disponible para tu perfil."}
+
+    # Si el usuario tiene acceso permitido, procesar la pregunta
+    return {"response": "Estamos trabajando en tu respuesta."}
+
+
+#**************************** BUSCA BIENES X DNI ************************************
+@app.get("/bienes-dni")
+async def bienes_dni(
+    request: Request,
+    el_dni: str = Query(None),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Verificar el DNI
+        if not el_dni:
+            return templates.TemplateResponse(
+                "bienes_por_dni.html",
+                {"request": request, "error": "DNI es requerido", "bienes": []}
+            )
+
+        # Consultar los bienes
+        bienes_dni = db.query(AnteriorSis).filter_by(codigo_dni=el_dni).all()
+        
+        # Log para debugging
+        print(f"DNI consultado: {el_dni}")
+        print(f"Bienes encontrados: {len(bienes_dni)}")
+        
+        # Retornar la plantilla con los resultados
+        return templates.TemplateResponse(
+            "bienes_por_dni.html",
+            {
+                "request": request,
+                "bienes": bienes_dni,
+                "dni": el_dni
+            }
+        )
+
+    except Exception as e:
+        print(f"Error al buscar bienes: {str(e)}")
+        return templates.TemplateResponse(
+            "bienes_por_dni.html",
+            {
+                "request": request,
+                "error": "Error al buscar bienes",
+                "bienes": []
+            }
+        )
+    #return templates.TemplateResponse("demo/usuarios_responsables.html",{"request":request,"users":users})
+            #**********************  BUSCAR UNO DE LOS BIENES DEL EMPLEADO **************************
+@app.get("/cargar-bien/{bien_id}")
+async def cargar_bien(
+    bien_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    try:
+        # Consultar el bien en la base de datos
+        bien = db.query(AnteriorSis).filter_by(id=bien_id).first()
+        print("ID :", bien_id)
+        print("Datos del bien ===> ", bien.codigo_dni)
+        
+        if not bien:
+            return {"error": "Bien no encontrado"}
+        
+        # Convertir el objeto a diccionario con los datos que necesitas
+        bien_data =[{
+                "codigo_patr": bien.codigo_patrimonial or "Sin código patrimonial",
+                "codigo_inv_2023": bien.inv_2023 or "No disponible",
+                "codigo_inv_2022": bien.inv_2022 or "No disponible",
+                "codigo_nacional": bien.codigo_nacional or "No disponible",
+                "descripcion": bien.descripcion or "Sin descripción",
+                "material": bien.material or "Material no disponible",
+                "color": bien.color or "Color no disponible",
+                "marca": bien.marca or "Marca no disponible",
+                "modelo": bien.modelo or "Modelo no disponible",
+                "largo": bien.largo or "Largo no disponible",
+                "ancho": bien.ancho or "Ancho no disponible",
+                "alto": bien.alto or "Alto no disponible",
+                "numero_serie": bien.numero_serie or "N° Serie no disponible",
+                "observaciones": bien.observaciones or "Observaciones no disponible",
+                "anio_fabricac": bien.anio_fabricac or 0,
+                "num_placa": bien.num_placa if bien.num_placa else "Placa no disponible",
+                "num_chasis": bien.num_chasis if bien.num_chasis else "N° Chasis no disponible",
+                "num_motor": bien.num_motor if bien.num_motor else "N° Serie motor no disponible",
+                "procedencia": bien.procedencia if bien.procedencia else "Sin dato",
+                "propietario": bien.propietario if bien.propietario else "Sin dato",
+                "faltante": bien.faltante if bien.faltante else "Sin dato",
+                "sede":  bien.sede if bien.sede else "Sin dato",
+                "ubicacion_actual":  bien.ubicacion_actual if bien.ubicacion_actual else "Sin dato",
+                "codigo_dni":  bien.codigo_dni if bien.codigo_dni else "Sin dato"
+            }
+        ]
+
+        #areas_oficiales = []
+        try:
+            areas_result = db.execute(
+                text("SELECT id, nombre FROM areas_oficiales ORDER BY id")
+            ).fetchall()
+            areas_oficiales = [{"id": row[0], "nombre": row[1]} for row in areas_result]
+
+            codigo_dni = bien_data[0]["codigo_dni"]
+
+            nombre_empleado = db.execute(
+                text("SELECT nombre FROM empleados WHERE codigo = :codigo_dni"),
+                {"codigo_dni": codigo_dni}
+            ).fetchone()
+
+        except Exception as e:
+            print(f"Error obteniendo áreas oficiales: {e}")
+
+        """ubicaciones = []
+        try:
+            ubicaciones_result = db.execute(
+                text(
+                SELECT d.id, s.nombre AS sede, d.nombre AS dependencia 
+                FROM dependencias d
+                JOIN sedes s ON d.sede_id = s.id
+                ORDER BY s.nombre, d.nombre
+                )
+            ).fetchall()
+            
+            ubicaciones = [
+                {
+                    "id": row[0], 
+                    "sede": row[1], 
+                    "dependencia": row[2]
+                } for row in ubicaciones_result
+            ]
+
+        except Exception as e:
+            print(f"Error obteniendo ubicaciones: {e}")"""
+        
+
+
+        # Retornar la plantilla del formulario con los datos
+        return templates.TemplateResponse(
+            "demo/datos_inventario_ok.html",
+            {
+                "request": request,
+                "datos": bien_data,
+                #"areas_oficiales": areas_oficiales, 
+                "nombre_empleado": nombre_empleado[0], 
+                "codigo_dni": codigo_dni,
+                #"ubicaciones": ubicaciones
+            }
+        )
+    except Exception as e:
+        print(f"Error al cargar bien: {str(e)}")
+        return {"error": f"Error al cargar bien: {str(e)}"}
