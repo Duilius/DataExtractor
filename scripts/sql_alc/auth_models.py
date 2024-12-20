@@ -48,7 +48,8 @@ class Usuario(Base):
     # Relaciones
     institucion = relationship("Institucion", back_populates="usuarios")
     sede_actual = relationship("Sede", back_populates="usuarios_actuales")
-    empleado = relationship("Empleado", back_populates="usuario")
+     # Relación con Empleado
+    empleado = relationship("Empleado", back_populates="usuario", uselist=False)
 
     def __repr__(self):
         return f"<Usuario {self.codigo}>"
