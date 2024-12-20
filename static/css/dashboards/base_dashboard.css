@@ -349,6 +349,28 @@ body {
     position: relative;
     width: 100%;
     z-index: 1;
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.container-fluid {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 15px;
+}
+
+@media (min-width: 992px) {
+    .container-fluid {
+        padding: 0 30px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container-fluid {
+        padding: 0 40px;
+    }
 }
 
 /* Estilos para encabezados ordenables */

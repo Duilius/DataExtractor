@@ -1,0 +1,292 @@
+/* static/css/dashboards/analisis_historico.css */
+.analysis-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.analysis-header h1 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.analysis-header .subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* En analisis.css */
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    margin-bottom: -1px;
+    color: #495057;
+    background: none;
+    border: 1px solid transparent;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+    padding: 0.75rem 1.25rem;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6;
+}
+
+.nav-tabs .nav-link.active {
+    color: #007bff;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+    font-weight: 500;
+}
+
+.analysis-sections {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.analysis-section {
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #2c3e50;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -0.75rem;
+}
+
+.col-md-6 {
+    width: 100%;
+    padding: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .col-md-6 {
+        width: 50%;
+    }
+}
+
+/************************/
+/* static/css/dashboards/analisis.css */
+
+/* Estilos generales para las pestañas */
+.tab-content {
+    padding: 20px 0;
+}
+
+/* Estilos para las cards */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    padding: 1rem 1.25rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #2c3e50;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Estilos para tablas */
+.table-responsive {
+    margin-top: 1rem;
+}
+
+.table {
+    font-size: 0.9rem;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Estilos para estadísticas */
+.stats-summary {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+}
+
+.stat-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.stat-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.stat-list li:last-child {
+    border-bottom: none;
+}
+
+/* Estilos para alertas y recomendaciones */
+.alert {
+    border-left: 4px solid #ffc107;
+}
+
+.alert-heading {
+    color: #856404;
+    margin-bottom: 1rem;
+}
+
+.recommendations {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+}
+
+.recommendations ol {
+    padding-left: 1.2rem;
+}
+
+.recommendations li {
+    margin-bottom: 0.75rem;
+}
+
+/* Estilos para gráficos */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+}
+
+/* Estilos para métricas destacadas */
+.metric-highlight {
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.metric-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .card-header {
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .chart-container {
+        height: 250px;
+    }
+}
+
+
+/************** COMPRAS  ***********************
+/* Estilos adicionales para la pestaña de Compras */
+.error-metric .metric-value {
+    color: #dc3545;
+}
+
+.warning-metric .metric-value {
+    color: #ffc107;
+}
+
+.metric-highlight {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.metric-highlight:hover {
+    transform: translateY(-5px);
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.recommendations ol {
+    counter-reset: item;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.recommendations li {
+    counter-increment: item;
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.recommendations li:before {
+    content: counter(item);
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #007bff;
+    color: white;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 1.5rem;
+    font-size: 0.8rem;
+}
