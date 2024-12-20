@@ -1,86 +1,72 @@
+# middleware/auth_middleware.py
 from fastapi import Request
 from fastapi.responses import RedirectResponse, JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from scripts.py.auth_utils import AuthUtils
-from scripts.py.session_handler import session_handler
-import os
-from typing import List
-from starlette.middleware.base import BaseHTTPMiddleware
 from config import JWT_SECRET_KEY
-
-# Crear instancia de AuthUtils
-auth_utils = AuthUtils(JWT_SECRET_KEY)
-
+import json, jwt
 
 class AuthMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, public_paths: List[str] = None):
+    def __init__(self, app):
         super().__init__(app)
-        self.auth_utils = AuthUtils(os.getenv("JWT_SECRET_KEY"))
-        self.public_paths = public_paths or [
+        self.auth_utils = AuthUtils(JWT_SECRET_KEY)
+        
+        # Rutas completamente públicas
+        self.public_paths = [
             "/auth/login",
             "/auth/logout",
-            "/auth/renew-session",
             "/static",
             "/favicon.ico",
-            "/"
+            "/docs",  # Si quieres que la documentación FastAPI sea pública
+            "/openapi.json"
         ]
-    
-    async def dispatch(self, request: Request, call_next):
-        """
-        Middleware para autenticar usuarios mediante JWT y gestionar sesiones activas.
-        """
-        # Permitir acceso a rutas públicas sin autenticación
+        
+        # Rutas que requieren autenticación básica (todo usuario logueado)
+        self.auth_paths = [
+            "/dashboard",
+            "/profile"
+        ]
+        
+        # Rutas específicas por rol
+        self.role_paths = {
+            "Comisión Cliente": ["/dashboard/comision"],
+            "Inventariador Proveedor": ["/dashboard/proveedor"],
+            "Gerencial Proveedor": ["/dashboard/gerencia"]
+        }
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
+        # 1. Permitir rutas públicas
         if any(request.url.path.startswith(path) for path in self.public_paths):
-            print(f"Middleware Auth: Request Path -> {request.url.path}")
-            response = await call_next(request)
-            print(f"Middleware Auth: Response Status -> {response.status_code}")
-            return response
-            
-
-        # Obtener el token desde las cookies
+            return await call_next(request)
+        
+        # 2. Verificar autenticación
         access_token = request.cookies.get("access_token")
-        if not access_token:
-            # Si no hay token, redirigir al login
+        session_data = request.cookies.get("session_data")
+        
+        if not access_token or not session_data:
             return RedirectResponse(url="/auth/login", status_code=302)
-
+        
         try:
-            # Verificar la validez del token
-            payload = self.auth_utils.verify_access_token(access_token)
-            request.state.user = payload  # Añadir usuario a request.state
-            response = await call_next(request)
-            # Renovar sesión si hay actividad
-            session_handler.renew_session_if_active(request, response)
-            return response
-        except Exception as e:
-            # Manejar errores en la verificación del token
-            print(f"AuthMiddleware Error: {e}")  # Registrar error
-            return RedirectResponse(url="/auth/login", status_code=302)
-
-
-# ************* VALIDACIÓN DE SESIONES ****************
-async def validate_session(request: Request, call_next):
-    """
-    Middleware para validar sesiones activas.
-    """
-    token = request.cookies.get("access_token")
-    if token:
-        try:
-            # Verificar el token y obtener datos
-            payload = auth_utils.verify_access_token(token)
-            user_id = str(payload.get("sub"))
+            # 3. Verificar token y obtener datos de usuario
+            payload = jwt.decode(access_token, JWT_SECRET_KEY, algorithms=["HS256"])
+            user_data = json.loads(session_data)
+            request.state.user = user_data
             
-            # Verificar si el token sigue siendo válido
-            if not auth_utils.is_token_active(user_id, token):
-                # Sesión inválida, eliminar cookies
-                response = JSONResponse(
-                    status_code=401,
-                    content={"detail": "Sesión invalidada por inicio de sesión en otro dispositivo"}
-                )
-                response.delete_cookie("access_token")
-                response.delete_cookie("session_data")
-                return response
-                
+            # 4. Verificar permisos por rol
+            current_path = request.url.path
+            user_role = user_data.get("tipo_usuario")
+            
+            # Si la ruta requiere un rol específico
+            for role, paths in self.role_paths.items():
+                if any(current_path.startswith(path) for path in paths):
+                    if user_role != role:
+                        return JSONResponse(
+                            status_code=403,
+                            content={"detail": "No tienes permisos para acceder a esta sección"}
+                        )
+            
+            return await call_next(request)
+            
         except Exception as e:
-            print(f"Validate Session Error: {e}")  # Registrar error
-    
-    # Continuar al siguiente middleware o endpoint
-    return await call_next(request)
+            print(f"Error en AuthMiddleware: {str(e)}")
+            return RedirectResponse(url="/auth/login", status_code=302)
