@@ -102,18 +102,6 @@ class CatalogoNacionalBienes(Base):
     estado = Column(String(50), nullable=False)
     fecha_alta = Column(Date, nullable=False)
 
-class Institucion(Base):
-    __tablename__ = 'instituciones'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    nombre = Column(String(100), nullable=False)
-    ruc = Column(String(20), unique=True, nullable=False)
-    sedes = relationship("Sede", back_populates="institucion")
-    bienes = relationship("Bien", back_populates="institucion")
-    empleados = relationship("Empleado", back_populates="institucion")
-    procesos_inventario = relationship("ProcesoInventario", back_populates="institucion")
-    usuarios = relationship("Usuario", back_populates="institucion")
-
-
 class Sede(Base):
     __tablename__ = 'sedes'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -126,9 +114,16 @@ class Sede(Base):
     region = Column(String(100))
     provincia = Column(String(100))
     distrito = Column(String(100))
-    usuarios_actuales = relationship("Usuario", back_populates="sede_actual")
+    usuarios_actuales = relationship(
+        "Usuario", 
+        back_populates="sede_actual",
+        foreign_keys="[Usuario.sede_actual_id]"
+    )
     # Añadir relación con Dependencias
     dependencias = relationship("Dependencia", back_populates="sede")
+    # Nuevas relaciones
+    altas = relationship("AltasSis2024", back_populates="sede_rel")
+    bajas = relationship("BajasSis2024", back_populates="sede_rel")
 
 class Oficina(Base):
     __tablename__ = 'oficinas'
@@ -136,8 +131,8 @@ class Oficina(Base):
     sede_id = Column(Integer, ForeignKey('sedes.id'), nullable=False)
     institucion_id = Column(Integer, ForeignKey('instituciones.id'), nullable=False)
     codigo = Column(String(20), unique=True, nullable=False)
-    ambiente = Column(String(100), nullable=False)
-    dependencia = Column(Enum(NivelJerarquico), nullable=False)
+    nombre = Column(String(100), nullable=False)
+    nivel = Column(Enum(NivelJerarquico), nullable=False)
     jefe_id = Column(Integer, ForeignKey('empleados.id'))
     sede = relationship("Sede", back_populates="oficinas")
     institucion = relationship("Institucion")
@@ -162,9 +157,27 @@ class Empleado(Base):
     oficina = relationship("Oficina", back_populates="empleados", foreign_keys=[oficina_id])
     oficina_dirigida = relationship("Oficina", back_populates="jefe", foreign_keys="Oficina.jefe_id")
     asignaciones = relationship("AsignacionBien", back_populates="empleado")
-    usuario = relationship("Usuario", back_populates="empleado")  # Añadir esta línea
+    #usuario = relationship("Usuario", back_populates="empleado")  # Añadir esta línea
     sede = relationship("Sede")
-    
+
+    # Relación con altas usando el código/dni
+    altas = relationship(
+        "AltasSis2024",
+        primaryjoin="Empleado.codigo==AltasSis2024.dni",
+        foreign_keys="AltasSis2024.dni",
+        backref="empleado"
+    )
+    # Relación uno a uno con Usuario
+    usuario = relationship("Usuario", back_populates="empleado", uselist=False)
+
+    # Relación con bajas usando el código/dni
+    bajas = relationship(
+        "BajasSis2024",
+        primaryjoin="Empleado.codigo==BajasSis2024.dni",
+        foreign_keys="BajasSis2024.dni",
+        backref="empleado"
+    )
+
 class Bien(Base):
     __tablename__ = 'bienes'
     
@@ -200,8 +213,8 @@ class Bien(Base):
     codigo_oficina = Column(String(50))  # antes era ubicacion
     acciones=Column(String(50))#Etiq-2023, Etiq-SBN, 
     describe_area=Column(String(100))# Nombre de Área Oficial nueva
-    #area_actual_id=Column(String(10))#Id de Área Oficial nueva (a la fecha)
-    nuevo_usuario = Column(String(50))    
+    area_actual_id=Column(String(10))#Id de Área Oficial nueva (a la fecha)
+
 
     # Relaciones
     institucion = relationship("Institucion", back_populates="bienes")
@@ -213,6 +226,82 @@ class Bien(Base):
     historial_codigos = relationship("HistorialCodigoInventario", back_populates="bien")
     sede_actual = relationship("Sede", foreign_keys=[sede_actual_id])
     
+class AltasSis2024(Base):
+    __tablename__ = "altas_sis_2024"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    #empleado_id = Column(Integer, ForeignKey('empleados.id'))
+    codigo_patrimonial = Column(String(50), unique=True, index=True)
+    codigo_sbn = Column(String(50))
+    denominacion = Column(String(200))
+    marca = Column(String(100))
+    modelo = Column(String(100))
+    tipo = Column(String(100))
+    color = Column(String(50))
+    numero_serie = Column(String(100))
+    medidas = Column(String(100))
+    caracteristicas = Column(String(500))
+    estado = Column(String(50))
+    situacion = Column(String(100))
+    usuario = Column(String(200))
+    dni = Column(String(8))
+    dependencia = Column(String(200))
+    ambiente = Column(String(200))
+    sede_id = Column(Integer, ForeignKey("sedes.id"))
+    sede = Column(String(200))
+    procedencia = Column(String(100))
+    propietario = Column(String(200))
+    faltante = Column(Boolean, default=False)
+    oficina = Column(String(200))
+    observacion = Column(String(500))
+    activo_no_depreciable = Column(String(50))
+    documento_alta = Column(String(100))
+    fecha_alta = Column(Date)
+    cuenta_contable = Column(String(50))
+    factor_dep = Column(Float)
+    valor_libros = Column(Float)
+    
+    # Relaciones
+    sede_rel = relationship("Sede", back_populates="altas")
+    
+class BajasSis2024(Base):   
+    __tablename__ = "bajas_sis_2024"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    inv_2023 = Column(String(50))
+    inv_2022 = Column(String(50))
+    codigo_cp = Column(String(50), unique=True, index=True)
+    codigo_sbn = Column(String(50))
+    denominacion = Column(String(200))
+    marca = Column(String(100))
+    modelo = Column(String(100))
+    modelo_comercial = Column(String(100))
+    color = Column(String(50))
+    num_serie = Column(String(100))
+    medidas = Column(String(100))
+    caracteristicas = Column(String(500))
+    estado = Column(String(50))
+    situacion = Column(String(100))
+    dni = Column(String(8))
+    dependencia = Column(String(200))
+    ambiente = Column(String(200))
+    sede_id = Column(Integer, ForeignKey("sedes.id"))
+    procedencia = Column(String(100))
+    propietario = Column(String(200))
+    faltante = Column(Boolean, default=False)
+    
+    # Relaciones
+    sede_rel = relationship("Sede", back_populates="bajas")
+    #anterior = relationship("AnteriorSis", back_populates="bajas")
+    #empleado = relationship("Empleado", back_populates="bajas")
+
+    # Definir la relación con anterior_sis
+    anterior = relationship(
+        "AnteriorSis",  # o el nombre de tu clase para anterior_sis
+        primaryjoin="BajasSis2024.codigo_sbn==AnteriorSis.codigo_nacional",
+        foreign_keys="AnteriorSis.codigo_nacional",
+        backref="bajas"
+    )
 
 class ImagenBien(Base):
     __tablename__ = 'imagenes_bienes'
@@ -400,7 +489,18 @@ class Area(Base):
     # Relación con Unidad Funcional
     unidad_funcional = relationship("UnidadFuncional", back_populates="areas")
 
-
+class Institucion(Base):
+    __tablename__ = 'instituciones'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    nombre = Column(String(100), nullable=False)
+    ruc = Column(String(20), unique=True, nullable=False)
+    sedes = relationship("Sede", back_populates="institucion")
+    bienes = relationship("Bien", back_populates="institucion")
+    empleados = relationship("Empleado", back_populates="institucion")
+    procesos_inventario = relationship("ProcesoInventario", back_populates="institucion")
+    
+    # Asegúrate de que esta línea esté presente
+    usuarios = relationship("Usuario", back_populates="institucion")
 
 mapper_registry = registry()
 

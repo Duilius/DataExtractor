@@ -5,14 +5,25 @@ from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from fastapi import HTTPException
 from typing import Optional
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Modificar la inicialización de CryptContext
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__default_rounds=12,  # Establecer rondas explícitamente
+    bcrypt__ident="2b"         # Usar identificador específico
+)
 
 class AuthUtils:
     def __init__(self, secret_key: str):
         self.secret_key = secret_key
 
     def hash_password(self, password: str) -> str:
-        return pwd_context.hash(password)
+        try:
+            return pwd_context.hash(password)
+        except Exception as e:
+            print(f"Error al hashear password: {str(e)}")
+            # Podemos intentar un fallback o re-lanzar el error
+            raise
     
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return pwd_context.verify(plain_password, hashed_password)
