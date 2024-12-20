@@ -2,37 +2,63 @@
 
 {% block title %}Dashboard Comisión{% endblock %}
 
-{% block sidebar_menu %}
-<div class="menu-section">
-    <h3>Supervisión</h3>
-    <ul>
-        <li><a href="/reportes/por-sede" class="menu-item">
-            <i class="fas fa-building"></i>
-            <span>Por Sede</span>
-        </a></li>
-        <li><a href="/reportes/consolidado" class="menu-item">
-            <i class="fas fa-chart-pie"></i>
-            <span>Consolidado</span>
-        </a></li>
-    </ul>
-</div>
-
-<div class="menu-section">
-    <h3>Validación</h3>
-    <ul>
-        <li><a href="/validar/hallazgos" class="menu-item">
-            <i class="fas fa-check-circle"></i>
-            <span>Validar Hallazgos</span>
-        </a></li>
-        <li><a href="/validar/sobrantes" class="menu-item">
-            <i class="fas fa-plus-circle"></i>
-            <span>Revisar Sobrantes</span>
-        </a></li>
-    </ul>
-</div>
+{# Agregamos la referencia a los estilos #}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/dashboards/comision.css">
 {% endblock %}
 
 {% block content %}
+<!-- Nueva sección de análisis al inicio -->
+<div class="analysis-cards mb-5">
+    <div class="row g-4">
+        <!-- Tarjeta de Análisis Histórico -->
+        <div class="col-md-6">
+            <div class="analysis-card">
+                <div class="card-icon bg-primary">
+                    <i class="fas fa-history fa-2x"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Análisis Histórico de Inventarios</h3>
+                    <p>Explore el análisis comparativo detallado de inventarios 2022-2023</p>
+                    <div class="features">
+                        <span><i class="fas fa-check-circle"></i> Comparación interanual</span>
+                        <span><i class="fas fa-check-circle"></i> Análisis de movimientos</span>
+                        <span><i class="fas fa-check-circle"></i> Estadísticas detalladas</span>
+                    </div>
+                    <a href="/dashboard/comision/analisis-historico" class="btn-analysis">
+                        <span>Ver Análisis Completo</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Reportes -->
+        <div class="col-md-6">
+            <div class="analysis-card">
+                <div class="card-icon bg-success">
+                    <i class="fas fa-file-pdf fa-2x"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Reportes e Informes</h3>
+                    <p>Descargue informes completos en formato PDF para su revisión</p>
+                    <div class="features">
+                        <span><i class="fas fa-check-circle"></i> Reporte comparativo</span>
+                        <span><i class="fas fa-check-circle"></i> Análisis de estado</span>
+                        <span><i class="fas fa-check-circle"></i> Estadísticas generales</span>
+                    </div>
+                    <a href="/dashboard/comision/descargar-analisis" class="btn-analysis btn-success">
+                        <span>Descargar Análisis PDF</span>
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard existente -->
 <div class="dashboard-header">
     <div class="header-info">
         <h1>Panel de Control - Comisión</h1>
@@ -99,7 +125,6 @@
         </table>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}

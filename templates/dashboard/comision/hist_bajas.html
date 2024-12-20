@@ -1,0 +1,104 @@
+<!-- templates/dashboard/comision/components/hist_bajas.html -->
+<div class="tab-pane fade" id="bajas">
+    <!-- Sección de Resumen de Bajas -->
+    <div class="alert alert-warning mb-4">
+        <h4 class="alert-heading">Análisis de Bajas 2024</h4>
+        <p>Detalle de los bienes dados de baja, causales y su impacto financiero.</p>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de Bajas por Tipo -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Bajas por Tipo de Bien</h3>
+                    <small class="text-muted">Distribución de bajas por categoría</small>
+                </div>
+                <div class="card-body">
+                    <canvas id="bajasPorTipo"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Valor por Sede -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Valor de Bajas por Sede</h3>
+                    <small class="text-muted">Impacto financiero por ubicación</small>
+                </div>
+                <div class="card-body">
+                    <canvas id="bajasValorSede"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis de Bajas Previo Desuso -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Análisis de Bajas con Desuso Previo</h3>
+            <small class="text-muted">Bienes que estaban en desuso (D) antes de su baja</small>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <canvas id="bajasPrevioDesuso"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <div class="alert alert-info">
+                        <h5>Hallazgos Importantes</h5>
+                        <ul>
+                            <li>{{ bajas_data.estadisticas.bajas_previo_desuso }} bienes estaban en desuso antes de su baja</li>
+                            <li>Representa el {{ (bajas_data.estadisticas.bajas_previo_desuso / bajas_data.estadisticas.total_bajas * 100) | round(1) }}% del total de bajas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla Detallada de Bajas -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Detalle de Bajas por Tipo</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Tipo de Bien</th>
+                            <th class="text-end">Cantidad</th>
+                            <th class="text-end">Valor Total (S/.)</th>
+                            <th class="text-end">% del Total</th>
+                            <th>Principales Causales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in bajas_data.por_tipo.datos %}
+                        <tr>
+                            <td>{{ item.tipo }}</td>
+                            <td class="text-end">{{ item.cantidad }}</td>
+                            <td class="text-end">{{ "%.2f"|format(item.valor) }}</td>
+                            <td class="text-end">
+                                {{ (item.cantidad / bajas_data.estadisticas.total_bajas * 100) | round(1) }}%
+                            </td>
+                            <td>{{ item.causal }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-info">
+                            <td><strong>Total</strong></td>
+                            <td class="text-end"><strong>{{ bajas_data.estadisticas.total_bajas }}</strong></td>
+                            <td class="text-end"><strong>S/. {{ "%.2f"|format(bajas_data.estadisticas.valor_total) }}</strong></td>
+                            <td class="text-end"><strong>100%</strong></td>
+                            <td>-</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

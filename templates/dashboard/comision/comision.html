@@ -1,0 +1,25 @@
+<!-- templates/dashboard/comision/comision.html -->
+{% extends "dashboard/shared/base.html" %}
+
+{% block content %}
+<!-- Tarjeta de Análisis de Inventario -->
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">Análisis de Inventario</h5>
+    </div>
+    <div class="card-body">
+        <p class="card-text">
+            Acceda al análisis detallado del inventario institucional, incluyendo comparativas históricas,
+            bienes en mantenimiento, bienes asegurables y más.
+        </p>
+        <div class="d-grid gap-2">
+            <a href="/dashboard/comision/analisis" class="btn btn-primary">
+                <i class="fas fa-chart-line me-2"></i>Ver Análisis Histórico
+            </a>
+            <a href="/dashboard/comision/descargar-analisis" class="btn btn-secondary">
+                <i class="fas fa-file-pdf me-2"></i>Descargar Análisis en PDF
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+<!-- templates/dashboard/comision/components/hist_comparativo.html -->
+<div class="tab-pane fade show active" id="historico">
+    <!-- Sección de Resumen -->
+    <div class="alert alert-info mb-4">
+        <h4 class="alert-heading">Resumen del Análisis</h4>
+        <p>Comparativa entre los años 2022 y 2023, mostrando la evolución del inventario, estados y distribución por sedes.</p>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de evolución total -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Evolución de Bienes 2022-2023</h3>
+                    <small class="text-muted">Comparación interanual del total de bienes inventariados</small>
+                </div>
+                <div class="card-body">
+                    <canvas id="totalComparison"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado de bienes -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Estado de Bienes 2023</h3>
+                    <small class="text-muted">B: Bueno, R: Regular, M: Malo</small>
+                </div>
+                <div class="card-body">
+                    <canvas id="estadoBienes"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribución por sede -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Distribución por Sede</h3>
+                    <small class="text-muted">Excluye Sede Central para mejor visualización</small>
+                </div>
+                <div class="card-body">
+                    <canvas id="comparativaSede"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Resumen -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3>Resumen Detallado</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Métrica</th>
+                            <th class="text-end">2022</th>
+                            <th class="text-end">2023</th>
+                            <th class="text-end">Variación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total de Bienes</td>
+                            <td class="text-end">{{ resumen_data.total_comparison.data[0] }}</td>
+                            <td class="text-end">{{ resumen_data.total_comparison.data[1] }}</td>
+                            <td class="text-end">
+                                {% set variacion = ((resumen_data.total_comparison.data[1] - resumen_data.total_comparison.data[0]) / resumen_data.total_comparison.data[0] * 100) | round(1) %}
+                                <span class="{% if variacion > 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ variacion }}%
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

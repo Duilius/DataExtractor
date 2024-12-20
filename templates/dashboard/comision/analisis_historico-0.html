@@ -1,0 +1,150 @@
+<!-- templates/dashboard/comision/analisis_historico.html -->
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Análisis Histórico de Inventarios{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/dashboards/analisis_historico.css">
+{% endblock %}
+
+{% block content %}
+<div class="analysis-header">
+    <h1>Análisis Histórico de Inventarios</h1>
+    <p class="subtitle">Comparativa 2022-2023</p>
+</div>
+
+<div class="analysis-sections">
+    <!-- Sección 1: Resumen Comparativo -->
+    <section class="analysis-section">
+        <div class="card">
+            <div class="card-header">
+                <h2>Comparación Total de Bienes</h2>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="totalComparison"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="row">
+        <!-- Estado de Bienes 2023 -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Estado de Bienes 2023</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="estadoBienes"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparativa por Sede -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Comparativa por Sede</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="comparativaSede"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de comparación total
+    const totalCtx = document.getElementById('totalComparison').getContext('2d');
+    new Chart(totalCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ resumen_data.total_comparison.labels | tojson }},
+            datasets: [{
+                label: 'Total de Bienes',
+                data: {{ resumen_data.total_comparison.data | tojson }},
+                backgroundColor: ['rgba(54, 162, 235, 0.8)', 'rgba(75, 192, 192, 0.8)']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Comparación Total de Bienes por Año'
+                }
+            }
+        }
+    });
+
+    // Gráfico de estado de bienes
+    const estadoCtx = document.getElementById('estadoBienes').getContext('2d');
+    new Chart(estadoCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ resumen_data.estado_2023.labels | tojson }},
+            datasets: [{
+                data: {{ resumen_data.estado_2023.data | tojson }},
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(255, 99, 132, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Distribución por Estado 2023'
+                }
+            }
+        }
+    });
+
+    // Gráfico comparativo por sede
+    const sedeCtx = document.getElementById('comparativaSede').getContext('2d');
+    new Chart(sedeCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ resumen_data.por_sede.labels | tojson }},
+            datasets: [{
+                label: '2022',
+                data: {{ resumen_data.por_sede.data_2022 | tojson }},
+                backgroundColor: 'rgba(54, 162, 235, 0.8)'
+            }, {
+                label: '2023',
+                data: {{ resumen_data.por_sede.data_2023 | tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.8)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Comparativa por Sede'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,168 @@
+<!-- templates/dashboard/comision/components/hist_operativo.html -->
+<div class="tab-pane fade" id="operativo">
+    <!-- Resumen de Aspectos Operativos -->
+    <div class="alert alert-primary mb-4">
+        <h4 class="alert-heading">Aspectos Operativos y Financieros</h4>
+        <p>Análisis de bienes críticos que requieren atención especial: mantenimiento, aseguramiento y acciones preventivas.</p>
+    </div>
+
+    <div class="row">
+        <!-- Bienes que Requieren Mantenimiento -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Bienes que Requieren Mantenimiento</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary btn-sm" onclick="exportarMantenimiento()">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Tipo de Bien</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Buen Estado</th>
+                                    <th class="text-center">Regular</th>
+                                    <th class="text-center">Malo</th>
+                                    <th>Sede</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in operativo_data.mantenimiento.datos %}
+                                <tr>
+                                    <td>{{ item.tipo }}</td>
+                                    <td class="text-center">{{ item.cantidad }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ item.estado_b }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning">{{ item.estado_r }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger">{{ item.estado_m }}</span>
+                                    </td>
+                                    <td>{{ item.sede }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" title="Ver Detalle">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bienes Asegurables -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Bienes Asegurables</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary btn-sm" onclick="exportarAsegurables()">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Gráfico de Distribución -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <canvas id="bienesAsegurables"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <h5>Resumen</h5>
+                                <p>Total de bienes asegurables: <strong>{{ operativo_data.asegurables.total }}</strong></p>
+                                <ul>
+                                    <li>En buen estado: {{ operativo_data.asegurables.estado_b }}</li>
+                                    <li>En estado regular: {{ operativo_data.asegurables.estado_r }}</li>
+                                    <li>En mal estado: {{ operativo_data.asegurables.estado_m }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Detalle -->
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Tipo de Bien</th>
+                                    <th>Estado</th>
+                                    <th>Sede</th>
+                                    <th class="text-end">Cantidad</th>
+                                    <th>Recomendación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in operativo_data.asegurables.datos %}
+                                <tr>
+                                    <td>{{ item.tipo }}</td>
+                                    <td>
+                                        <span class="badge {% if item.estado == 'B' %}bg-success{% elif item.estado == 'R' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ item.estado }}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.sede }}</td>
+                                    <td class="text-end">{{ item.cantidad }}</td>
+                                    <td>
+                                        {% if item.estado == 'B' %}
+                                            Mantener seguro vigente
+                                        {% elif item.estado == 'R' %}
+                                            Evaluar mantenimiento preventivo
+                                        {% else %}
+                                            Considerar reemplazo
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recomendaciones Operativas -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recomendaciones Operativas</h3>
+                </div>
+                <div class="card-body">
+                    <div class="recommendations">
+                        <h5>Mantenimiento</h5>
+                        <ul>
+                            <li>Implementar programa de mantenimiento preventivo para equipos críticos</li>
+                            <li>Priorizar mantenimiento de equipos en estado regular</li>
+                            <li>Establecer cronograma de revisiones periódicas</li>
+                        </ul>
+
+                        <h5>Aseguramiento</h5>
+                        <ul>
+                            <li>Revisar y actualizar pólizas de seguro</li>
+                            <li>Incluir nuevas adquisiciones en las pólizas existentes</li>
+                            <li>Evaluar cobertura por sede</li>
+                        </ul>
+
+                        <h5>Gestión</h5>
+                        <ul>
+                            <li>Implementar sistema de alertas para mantenimientos programados</li>
+                            <li>Establecer procedimientos de verificación periódica</li>
+                            <li>Capacitar al personal en el uso adecuado de equipos críticos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
