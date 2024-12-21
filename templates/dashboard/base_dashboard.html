@@ -97,12 +97,13 @@
 
         <!-- templates/dashboard/base_dashboard.html -->
 <!-- Donde necesitas mostrar el código del usuario -->
-<span>
+<span><!--
     {% if user and user.codigo %}
         {{ user.codigo }}
     {% else %}
         Invitado
     {% endif %}
+-->
 </span>
 
         <!-- Main Content -->
@@ -122,7 +123,7 @@
                             Invitado
                         {% endif %}
                     </span>
-                    <span>{{ user.tipo_usuario }}</span>
+                    <span>{{ user.nombres }}</span>
                 </div>
                 <div class="actions">
                     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
