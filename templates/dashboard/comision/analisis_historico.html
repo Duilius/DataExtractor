@@ -316,18 +316,297 @@
         </div>
 
         <!-- Pestaña de Bajas 2024 -->
-        <div class="tab-pane fade" id="bajas">
-            <!-- Aquí irá el contenido de bajas -->
-            <h2>Análisis de Bajas 2024</h2>
-            <p>Contenido en desarrollo...</p>
+        <!-- Pestaña Bajas 2024 -->
+<div class="tab-pane fade" id="bajas">
+    <!-- Resumen de Bajas -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Resumen de Bajas 2024</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="metric-highlight primary-metric">
+                                <div class="metric-value">971</div>
+                                <div class="metric-label">Total Bienes Dados de Baja</div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="procedencia-chart">
+                                <h5>Procedencia de Bienes Dados de Baja</h5>
+                                <canvas id="procedenciaBajas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis Detallado -->
+    <div class="row">
+        <!-- Estado de Bienes Dados de Baja -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Estado de Bienes al Momento de Baja</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Hallazgo Importante:</strong> De los 737 bienes comprados dados de baja:
+                        <ul>
+                            <li>7 estaban en estado Bueno (B)</li>
+                            <li>445 en estado Regular (R)</li>
+                        </ul>
+                    </div>
+                    <canvas id="estadoBajas"></canvas>
+                </div>
+            </div>
         </div>
 
-        <!-- Pestaña de Aspectos Operativos -->
-        <div class="tab-pane fade" id="operativo">
-            <!-- Aquí irá el contenido operativo -->
-            <h2>Aspectos Operativos y Financieros</h2>
-            <p>Contenido en desarrollo...</p>
+        <!-- Casos Especiales -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Casos que Requieren Atención</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tipo de Bien</th>
+                                    <th>Estado</th>
+                                    <th>Cantidad</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Laptops</td>
+                                    <td><span class="badge bg-success">Bueno</span></td>
+                                    <td>5</td>
+                                    <td>Revisar criterios de baja</td>
+                                </tr>
+                                <tr>
+                                    <td>Cámara de Video</td>
+                                    <td><span class="badge bg-success">Bueno</span></td>
+                                    <td>1</td>
+                                    <td>Verificar motivo de baja</td>
+                                </tr>
+                                <tr>
+                                    <td>Vehículos</td>
+                                    <td><span class="badge bg-warning">Regular</span></td>
+                                    <td>3</td>
+                                    <td>2 autos y 1 camioneta</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <!-- Recomendaciones y Normativa -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3>Marco Normativo y Recomendaciones</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="normativa-section">
+                        <h5>Marco Normativo</h5>
+                        <ul>
+                            <li>Directiva 004-2021-EF/54.01</li>
+                            <li>Directiva 006-2021-EF/54.01</li>
+                            <li>Plazo máximo de disposición final: 5 meses</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="recommendations">
+                        <h5>Recomendaciones</h5>
+                        <ol>
+                            <li>Revisar criterios de baja para bienes en buen estado</li>
+                            <li>Implementar evaluación técnica previa para vehículos</li>
+                            <li>Documentar detalladamente motivos de baja</li>
+                            <li>Cumplir plazos de disposición final</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- Pestaña de Aspectos Operativos -->
+        <!-- Pestaña Aspectos Operativos -->
+<div class="tab-pane fade" id="operativo">
+    <!-- Resumen Ejecutivo -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Resumen de Hallazgos Críticos</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="metric-highlight warning-metric">
+                        <div class="metric-value">52%</div>
+                        <div class="metric-label">Equipos Multifuncionales en Estado Regular</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-highlight info-metric">
+                        <div class="metric-value">98%</div>
+                        <div class="metric-label">Celulares en Buen Estado</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-highlight error-metric">
+                        <div class="metric-value">42%</div>
+                        <div class="metric-label">Extintores Requieren Revisión</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-highlight warning-metric">
+                        <div class="metric-value">55%</div>
+                        <div class="metric-label">Aires Acondicionados en Estado Regular</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis de Impacto -->
+    <div class="row">
+        <!-- Mantenimiento Preventivo -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Plan de Mantenimiento Preventivo</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="planMantenimiento"></canvas>
+                    <div class="mt-4">
+                        <h5>Prioridades de Mantenimiento</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo de Bien</th>
+                                        <th>Frecuencia</th>
+                                        <th>Prioridad</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Extintores</td>
+                                        <td>Trimestral</td>
+                                        <td><span class="badge bg-danger">Alta</span></td>
+                                        <td>Pendiente</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Aires Acondicionados</td>
+                                        <td>Semestral</td>
+                                        <td><span class="badge bg-warning">Media</span></td>
+                                        <td>En Proceso</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Equipos Multifuncionales</td>
+                                        <td>Trimestral</td>
+                                        <td><span class="badge bg-warning">Media</span></td>
+                                        <td>Pendiente</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riesgos y Aseguramiento -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Riesgos y Aseguramiento</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">Riesgos Identificados:</h5>
+                        <ul>
+                            <li>Alta concentración de equipos en estado regular</li>
+                            <li>Potencial obsolescencia masiva de celulares</li>
+                            <li>Extintores sin certificación actualizada</li>
+                            <li>Deterioro acelerado de aires acondicionados</li>
+                        </ul>
+                    </div>
+                    <canvas id="riesgosAseguramiento"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recomendaciones -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3>Plan de Acción y Recomendaciones</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Planificación de Compras</h5>
+                    <div class="recommendations">
+                        <ol>
+                            <li>Implementar renovación escalonada de equipos</li>
+                            <li>Evaluar vida útil antes de nuevas adquisiciones</li>
+                            <li>Priorizar reemplazo de equipos críticos</li>
+                            <li>Establecer criterios técnicos de compra</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Mantenimiento y Auditorías</h5>
+                    <div class="recommendations">
+                        <ol>
+                            <li>Establecer cronograma de mantenimiento preventivo</li>
+                            <li>Implementar sistema de alertas para mantenimientos</li>
+                            <li>Realizar auditorías técnicas trimestrales</li>
+                            <li>Documentar todas las intervenciones técnicas</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <h5>Presupuesto Estimado Anual</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Mantenimiento Preventivo:</strong>
+                        <br>S/. 120,000.00
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Renovación de Equipos:</strong>
+                        <br>S/. 250,000.00
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Capacitación:</strong>
+                        <br>S/. 30,000.00
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Auditorías:</strong>
+                        <br>S/. 40,000.00
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     </div>
 </div>
 {% endblock %}
@@ -636,6 +915,175 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     legend: {
                         position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+{% endif %}
+
+
+// Agregar dentro del bloque DOMContentLoaded existente, después de los scripts de compras
+
+// Gráficos de Bajas
+{% if bajas_data %}
+   // Gráfico de Procedencia de Bajas
+   const procedenciaCtx = document.getElementById('procedenciaBajas');
+   if (procedenciaCtx) {
+       new Chart(procedenciaCtx, {
+           type: 'bar',
+           data: {
+               labels: ['Compras', 'Transferencias', 'Donaciones', 'Saneamiento', 'Reposición', 'Fabricación'],
+               datasets: [{
+                   label: 'Cantidad de Bienes',
+                   data: [737, 136, 36, 35, 26, 1],
+                   backgroundColor: [
+                       'rgba(54, 162, 235, 0.8)',
+                       'rgba(75, 192, 192, 0.8)',
+                       'rgba(255, 206, 86, 0.8)',
+                       'rgba(153, 102, 255, 0.8)',
+                       'rgba(255, 99, 132, 0.8)',
+                       'rgba(255, 159, 64, 0.8)'
+                   ]
+               }]
+           },
+           options: {
+               responsive: true,
+               plugins: {
+                   title: {
+                       display: true,
+                       text: 'Procedencia de Bienes Dados de Baja'
+                   },
+                   legend: {
+                       display: false
+                   }
+               },
+               scales: {
+                   y: {
+                       beginAtZero: true
+                   }
+               }
+           }
+       });
+   }
+
+   // Gráfico de Estado de Bajas
+   const estadoBajasCtx = document.getElementById('estadoBajas');
+   if (estadoBajasCtx) {
+       new Chart(estadoBajasCtx, {
+           type: 'doughnut',
+           data: {
+               labels: ['Regular (R)', 'Malo (M)', 'Bueno (B)'],
+               datasets: [{
+                   data: [445, 285, 7],
+                   backgroundColor: [
+                       'rgba(255, 206, 86, 0.8)',
+                       'rgba(255, 99, 132, 0.8)',
+                       'rgba(75, 192, 192, 0.8)'
+                   ]
+               }]
+           },
+           options: {
+               responsive: true,
+               plugins: {
+                   title: {
+                       display: true,
+                       text: 'Estado de Bienes al Momento de Baja'
+                   },
+                   legend: {
+                       position: 'bottom'
+                   }
+               }
+           }
+       });
+   }
+{% endif %}
+
+
+// Gráficos de Aspectos Operativos
+{% if operativo_data %}
+    // Gráfico de Plan de Mantenimiento
+    const planMantenimientoCtx = document.getElementById('planMantenimiento');
+    if (planMantenimientoCtx) {
+        new Chart(planMantenimientoCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Extintores', 'Aires Acond.', 'Eq. Multifunc.', 'Celulares'],
+                datasets: [{
+                    label: 'Requieren Mantenimiento',
+                    data: [124, 69, 131, 13],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                }, {
+                    label: 'Buen Estado',
+                    data: [167, 55, 115, 844],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Estado de Mantenimiento por Tipo de Bien'
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Gráfico de Riesgos y Aseguramiento
+    const riesgosCtx = document.getElementById('riesgosAseguramiento');
+    if (riesgosCtx) {
+        new Chart(riesgosCtx, {
+            type: 'radar',
+            data: {
+                labels: [
+                    'Riesgo Operativo',
+                    'Riesgo Financiero',
+                    'Riesgo de Seguridad',
+                    'Riesgo de Obsolescencia',
+                    'Riesgo de Mantenimiento'
+                ],
+                datasets: [{
+                    label: 'Nivel de Riesgo',
+                    data: [4.2, 3.8, 4.5, 3.2, 4.0],
+                    fill: true,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    pointBackgroundColor: 'rgb(255, 99, 132)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(255, 99, 132)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Análisis de Riesgos'
+                    }
+                },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 5,
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
                     }
                 }
             }

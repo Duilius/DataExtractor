@@ -48,7 +48,7 @@
                         <span><i class="fas fa-check-circle"></i> Análisis de estado</span>
                         <span><i class="fas fa-check-circle"></i> Estadísticas generales</span>
                     </div>
-                    <a href="/dashboard/comision/descargar-analisis" class="btn-analysis btn-success">
+                    <a href="/dashboard/comision/descargar-analisis-pdf" class="btn-analysis btn-success">
                         <span>Descargar Análisis PDF</span>
                         <i class="fas fa-download"></i>
                     </a>
@@ -61,26 +61,36 @@
 <!-- Dashboard existente -->
 <div class="dashboard-header">
     <div class="header-info">
-        <h1>Panel de Control - Comisión</h1>
+        <h1>Panel de Control - Comisión Inventario</h1>
         <div class="progress-info">
+            <!--
             <span class="progress-label">Avance Global:</span>
             <span class="progress-value">{{ metrics.avance_global }}%</span>
+            -->
         </div>
     </div>
 </div>
 
 <div class="metrics-summary">
     <div class="metric-card">
-        <div class="metric-value">{{ metrics.total_sedes }}</div>
+        <!--<div class="metric-value">{{ metrics.total_sedes }}</div>-->
+        <div class="metric-value">46</div>
         <div class="metric-label">Sedes</div>
     </div>
     <div class="metric-card">
-        <div class="metric-value">{{ metrics.total_bienes }}</div>
+        <!--<div class="metric-value">{{ metrics.total_bienes }}</div>-->
+        <div class="metric-value">17200</div>
         <div class="metric-label">Total Bienes</div>
     </div>
     <div class="metric-card highlight">
-        <div class="metric-value">{{ metrics.total_inventariados }}</div>
-        <div class="metric-label">Bienes Inventariados</div>
+        <!--<div class="metric-value">{{ metrics.total_inventariados }}</div>-->
+        <div class="metric-value">856</div>
+        <div class="metric-label">Total Empleados</div>
+    </div>
+    <div class="metric-card highlight">
+        <!--<div class="metric-value">{{ metrics.total_inventariados }}</div>-->
+        <div class="metric-value">70</div>
+        <div class="metric-label">Empleados sin DNI</div>
     </div>
 </div>
 
@@ -104,13 +114,16 @@
                 <tr>
                     <td>{{ sede.nombre }}</td>
                     <td>{{ sede.region }}</td>
-                    <td class="text-right">{{ sede.total_bienes }}</td>
-                    <td class="text-right">{{ sede.inventariados }}</td>
-                    <td class="text-right">{{ sede.pendientes }}</td>
+                    <!--<td class="text-right">{{ sede.total_bienes }}</td>-->
+                    <td class="text-right">5380</td>
+                    <td class="text-right">X</td>
+                    <!--<td class="text-right">{{ sede.inventariados }}</td>-->
+                    <td class="text-right">X</td>
                     <td>
                         <div class="progress-bar">
                             <div class="progress" style="width: {{ sede.porcentaje }}%">
-                                <span>{{ sede.porcentaje }}%</span>
+                                <!--<span>{{ sede.porcentaje }}%</span>-->
+                                <span>X %</span>
                             </div>
                         </div>
                     </td>
@@ -130,7 +143,8 @@
 {% block scripts %}
 <script>
 function verDetalle(sedeId) {
-    window.location.href = `/reportes/sede/${sedeId}`;
+    //window.location.href = `/reportes/sede/${sedeId}`;
+    window.location.href = `#`;
 }
 </script>
 {% endblock %}
