@@ -4,8 +4,9 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from database import get_db
 from sqlalchemy import func
-from scripts.sql_alc.auth_models import Usuario
-from scripts.py.create_tables_BD_INVENTARIO import (
+#from scripts.sql_alc.auth_models import Usuario
+from scripts.sql_alc.create_tables_BD_INVENTARIO import (
+    Usuario,
     Bien, 
     InventarioBien, 
     ProcesoInventario,
@@ -129,3 +130,31 @@ async def get_comision_metrics(db: Session, user_data: dict):
         "total_bienes": sum(sede.cantidad_bienes for sede in sedes),
         "total_inventariados": sum(sede["inventariados"] for sede in sedes_metrics)
     }
+
+#ENDPOINT PARA GERENTES-PROVEEDOR
+
+@dashboard_router.get("/gerencia", response_class=HTMLResponse)
+async def dashboard_comision(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    try:
+        # Obtener datos del usuario de la cookie de sesión
+        session_data = request.cookies.get("session_data")
+        if not session_data:
+            return RedirectResponse(url="/auth/login", status_code=302)
+            
+        user_data = json.loads(session_data)
+        
+        if user_data.get("tipo_usuario") != "Gerencial Proveedor":
+            raise HTTPException(status_code=403, detail="Acceso no autorizado")
+
+        return templates.TemplateResponse(
+            "dashboard/gerencia/index.html",
+            {
+                "request": request
+            }
+        )
+    except Exception as e:
+        print(f"Error en dashboard comision: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

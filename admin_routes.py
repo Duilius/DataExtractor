@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from scripts.sql_alc.auth_models import Usuario
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Usuario
 from scripts.py.auth_utils import AuthUtils
 from database import get_db
 from config import JWT_SECRET_KEY

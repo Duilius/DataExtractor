@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from scripts.py.create_tables_BD_INVENTARIO import Oficina
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Oficina
 
 office_router = APIRouter(prefix="/api/offices")
 

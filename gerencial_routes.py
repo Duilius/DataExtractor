@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case, desc
 from database import SessionLocal
-from scripts.py.create_tables_BD_INVENTARIO import ProcesoInventario, Oficina, Empleado, Bien, Sede
+from scripts.sql_alc.create_tables_BD_INVENTARIO import ProcesoInventario, Oficina, Empleado, Bien, Sede
 import json
 
 gerencial_router = APIRouter()

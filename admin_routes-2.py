@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from database import get_db
 from scripts.py.user_operations import user_operations
-from scripts.py.create_tables_BD_INVENTARIO import Institucion, Sede  # Importa las tablas relacionadas
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Institucion, Sede  # Importa las tablas relacionadas
 
 admin_router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="templates")

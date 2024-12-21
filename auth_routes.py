@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from scripts.sql_alc.auth_models import Usuario
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Usuario
 from scripts.py.auth_utils import AuthUtils
 from database import get_db
 import os
@@ -32,6 +32,9 @@ async def login(
         
         # Buscar usuario por código
         usuario = db.query(Usuario).filter(Usuario.codigo == codigo).first()
+
+        print("Usuario codigo: ", usuario.codigo)
+        print("Usuario clave: ", usuario.password_hash)
         if not usuario:
             print(f"Usuario no encontrado: {codigo}")
             return templates.TemplateResponse(
@@ -62,6 +65,7 @@ async def login(
         session_data = {
             "id": usuario.id,
             "codigo": usuario.codigo,
+            "nombres": f"{usuario.nombres.split()[0]} {usuario.apellidos.split()[0]}",
             "tipo_usuario": usuario.tipo_usuario,
             "institucion_id": usuario.institucion_id,
             "sede_actual_id": usuario.sede_actual_id
