@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from scripts.sql_alc.auth_models import Usuario
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Usuario
 from scripts.py.auth_utils import AuthUtils
 import os
 

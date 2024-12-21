@@ -102,7 +102,7 @@ class CatalogoNacionalBienes(Base):
     estado = Column(String(50), nullable=False)
     fecha_alta = Column(Date, nullable=False)
 
-class Sede(Base):
+"""class Sede(Base):
     __tablename__ = 'sedes'
     id = Column(Integer, primary_key=True, autoincrement=True)
     institucion_id = Column(Integer, ForeignKey('instituciones.id'), nullable=False)
@@ -123,9 +123,9 @@ class Sede(Base):
     dependencias = relationship("Dependencia", back_populates="sede")
     # Nuevas relaciones
     altas = relationship("AltasSis2024", back_populates="sede_rel")
-    bajas = relationship("BajasSis2024", back_populates="sede_rel")
+    bajas = relationship("BajasSis2024", back_populates="sede_rel")"""
 
-class Oficina(Base):
+"""class Oficina(Base):
     __tablename__ = 'oficinas'
     id = Column(Integer, primary_key=True, autoincrement=True)
     sede_id = Column(Integer, ForeignKey('sedes.id'), nullable=False)
@@ -137,7 +137,7 @@ class Oficina(Base):
     sede = relationship("Sede", back_populates="oficinas")
     institucion = relationship("Institucion")
     jefe = relationship("Empleado", foreign_keys=[jefe_id], back_populates="oficina_dirigida")
-    empleados = relationship("Empleado", back_populates="oficina", foreign_keys="Empleado.oficina_id")
+    empleados = relationship("Empleado", back_populates="oficina", foreign_keys="Empleado.oficina_id")"""
 
 class Empleado(Base):
     __tablename__ = 'empleados'
@@ -489,8 +489,9 @@ class Area(Base):
     # Relación con Unidad Funcional
     unidad_funcional = relationship("UnidadFuncional", back_populates="areas")
 
-class Institucion(Base):
+"""class Institucion(Base):
     __tablename__ = 'instituciones'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
     nombre = Column(String(100), nullable=False)
     ruc = Column(String(20), unique=True, nullable=False)
@@ -500,7 +501,7 @@ class Institucion(Base):
     procesos_inventario = relationship("ProcesoInventario", back_populates="institucion")
     
     # Asegúrate de que esta línea esté presente
-    usuarios = relationship("Usuario", back_populates="institucion")
+    usuarios = relationship("Usuario", back_populates="institucion")"""
 
 mapper_registry = registry()
 

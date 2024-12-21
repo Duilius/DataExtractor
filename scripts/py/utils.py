@@ -5,8 +5,8 @@ from pathlib import Path
 
 root_path = str(Path(__file__).parent.parent.parent)
 sys.path.append(root_path)
-from scripts.sql_alc.auth_models import Usuario
-from scripts.py.create_tables_BD_INVENTARIO import Empleado
+#from scripts.sql_alc.auth_models import Usuario
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Empleado, Usuario
 
 def obtener_id_usuario(db, codigo: str) -> int:
     """Obtiene ID numérico del empleado por su código."""
