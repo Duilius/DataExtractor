@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from database import get_db
-from scripts.py.create_tables_BD_INVENTARIO import Sede, Dependencia, UnidadFuncional, Area
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Sede, Dependencia, UnidadFuncional, Area
 
 router = APIRouter()
 

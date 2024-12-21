@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from database import get_db  # Asegúrate de tener una conexión a la base de datos
-from scripts.py.create_tables_BD_INVENTARIO import Empleado
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Empleado
 from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area, consulta_codigo
 
 
