@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, func
 from sqlalchemy.orm import relationship
 from scripts.sql_alc.base_models import Base
-from scripts.py.create_tables_BD_INVENTARIO import Institucion, Sede, Empleado
+from scripts.sql_alc.create_tables_BD_INVENTARIO import Institucion, Sede, Empleado
 import enum
 from datetime import datetime
 import sys
@@ -21,7 +21,7 @@ class TipoUsuario(str, enum.Enum):
 
 class Usuario(Base):
     __tablename__ = 'usuarios'
-    
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True)
     codigo = Column(String(20), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
