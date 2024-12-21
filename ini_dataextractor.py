@@ -30,7 +30,7 @@ from decimal import Decimal
 from datetime import datetime
 from utils.dispositivo import determinar_tipo_dispositivo
 from database import SessionLocal
-from scripts.py.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, HistorialCodigoInventario, AsignacionBien, InventarioBien, TipoBien, TipoMovimiento, ProcesoInventario, Empleado, Oficina)
+from scripts.sql_alc.create_tables_BD_INVENTARIO import (Base, Bien, RegistroFallido, MovimientoBien, ImagenBien, HistorialCodigoInventario, AsignacionBien, InventarioBien, TipoBien, TipoMovimiento, ProcesoInventario, Empleado, Oficina)
 from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area, consulta_codigo
 import logging
 #from create_tabla_inventario_anterior import InventarioAnterior
