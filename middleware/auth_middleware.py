@@ -13,6 +13,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         
         # Rutas completamente públicas
         self.public_paths = [
+            "/",
             "/auth/login",
             "/auth/logout",
             "/static",
@@ -23,6 +24,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         
         # Rutas que requieren autenticación básica (todo usuario logueado)
         self.auth_paths = [
+            "demo-inventario",
             "/dashboard",
             "/profile"
         ]
