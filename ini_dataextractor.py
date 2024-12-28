@@ -231,6 +231,11 @@ def registrar_imagen_en_db(db: Session, bien_id: int, s3_url: str, descripcion: 
         db.rollback()
         print(f"Error al registrar imagen en la base de datos: {str(e)}")
 
+#*********************** POLITICAS ******************************
+@app.get("/politicas")
+async def home(request: Request):
+    return templates.TemplateResponse("politicas-privacidad.html", {"request": request})
+
 
 # --------------------------------------------------------------
 # Rutas principales para la carga de las diferentes páginas
