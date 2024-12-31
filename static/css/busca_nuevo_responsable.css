@@ -1,0 +1,80 @@
+#lista-empleados2 {
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow-y: auto;
+    max-height: 400px;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    scroll-behavior: smooth; /* Scroll suave */
+}
+
+/* Fila de empleado */
+.fila-empleado {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 8px 15px;
+    border-bottom: 1px solid #eaeaea; /* Línea separadora */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 14px; /* Tamaño reducido */
+}
+
+.fila-empleado:hover {
+    background-color: #f9f9f9;
+    transform: translateY(-1px);
+}
+
+/* Código */
+.codigo {
+    font-weight: bold;
+    color: #007bff;
+    margin-right: 15px; /* Espaciado entre código y nombres */
+    flex-shrink: 0; /* Evita que el código se reduzca */
+}
+
+/* Nombres */
+.nombres {
+    color: #333333;
+    font-weight: 400;
+    flex-grow: 1; /* Permite que los nombres ocupen el espacio restante */
+    margin-right: 15px; /* Espaciado entre código y nombres */
+    text-align: left;
+}
+
+
+/* Scroll personalizado */
+#lista-empleados2::-webkit-scrollbar {
+    width: 8px;
+}
+
+#lista-empleados2::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 8px;
+}
+
+#lista-empleados2::-webkit-scrollbar-thumb {
+    background: #c4c4c4;
+    border-radius: 8px;
+}
+
+#lista-empleados2::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsivo: Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+    .fila-empleado {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .codigo {
+        margin-right: 0;
+        margin-bottom: 4px; /* Espacio entre código y nombres en mobile */
+    }
+}
