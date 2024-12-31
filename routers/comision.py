@@ -1,4 +1,5 @@
 # routers/comision.py
+import json
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -22,6 +23,11 @@ async def comision_dashboard(request: Request, db: Session = Depends(get_db)):
     """
     Vista principal del dashboard de comisión
     """
+
+    # Obtener user de la cookie session_data
+    session_data = request.cookies.get("session_data")
+    user = json.loads(session_data) if session_data else None
+
     # Mock de métricas para el dashboard
     metrics = {
         "avance_global": 45,
@@ -46,7 +52,7 @@ async def comision_dashboard(request: Request, db: Session = Depends(get_db)):
         "dashboard/comision/index.html",
         {
             "request": request,
-            "user": request.state.user,
+            "user": user,
             "metrics": metrics
         }
     )
