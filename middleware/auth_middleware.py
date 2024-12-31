@@ -19,7 +19,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/static",
             "/favicon.ico",
             "/docs",  # Si quieres que la documentación FastAPI sea pública
-            "/openapi.json"
+            "/openapi.json",
+            "/dashboard/comision",
+            "/demo-inventario"
         ]
         
         # Rutas que requieren autenticación básica (todo usuario logueado)
@@ -32,7 +34,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Rutas específicas por rol
         self.role_paths = {
             "Comisión Cliente": ["/dashboard/comision"],
-            "Inventariador Proveedor": ["/dashboard/proveedor"],
+            #"Inventariador Proveedor": ["demo-inventario"],
             "Gerencial Proveedor": ["/dashboard/gerencia"]
         }
 
