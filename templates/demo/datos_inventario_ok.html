@@ -1,19 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <!-- Cargar HTMX -->
-<script src="https://unpkg.com/htmx.org@1.8.4" 
-onload="console.log('HTMX loaded successfully')" 
-onerror="console.log('Error loading HTMX')">
-</script>
+
 
 <!-- Cargar HyperScript -->
 <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+<script src="https://unpkg.com/htmx.org@1.8.4"></script>
 
 <!-- CSS -->
-<link rel="stylesheet" href="{{ url_for('static', path='worker_search.css') }}">
+
+<style>
+    /* Contenedor principal */
+    #lista-empleados2 {
+        z-index: 10000;
+        width: 90%;
+        max-width: 400px;
+        margin: 20px auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow-y: auto;
+        max-height: 400px;
+        padding: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        scroll-behavior: smooth; /* Scroll suave */
+        }
+        
+        /* Fila de empleado */
+        .fila-empleado {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 8px 15px;
+            border-bottom: 1px solid #eaeaea; /* Línea separadora */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 14px; /* Tamaño reducido */
+        }
+        
+        .fila-empleado:hover {
+            background-color: #f9f9f9;
+            transform: translateY(-1px);
+        }
+        
+        /* Código */
+        .codigo {
+            font-weight: bold;
+            color: #007bff;
+            margin-right: 15px; /* Espaciado entre código y nombres */
+            flex-shrink: 0; /* Evita que el código se reduzca */
+        }
+        
+        /* Nombres */
+        .nombres {
+            color: #333333;
+            font-weight: 400;
+            flex-grow: 1; /* Permite que los nombres ocupen el espacio restante */
+            margin-right: 15px; /* Espaciado entre código y nombres */
+            text-align: left;
+        }
+
+        
+        /* Scroll personalizado */
+        #lista-empleados2::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #lista-empleados2::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+        
+        #lista-empleados2::-webkit-scrollbar-thumb {
+            background: #c4c4c4;
+            border-radius: 8px;
+        }
+        
+        #lista-empleados2::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Responsivo: Ajustes para pantallas pequeñas */
+        @media (max-width: 768px) {
+            .fila-empleado {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        
+            .codigo {
+                margin-right: 0;
+                margin-bottom: 4px; /* Espacio entre código y nombres en mobile */
+            }
+        }
+</style>
 
 
-    
 <style>
 .modal {
     display: none;
@@ -66,6 +147,8 @@ onerror="console.log('Error loading HTMX')">
 .selected-area{
     width:60%;
 }
+
+
 </style>
 
 </head>
@@ -81,13 +164,29 @@ onerror="console.log('Error loading HTMX')">
         <div class="form-group message-group">
             <h3>Situación del Bien</h3>
             <div class="form-grid">
+            <!--
                 <div class="form-field">
                     <div class="field-header">Situación <i>según SIS</i> !</div>
                     <input type="text" id="situacion_sis" maxlength="30" readonly value="{{ estado ~ ' - ' ~ tipo_propietario }}"
                     >
                 </div>
+            -->
                 <div class="form-field">
-                    <div class="field-header">Acciones sugeridas</div>
+                    <div class="field-header">Dato Modificado</div>
+                    <select id="acciones" name="acciones" style="width: 150px; height: 33px;">
+                        <option value="Ninguno">Ninguna</option>
+                        <option value="usuario">Usuario Respons.</option>
+                        <option value="ubicacion">Ubicación del Bien</option>
+                        <option value="codPatr">Código Patr.</option>
+                        <option value="color">Color</option>
+                        <option value="material">Material</option>
+                        <option value="numSerie">N° de Serie</option>
+                        <option value="numPlaca">N° de Placa</option>
+                        <option value="numMotor">N° Motor</option>
+                        <option value="numChasis">N° Chasis</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                <!--
                     <select id="acciones" name="acciones[]" multiple style="width: 300px; height: auto;">
                         <option value="Nuevo">Nuevo</option>
                         <option value="Etiq-2023">Etiquetar Inv 2023</option>
@@ -95,23 +194,44 @@ onerror="console.log('Error loading HTMX')">
                         <option value="Etiq-CP">Etiquetar CP</option>
                         <option value="Etiq-SBN">Etiquetar SBN</option>
                     </select>
+                -->
                 </div>
                 
                 <div class="form-field">
-                    <div class="field-header">Nueva Ubicación</div>
-                    <input type="text" id="describe_area" name="describe_area" maxlength="150">
+                    <div class="field-header">Nuevo Responsable</div>
+                    <input type="text" id="nombre_nuevo_respons" name="nombre_nuevo_respons" maxlength="150" style="font-size: 75%; color:rgb(67, 125, 9);">
                 </div>
-                <div class="form-field">
-                    <div class="field-header">Nuevo Usuario</div>
-                    <input type="text" id="nuevo_usuario" name="nuevo_usuario" maxlength="8" size="8">
-                </div>
-
-                
 
 <!-- Agregar un indicador de carga -->
 <!-- En el body, al final -->
                 
             <!--    <div id="lista-areas" class="oculto"></div> -->
+        </div>
+
+        <div class="form-field">
+            <div class="field-header" style="padding-top: 10px;">DNI o Apellidos <i>Nuevo Responsable</i></div>
+        <!--NUEVO USUARIO-->
+        <form>
+            <input type="hidden" id="nuevo_usuario" name="nuevo_usuario">
+            <input type="text" placeholder="Ingrese DNI o Apellidos..." id="buscando_nuevo_usuario" name="buscando_nuevo_usuario" class="text-ancho" style="height: 35px;"
+            hx-post="/dashboard/gerencia/buscar-empleado2"
+            hx-trigger="keyup changed delay:1000ms"
+            hx-target="#lista-empleados2"
+            _="on keyup 
+                if my.value.length is greater than 2
+                    remove .oculto from #lista-empleados2
+                else
+                    add .oculto to #lista-empleados2
+                end
+            "/>
+            <div id="lista-empleados2" class="oculto"></div>
+        </form>
+        </div>
+
+
+        <div class="form-field">
+            <div class="field-header" style="padding-top: 10px;">Responsable del Bien <i>según Cliente</i></div>
+            <input type="text" class="text-ancho" style="background-color: #d9efcd ;" id="nombre_ubicacion" maxlength="300" readonly style="text-align: left;" value="{{ codigo_dni  ~ ' - ' ~ nombre_empleado }}">
         </div>
             <!--
                 <div class="form-field">
@@ -124,14 +244,15 @@ onerror="console.log('Error loading HTMX')">
                 </div>
 
                 <div class="form-field">
-                    <div class="field-header" style="padding-top: 10px;">Ubicación del Bien <i>según SIS</i></div>
-                    <input type="text" class="text-ancho" style="background-color: #bccfd2 ;" id="nombre_ubicacion" maxlength="300" readonly style="text-align: left;" value="{{ dato.sede ~ '==>' ~ (dato.ubicacion_actual if dato.ubicacion_actual else 'Ubicación no disponible') }}">
+                    <div class="field-header">Nueva Ubicación</div>
+                    <input type="text" id="describe_area" name="describe_area" maxlength="150">
                 </div>
 
                 <div class="form-field">
-                    <div class="field-header" style="padding-top: 10px;">Responsable del Bien <i>según SIS</i></div>
-                    <input type="text" class="text-ancho" style="background-color: #d9efcd ;" id="nombre_ubicacion" maxlength="300" readonly style="text-align: left;" value="{{ codigo_dni  ~ ' - ' ~ nombre_empleado }}">
+                    <div class="field-header" style="padding-top: 10px;">Ubicación del Bien <i>según Cliente</i></div>
+                    <input type="text" class="text-ancho" style="background-color: #bccfd2 ;" id="nombre_ubicacion" maxlength="300" readonly style="text-align: left;" value="{{ dato.sede ~ '==>' ~ (dato.ubicacion_actual if dato.ubicacion_actual else 'Ubicación no disponible') }}">
                 </div>
+
 
         <!--
             <div class="form-field">

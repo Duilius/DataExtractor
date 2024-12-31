@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="{{url_for('static', path='autenticacion_modal2.css')}}">
     <link rel="stylesheet" href="{{url_for('static', path='modal_error.css')}}">
     <link rel="stylesheet" href="{{url_for('static', path='overlayImageEditor.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', path='busca_nuevo_responsable.css') }}">
 
     <style>
         /* Estilos generales */
@@ -103,9 +104,11 @@
                 max-height: 350px; /* Algo más pequeño en móviles */
             }
         }
+        
         </style>
 </head>
 <body>
+    <!--<div id="lista_nuevo_usuario" class="oculto"></div>-->
     <header id="main-header">
         <div id="header-content">
             <div id="logo-title">
@@ -352,7 +355,7 @@
 <script src="{{url_for('static', path='js/tarjetas_usuarios_responsables.js')}}"></script>
 
 <!-- Scripts de autenticación -->
-<script src="{{ url_for('static', path='js/session_manager.js') }}"></script>
+<!--<script src="{{ url_for('static', path='js/session_manager.js') }}"></script>-->
 <script src="{{ url_for('static', path='js/user_controls.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {

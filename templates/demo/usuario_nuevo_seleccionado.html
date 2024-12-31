@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal de Selección</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='busca_nuevo_responsable.css') }}">
+</head>
+<body>
+
+<div id="lista-empleados2" class="contenedor-scroll" style="    width: 100%;
+max-width: 800px;
+margin: 20px auto;
+border: 1px solid #ddd;
+border-radius: 8px;
+overflow-y: auto;
+max-height: 400px;
+padding: 10px;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+background-color: #ffffff;
+scroll-behavior: smooth;" >
+    {% for user in users %}
+    <div class="fila-empleado" data-cod="{{ user[1] }}" data-name="{{ user[2] }}" onclick="selectUser(this)" style="display: flex;
+    align-items: center; justify-content: flex-start; padding: 8px 5px; border-bottom: 1px solid #eaeaea; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; font-size: 13px;">
+        <span class="codigo" style="font-weight: bold; color: #007bff; margin-right: 15px; flex-shrink: 0;" >{{ user[1] }}</span>
+        <span class="nombres" style="color: #333333; font-weight: 400; flex-grow: 1; margin-right: 15px; text-align: left;">{{ user[2] }}</span>
+    </div>
+    {% endfor %}
+</div>
+
+<!--
+<input type="hidden" id="codigo-seleccionado">
+<input type="hidden" id="nombres-seleccionado">
+<input type="hidden" id="gerencia-seleccionado">
+<input type="hidden" id="foto-seleccionado">
+<input type="hidden" id="oficina-seleccionado">
+-->
+<script>
+    // Definición de las funciones
+    function selectUser(element) {
+        //alert("EL ::::::::::::: "+ userId);
+        const userDNI = element.dataset.cod;
+        const userName = element.dataset.name;
+
+        document.getElementById('lista-empleados2').style.display='none';
+        document.getElementById('worker').value=userDNI;
+        document.getElementById('worker-name').textContent = userName;
+        document.getElementById('nombre_nuevo_respons').value = userName;
+        document.getElementById('nuevo_usuario').value=userDNI;
+
+
+    //document.getElementById('codigo-seleccionado').value = userId;
+    //document.getElementById('nombres-seleccionado').value = document.getElementById(`nombres-${userId}`).value;
+
+    // Ocultar todas las tarjetas
+    //const empleados = document.querySelectorAll('#lista-usuarios .empleado');
+    //empleados.forEach(emp => emp.style.display = 'none');
+    
+    // Mostrar solo el seleccionado
+    //document.getElementById(`empleado-${userId}`).style.display = '';
+    //document.getElementById('aceptar-descartar').classList.remove('oculto');
+}
+
+    function transferData() {
+        // Obtener los datos seleccionados del modal
+
+        const selectedCodigo = document.getElementById('codigo-seleccionado').value;
+        const selectedPhoto = document.getElementById('foto-seleccionado').value;
+        const selectedName = document.getElementById('nombres-seleccionado').value;
+        const selectedArea = document.getElementById('gerencia-seleccionado').value;
+        const oficinaId = document.getElementById('oficina-seleccionado').value;
+
+        // Asignar los valores a los elementos correspondientes en la página principal
+        document.getElementById('worker-photo').src = selectedPhoto;
+        document.getElementById('worker-name').textContent = selectedName;
+        document.getElementById('worker-area').textContent = selectedArea;
+        document.getElementById('worker').value = selectedCodigo;
+        document.getElementById('codigoOficina').value = oficinaId;
+
+        closeModal();
+    }
+
+    function resetSelection() {
+        // Resetea la selección de usuario y oculta los botones
+        document.getElementById('aceptar-descartar').classList.add('oculto');
+        const empleados = document.querySelectorAll('#lista-usuarios .empleado');
+        empleados.forEach(emp => emp.style.display='');
+    }
+
+
+    // Función para cerrar el modal
+    //function closeModal() {
+    //    const modal = document.getElementById('modal');
+    //    modal.style.display = 'none'; // Ocultar el modal
+   // }
+</script>
+
+</body>
+</html>
