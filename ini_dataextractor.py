@@ -4,7 +4,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from middleware.auth_middleware import AuthMiddleware
 import secrets
 from io import BytesIO
-from pyzbar.pyzbar import decode
+#from pyzbar.pyzbar import decode
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 import io
 import base64
@@ -231,6 +231,7 @@ def registrar_imagen_en_db(db: Session, bien_id: int, s3_url: str, descripcion: 
         db.rollback()
         print(f"Error al registrar imagen en la base de datos: {str(e)}")
 
+
 #*********************** POLITICAS ******************************
 @app.get("/politicas")
 async def home(request: Request):
@@ -264,6 +265,17 @@ async def busca_usuarios(request:Request, busca_usuario:str=Form()):
 
     return templates.TemplateResponse("demo/usuarios_responsables.html",{"request":request,"users":users})
 
+#######################
+# /busca-nuevo-usuario (En caso el bien ya no sea del usuario que reporta la Institución)
+#######################
+@app.post('/busca-nuevo-usuario',response_class=HTMLResponse)
+async def busca_nuevo_usuario(request:Request, nuevo_usuario:str=Form(...)):
+    print("Se busca a : ====> ", nuevo_usuario)
+    valor = nuevo_usuario
+    users =consulta_registro(valor)
+    print("Resultado =====>", users)
+
+    return templates.TemplateResponse("/demo/usuario_nuevo_seleccionado.html",{"request":request,"users":users})
 
 
 print("Current working directory:", os.getcwd())
@@ -1104,6 +1116,7 @@ async def registrar_bien(
         print("Acciones ====>",  acciones)
         #print("Area Actual ====>",  area_actual_id)
         print("Area descrita ====>",  describe_area)
+        print("NUEVO USUARIOOOOOOOOOOOO ====>",  nuevo_usuario)
 
         # Registrar el bien
         nuevo_bien = Bien(
@@ -1145,8 +1158,12 @@ async def registrar_bien(
 
         if 'nuevo_usuario' in locals() and nuevo_usuario not in (None, ''):
             worker = nuevo_usuario
+            print("WORKER ==>", worker)
+            print("NUEVO USUARIO ==>", nuevo_usuario)
         else:
             worker = worker
+            print("WORKER XXXX ==>", worker)
+            print("NUEVO USUARIO XXXX ==>", nuevo_usuario)
 
 
         print("Valor de nuevo_usuario:", nuevo_usuario if 'nuevo_usuario' in locals() else "No definido")
