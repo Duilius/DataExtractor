@@ -62,11 +62,16 @@ async def analisis_historico(request: Request, db: Session = Depends(get_db)):
     """
     Vista del análisis histórico
     """
+
+    # Obtener user de la cookie session_data
+    session_data = request.cookies.get("session_data")
+    user = json.loads(session_data) if session_data else None
+
     return templates.TemplateResponse(
         "dashboard/comision/comision.html",  # Usamos comision.html para el análisis
         {
             "request": request,
-            "user": request.state.user
+            "user": user
         }
     )
 
@@ -84,6 +89,9 @@ async def descargar_analisis(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/analisis-historico", response_class=HTMLResponse)
 async def analisis_historico(request: Request, db: Session = Depends(get_db)):
+    # Obtener user de la cookie session_data
+    session_data = request.cookies.get("session_data")
+    user = json.loads(session_data) if session_data else None
     try:
         from scripts.sql_alc.queries.hist_comparativo import get_comparativo_data
         from scripts.sql_alc.queries.hist_compras import get_compras_data
@@ -99,11 +107,11 @@ async def analisis_historico(request: Request, db: Session = Depends(get_db)):
             "dashboard/comision/analisis_historico.html",
             {
                 "request": request,
-                "user": request.state.user,
+                "user": user,
                 "resumen_data": resumen_data,
                 "compras_data": compras_data,
                 "bajas_data": bajas_data,
-                "operativo_data": None
+                "operativo_data": operativo_data
             }
         )
     except Exception as e:
@@ -112,7 +120,7 @@ async def analisis_historico(request: Request, db: Session = Depends(get_db)):
             "dashboard/comision/analisis_historico.html",
             {
                 "request": request,
-                "user": request.state.user,
+                "user": user,
                 "error": "Error al cargar los datos del análisis"
             }
         )
