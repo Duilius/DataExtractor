@@ -218,7 +218,8 @@ class Bien(Base):
     codigo_oficina = Column(String(50))  # antes era ubicacion
     acciones=Column(String(50))#Etiq-2023, Etiq-SBN, 
     describe_area=Column(String(100))# Nombre de Área Oficial nueva
-    area_actual_id=Column(String(10))#Id de Área Oficial nueva (a la fecha)
+    nuevo_usuario= Column(String(50))
+    #area_actual_id=Column(String(10))#Id de Área Oficial nueva (a la fecha)
 
 
     # Relaciones
