@@ -91,6 +91,17 @@ async def buscar_empleado(request: Request, busca_usuario: str = Form(...), db: 
     print("Resultado =====>", users)
     return templates.TemplateResponse("/dashboard/gerencia/lista_empleados.html",{"request":request,"users":users})
 
+
+#*********************** B Ú S Q U E D A  ----  NUEVO RESPONSABL DE BIEN ************************
+# Endpoint para búsqueda por DNI o Apellidos
+@router.post("/buscar-empleado2",response_class=HTMLResponse)
+async def buscar_empleado(request: Request, buscando_nuevo_usuario: str = Form(...), db: Session = Depends(get_db)):
+    print("Se busca a : ====> ", buscando_nuevo_usuario)
+    valor = buscando_nuevo_usuario
+    users =consulta_registro(valor)
+    print("Resultado =====>", users)
+    return templates.TemplateResponse("/demo/usuario_nuevo_seleccionado.html",{"request":request,"users":users})
+
 # Endpoint para listar empleados por Sede
 @router.get("/listar-empleados-sede", response_class=JSONResponse)
 async def listar_empleados_sede(sede_id: int, db: Session = Depends(get_db)):
