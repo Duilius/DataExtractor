@@ -7,6 +7,8 @@ from database import get_db  # Asegúrate de tener una conexión a la base de da
 from scripts.sql_alc.create_tables_BD_INVENTARIO import Empleado
 from scripts.py.buscar_por_trabajador_inventario import consulta_registro, consulta_area, consulta_codigo
 
+#para los INDICADORES-GERENCIA
+from utils.kpi_calculations import bienes_avance_por_sede, ranking_inventariadores_por_sede
 
 templates = Jinja2Templates(directory="templates")
 
@@ -64,7 +66,7 @@ async def ficha_levantamiento(
 
     # Renderizar la plantilla
     return templates.TemplateResponse(
-        "dashboard/gerencia/fichaLevInf.html",
+        "/dashboard/gerencia/fichaLevInf.html",
         {
             "request": request,
             "empleado": empleado_dict,
@@ -117,3 +119,58 @@ async def listar_empleados_sede(sede_id: int, db: Session = Depends(get_db)):
         return resultados
     except Exception as e:
         return {"error": str(e)}
+
+# **************************************  INVENTARIO POR SEDES     **************************************
+#router = APIRouter(prefix="/gerencia", tags=["Gerencia"])
+
+@router.get("/kpis/bienes-dia-sede")
+async def get_bienes_dia_sede(db: Session = Depends(get_db)):
+    """
+    Devuelve la cantidad de bienes inventariados por día y por sede.
+    """
+    data = bienes_avance_por_sede(db)  #EN utils.kpi_calculations
+    return data
+
+@router.get("/kpis", response_class=HTMLResponse)
+async def kpis_view(request: Request, db: Session = Depends(get_db)):
+    """
+    Renderiza la vista de KPIs para gerencia.
+    """
+    data = bienes_avance_por_sede(db)
+    return templates.TemplateResponse("dashboard/gerencia/kpis.html", {"request": request, "data": data})
+
+#************************ DETALLES POR SEDE (al tocar una Sede en Avance por Sede)  *****************************
+@router.get("/detalles/{sede_id}", response_class=HTMLResponse)
+async def detalles_sede(
+    sede_id: int, 
+    request: Request,
+    nombre: str = Query(None),
+    codigo_usuario: str = Query(None), #Codigo Usuario Inventariador : COM001, INV001, GER001, ...
+    cantidad_bienes: str = Query(None), #Cantidad TOTAL de Bienes en la Sede
+    total_bienes: int = Query(None), 
+    db: Session = Depends(get_db),
+    fecha_inicio: str = Query(None),  # Fecha de inicio opcional
+    fecha_fin: str = Query(None)      # Fecha de fin opcional
+):
+    """
+    Muestra los detalles de bienes inventariados por inventariador en una sede,
+    filtrados por un rango de fechas si se proporciona.
+    """
+
+    print("La Sede es ))))) > ", sede_id)
+    # Llamar a la función utilitaria para obtener el ranking
+    data = ranking_inventariadores_por_sede(db, sede_id, fecha_inicio, fecha_fin)
+    print("la data ===========>", data)
+    return templates.TemplateResponse(
+        "/dashboard/gerencia/detalles_sede.html", 
+        {
+            "request": request,
+            "data": data,
+            "nombre_sede":nombre,
+            "cantidad_bienes":cantidad_bienes,
+            "codigo_usuario":codigo_usuario,
+            "total_bienes":total_bienes,
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin,
+        }
+    )
