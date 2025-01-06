@@ -77,7 +77,7 @@ async def login(
         else:
             # Determinar redirección según rol
             redirect_urls = {
-                "Inventariador Proveedor": "/dashboard/proveedor",
+                "Inventariador Proveedor": "/dashboard/inventariador",
                 "Comisión Cliente": "/dashboard/comision",
                 "Gerencial Proveedor": "/dashboard/gerencia"
             }
@@ -173,7 +173,7 @@ async def change_password(
         
         # Redireccionar según el rol
         redirect_urls = {
-            "Inventariador Proveedor": "/dashboard/proveedor",
+            "Inventariador Proveedor": "/dashboard/inventariador",
             "Comisión Cliente": "/dashboard/comision",
             "Gerencial Proveedor": "/dashboard/gerencia"
         }
