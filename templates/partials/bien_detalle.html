@@ -1,0 +1,13 @@
+<div>
+    <h2 class="text-xl font-bold mb-4">Ficha Resumen</h2>
+    <p><strong>Código Patrimonial:</strong> {{ bien.codigo_patrimonial }}</p>
+    <p><strong>Código SBN:</strong> {{ bien.codigo_sbn }}</p>
+    <p><strong>Denominación:</strong> {{ bien.denominacion }}</p>
+    <p><strong>Color:</strong> {{ bien.color }}</p>
+    <p><strong>Marca:</strong> {{ bien.marca }}</p>
+    <p><strong>Modelo:</strong> {{ bien.modelo }}</p>
+    <p><strong>Número de Serie:</strong> {{ bien.numero_serie }}</p>
+    <!-- Agrega más campos si es necesario -->
+    <button class="mt-4 px-4 py-2 bg-red-500 text-white rounded"
+            onclick="document.getElementById('modal').classList.add('hidden')">Cerrar</button>
+</div>

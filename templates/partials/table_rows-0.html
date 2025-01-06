@@ -1,0 +1,19 @@
+<tbody>
+    {% for bien in bienes %}
+    <tr onclick="showModal('{{ bien.codigo_patrimonial }}')" class="cursor-pointer hover:bg-gray-100">
+        <td class="border px-4 py-2">{{ bien.codigo_patrimonial }}</td>
+        <td class="border px-4 py-2">{{ bien.codigo_sbn }}</td>
+        <td class="border px-4 py-2">{{ bien.denominacion }}</td>
+        <td class="border px-4 py-2">{{ bien.color }}</td>
+        <td class="border px-4 py-2">{{ bien.marca }}</td>
+        <td class="border px-4 py-2">{{ bien.modelo }}</td>
+        <td class="border px-4 py-2">{{ bien.numero_serie }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+<script>
+    var newRows = {{ bienes | tojson }};
+    loadPageData(newRows); // Actualiza localStorage con las nuevas filas
+</script>
+
