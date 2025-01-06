@@ -175,7 +175,7 @@ function validarFormulario() {
         if (!valor || valor.trim() === '' || valor === 'No disponible') {
             valido = false;
             elemento.classList.add('error');
-            alert("Campo es: " + campo.id);    
+            //alert("Campo es: " + campo.id);    
             if (campo.id === 'worker'){
                 errores.push(`Campo Trabajador es obligatorio`);    
             } else{
@@ -222,6 +222,7 @@ function validarFormulario() {
     }
 
     if (!valido) {
+        console.log("Algo saliío mal ....")
         mostrarMensajeModal(errores[0], true);
         return false;
     }
@@ -241,8 +242,8 @@ function limpiarGaleria() {
 
 
 // Función para registrar el bien
-// Modificación en la lógica de registro exitoso
 async function registrarBien() {
+
     console.log("Iniciando proceso de registro");
 
     if (!validarFormulario()) {
@@ -250,6 +251,11 @@ async function registrarBien() {
     }
 
     try {
+
+        // Obtener la fecha y hora actual en formato ISO UTC
+        const fechaHoraNavegador = new Date().toISOString();    
+        //alert(fechaHoraNavegador);
+        
         const formData = new FormData();
         const campos = {
             /*'codigoOficina': '#codigoOficina',*/
@@ -281,6 +287,8 @@ async function registrarBien() {
             'observaciones': '#observaciones'
         };
 
+        //alert("La fecha hora es ===> "+ fechaHoraNavegador);
+
         for (const [key, selector] of Object.entries(campos)) {
             const elemento = document.querySelector(selector);
             let valor = elemento ? elemento.value : '';
@@ -305,6 +313,9 @@ async function registrarBien() {
 
         const response = await fetch('/registrar_bien', {
             method: 'POST',
+            headers: {
+                'X-Client-Timestamp': fechaHoraNavegador // Enviar la fecha/hora del navegador
+            },
             body: formData
         });
 
