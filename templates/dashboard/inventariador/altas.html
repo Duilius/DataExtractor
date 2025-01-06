@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienes de Alta 2024</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Ancho de columnas */
+        .col-cod-pat { width: 12%; }
+        .col-cod-sbn { width: 12%; }
+        .col-denom { width: 36%; }
+        .col-color { width: 10%; }
+        .col-marca { width: 10%; }
+        .col-modelo { width: 10%; }
+        .col-serie { width: 10%; }
+        
+        @media (max-width: 768px) {
+            .col-cod-pat { width: 20%; }
+            .col-cod-sbn { width: 20%; }
+            .col-denom { width: 40%; }
+            .col-serie { width: 20%; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-6 max-w-6xl">
+        <h1 class="text-xl md:text-2xl font-bold mb-4">Bienes de Alta 2024: Compras y Donaciones</h1>
+        <p>{{user.nombres}}</p>
+        <!-- Barra de búsqueda -->
+        <div class="mb-6">
+            <form onsubmit="searchBienes(event)" class="flex flex-col md:flex-row gap-4">
+                <div class="flex flex-col sm:flex-row gap-2 flex-grow">
+                    <label for="filter" class="font-medium whitespace-nowrap">Buscar por:</label>
+                    <select id="filter" class="p-2 border rounded flex-grow md:flex-grow-0" name="filter">
+                        <option value="denominacion">Denominación</option>
+                        <option value="codigo_sbn">Cód SBN</option>
+                        <option value="codigo_patrimonial">Cód Patrimonial</option>
+                        <option value="numero_serie">N° Serie</option>
+                    </select>
+                    <input type="text" id="search-input" name="query" 
+                           class="border rounded px-2 py-1 flex-grow" 
+                           placeholder="Buscar bienes...">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Buscar
+                    </button>
+                    <button type="button" onclick="clearSearch()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                        Limpiar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla con ancho fijo -->
+        <div class="overflow-x-auto bg-white rounded shadow">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="col-cod-pat px-4 py-2 text-left font-medium">Cód Pat.</th>
+                        <th class="col-cod-sbn px-4 py-2 text-left font-medium">Cód SBN</th>
+                        <th class="col-denom px-4 py-2 text-left font-medium">Denominación</th>
+                        <th class="col-color px-4 py-2 text-left font-medium hidden md:table-cell">Color</th>
+                        <th class="col-marca px-4 py-2 text-left font-medium hidden md:table-cell">Marca</th>
+                        <th class="col-modelo px-4 py-2 text-left font-medium hidden md:table-cell">Modelo</th>
+                        <th class="col-serie px-4 py-2 text-left font-medium">N° Serie</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <!-- Contenido dinámico -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación con contador centrado -->
+        <div class="flex items-center justify-between mt-4 gap-4">
+            <button id="prev-btn" onclick="loadPreviousPage()" 
+                    class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50">
+                Anterior
+            </button>
+            <span id="results-count" class="text-gray-600 font-medium"></span>
+            <button id="next-btn" onclick="loadNextPage()" 
+                    class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50">
+                Siguiente
+            </button>
+        </div>
+
+        <!-- Modal mejorado -->
+        <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                <div class="flex justify-between items-center p-4 border-b">
+                    <h3 class="text-lg font-semibold">Detalles del Bien</h3>
+                    <button onclick="document.getElementById('modal').classList.add('hidden')" 
+                            class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="modal-content" class="p-6">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/altas.js"></script>
+</body>
+</html>

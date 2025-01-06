@@ -1,0 +1,133 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Dashboard Inventariador{% endblock %}
+
+{% block sidebar_menu %}
+<div class="menu-section">
+    <h3>Inventario</h3>
+    <ul>
+        <li><a href="/registro-bien" class="menu-item">
+            <i class="fas fa-plus-circle"></i>
+            <span>Registrar Bien</span>
+        </a></li>
+        <li><a href="/buscar-bien" class="menu-item">
+            <i class="fas fa-search"></i>
+            <span>Buscar Bien</span>
+        </a></li>
+        <li><a href="/pendientes-etiqueta" class="menu-item">
+            <i class="fas fa-tags"></i>
+            <span>Sin Etiqueta ({{ metrics.sin_etiqueta }})</span>
+        </a></li>
+    </ul>
+</div>
+
+<div class="menu-section">
+    <h3>Mi Trabajo</h3>
+    <ul>
+        <li><a href="/avance-diario" class="menu-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Avance Diario</span>
+        </a></li>
+        <li><a href="/mis-registros" class="menu-item">
+            <i class="fas fa-list"></i>
+            <span>Mis Registros</span>
+        </a></li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="location-info">
+        <h1>Panel de Control - Inventariador</h1>
+        <div class="sede-details">
+            <span class="sede-nombre">{{ metrics.sede_info.nombre }}</span>
+            <span class="sede-ubicacion">{{ metrics.sede_info.provincia }}, {{ metrics.sede_info.region }}</span>
+        </div>
+    </div>
+    <div class="user-info">
+        <span class="user-code">{{ user.sub }}</span>
+        <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+    </div>
+</div>
+
+<div class="metrics-grid">
+    <!-- Progreso General -->
+    <div class="metric-card primary">
+        <div class="metric-header">Avance General</div>
+        <div class="metric-value">{{ metrics.porcentaje_avance }}%</div>
+        <div class="progress-bar">
+            <div class="progress" style="width: {{ metrics.porcentaje_avance }}%"></div>
+        </div>
+        <div class="metric-details">
+            <span>{{ metrics.bienes_procesados }} / {{ metrics.total_bienes }}</span>
+            <span class="metric-label">bienes procesados</span>
+        </div>
+    </div>
+
+    <!-- Registros del Día -->
+    <div class="metric-card">
+        <div class="metric-header">Registros de Hoy</div>
+        <div class="metric-value">{{ metrics.bienes_hoy }}</div>
+        <div class="metric-label">bienes registrados</div>
+    </div>
+
+    <!-- Pendientes de Etiqueta -->
+    <div class="metric-card warning">
+        <div class="metric-header">Sin Etiqueta</div>
+        <div class="metric-value">{{ metrics.sin_etiqueta }}</div>
+        <div class="metric-label">pendientes de etiquetar</div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Acciones Rápidas -->
+    <div class="dashboard-card">
+        <h3>Acciones Rápidas</h3>
+        <div class="action-buttons">
+            <button onclick="window.location.href='/registro-bien'" class="btn-primary">
+                <i class="fas fa-plus"></i> Nuevo Registro
+            </button>
+            <button onclick="window.location.href='/buscar-bien'" class="btn-secondary">
+                <i class="fas fa-search"></i> Buscar Bien
+            </button>
+            <button onclick="window.location.href='/pendientes-etiqueta'" class="btn-warning">
+                <i class="fas fa-tag"></i> Pendientes de Etiqueta
+            </button>
+        </div>
+    </div>
+
+    <!-- Últimos Registros -->
+    <div class="dashboard-card">
+        <h3>Últimos Registros</h3>
+        <div class="table-container" hx-get="/api/ultimos-registros" hx-trigger="load">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                        <th>Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- HTMX cargará el contenido aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('logoutBtn').addEventListener('click', function() {
+    fetch('/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+    }).then(() => {
+        window.location.href = '/auth/login';
+    });
+});
+</script>
+{% endblock %}
