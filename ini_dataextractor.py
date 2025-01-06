@@ -18,7 +18,7 @@ from openai import OpenAIError
 import json
 import os
 from typing import List, Dict, Optional
-from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends, Body, APIRouter, Query
+from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File, Depends, Body, APIRouter, Query, Header 
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -167,7 +167,7 @@ app.include_router(auth_router)
 #app.include_router(dashboards.router)
 app.include_router(gerencia.router)
 app.include_router(comision.router)
-#app.include_router(inventariador.router)
+app.include_router(inventariador.router)
 
 s3_client = boto3.client(
     's3',
@@ -466,7 +466,7 @@ async def servicios(request: Request):
     #return templates.TemplateResponse("demo/inv_demo.html", {'request': request})
     return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
 
-@app.get('/demo-inventario')
+@app.get('/registrar-bienes')
 async def servicios(request: Request):
     try:
         access_token = request.cookies.get("access_token")
@@ -486,7 +486,7 @@ async def servicios(request: Request):
             return RedirectResponse(url="/auth/login", status_code=302)
             
     except Exception as e:
-        print(f"Error general en /demo-inventario: {str(e)}")
+        print(f"Error general en /registrar-bienes: {str(e)}")
         return RedirectResponse(url="/auth/login", status_code=302)
 
 @app.get('/fotos')
@@ -973,6 +973,7 @@ def validar_dimensiones(valor: str) -> float:
 @app.post("/registrar_bien")
 async def registrar_bien(
     request: Request,
+    x_client_timestamp: str = Header(None),
     db: Session = Depends(get_db),
     worker: str = Form(...),
     codigoOficina: str = "0",  # antes ubicacion
@@ -1005,6 +1006,18 @@ async def registrar_bien(
     #area_actual_id: str = Form(None),
     nuevo_usuario: str = Form(None)
 ):
+    print("La fecha hora es ============> ", x_client_timestamp)
+    if not x_client_timestamp:
+        raise HTTPException(status_code=400, detail="Falta el encabezado X-Client-Timestamp")
+    try:
+        # Convertir la fecha enviada al formato datetime
+        fecha_hora_registro = datetime.fromisoformat(x_client_timestamp.replace("Z", "+00:00"))
+        print("Fecha procesada correctamente:", fecha_hora_registro)
+    except ValueError as e:
+        print("Error al procesar la fecha:", e)
+        raise HTTPException(status_code=400, detail="Formato de fecha/hora inválido")
+    
+
     #Cookie de USAURIO INVENTARIADOR
     # Acceder a las cookies
     session_cookie = request.cookies.get("session_data")  # Cambia "session" por el nombre real de tu cookie
@@ -1098,7 +1111,8 @@ async def registrar_bien(
             "acciones":acciones,
             #"area_actual_id":area_actual_id,
             "describe_area":describe_area,
-            "nuevo_usuario":nuevo_usuario
+            "nuevo_usuario":nuevo_usuario,
+            "fecha_hora":fecha_hora_registro
         }
 
 
@@ -1151,7 +1165,8 @@ async def registrar_bien(
             acciones=acciones,
             #area_actual_id=area_actual_id,
             describe_area=describe_area,
-            nuevo_usuario=nuevo_usuario
+            nuevo_usuario=nuevo_usuario,
+            fecha_hora=fecha_hora_registro
         )
         db.add(nuevo_bien)
         db.flush()  # Para obtener el ID del bien
@@ -1165,10 +1180,8 @@ async def registrar_bien(
             print("WORKER XXXX ==>", worker)
             print("NUEVO USUARIO XXXX ==>", nuevo_usuario)
 
-
         print("Valor de nuevo_usuario:", nuevo_usuario if 'nuevo_usuario' in locals() else "No definido")
         print("Valor de worker antes del diccionario:", worker)
-
 
 
         # Procesar y guardar imágenes
@@ -1198,7 +1211,7 @@ async def registrar_bien(
             codigo_inventariador=registrador_id,
             empleado_id=obtener_id_empleado(db,worker),
             #proceso_inventario_id=registrador_id,
-            fecha_asignacion=func.now(),
+            fecha_asignacion=fecha_hora_registro, #antes func.now()
             estado_confirmacion="Pendiente"
         )
         db.add(asignacion)
@@ -1761,3 +1774,9 @@ async def cargar_bien(
     except Exception as e:
         print(f"Error al cargar bien: {str(e)}")
         return {"error": f"Error al cargar bien: {str(e)}"}
+    
+
+    #**************************** LANDING PAGE MUNICIPALIDADES **************************
+@app.get("/municipalidad")
+async def home(request: Request):
+    return templates.TemplateResponse("promoMuni.html", {"request": request})
