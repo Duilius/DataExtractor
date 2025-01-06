@@ -1,0 +1,49 @@
+{% extends "dashboard/shared/base.html" %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', path='/css/dashboards/detalles_sede.css') }}">
+{% endblock %}
+
+
+{% block content %}
+<div class="ranking-container">
+    <h2>
+        Ranking de Inventariadores - {{ nombre_sede }} ({{ cantidad_bienes }} Bienes)
+    </h2>
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Inventariador</th>
+                <th>Total Bienes</th>
+                <th>Promedio por Hora</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>
+                    <img src="{{ url_for('static', path='img/' + row.codigo_usuario + '.jpeg') }}" alt="Foto de {{ row.nombre }}" class="inventariador-imagen">
+                    <div>
+                        <strong>{{ row.nombre }}</strong><br>
+                        {{ row.apellidos }}
+                    </div>
+                </td>
+                <td>{{ row.bienes_inventariados }}</td>
+                <td>{{ row.promedio_por_hora }}</td>
+                <td>
+                    <a 
+                        href="https://wa.me/{{ row.telefono }}?text={{ 'Hola ' + row.nombre + ', necesitamos tu actualización de inventario en la sede ' + nombre_sede | urlencode }}"
+                        target="_blank"
+                        class="btn-whatsapp"
+                    >
+                        Enviar WhatsApp
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

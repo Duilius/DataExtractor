@@ -1,0 +1,33 @@
+{% extends "dashboard/shared/base.html" %}
+
+{% block content %}
+<div class="main-container">
+    <div class="card">
+        <h2>Avance del Inventario por Sede</h2>
+        <div class="responsive-table-container">
+            <table class="responsive-table" id="avance-sede-table">
+                <thead>
+                    <tr>
+                        <th hx-get="/gerencia/kpis?order_by=sede" hx-trigger="click" hx-swap="outerHTML">Sede</th>
+                        <th hx-get="/gerencia/kpis?order_by=total_bienes" hx-trigger="click" hx-swap="outerHTML">Total Bienes</th>
+                        <th hx-get="/gerencia/kpis?order_by=bienes_inventariados" hx-trigger="click" hx-swap="outerHTML">Bienes Inventariados</th>
+                        <th hx-get="/gerencia/kpis?order_by=porcentaje_avance" hx-trigger="click" hx-swap="outerHTML">% Avance</th>
+                        <th hx-get="/gerencia/kpis?order_by=promedio_diario" hx-trigger="click" hx-swap="outerHTML">Promedio Diario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr onclick="window.open('/dashboard/gerencia/detalles/{{ row.sede_id }}?nombre={{ row.sede | urlencode }}&cantidad_bienes={{ row.cantidad_bienes }}', '_blank')">
+                        <td>{{ row.sede }}</td>
+                        <td>{{ row.total_bienes }}</td>
+                        <td>{{ row.bienes_inventariados }}</td>
+                        <td>{{ row.porcentaje_avance }}%</td>
+                        <td>{{ row.promedio_diario }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
