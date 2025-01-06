@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Patrimonial SaaS</title>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss-cdn"></script>
+    <style>
+        /* Modo claro/oscuro */
+        :root {
+            --bg-light: #ffffff;
+            --bg-dark: #1a202c;
+            --text-light: #2d3748;
+            --text-dark: #edf2f7;
+            --highlight-dark: #cbd5e0;
+        }
+
+        [data-theme="dark"] {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        [data-theme="dark"] .benefits {
+            color: var(--bg-dark);
+        }
+
+
+        [data-theme="light"] {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+        }
+
+        [data-theme="dark"] .highlight {
+            color: var(--highlight-dark);
+        }
+
+        .container {
+            max-width: 80%;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 60%;
+            }
+        }
+
+        .benefits {
+            text-align: center;
+        }
+
+        .benefits ul {
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body data-theme="light" class="min-h-screen font-sans">
+    <!-- Header -->
+    <header class="p-4 bg-blue-500 text-white text-center">
+        <h1 class="text-2xl font-bold">Sistema SaaS para Inventarios Patrimoniales</h1>
+        <p class="text-sm">Optimización y ahorro para Instituciones Públicas</p>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="p-6 text-center container">
+        <h2 class="text-xl font-semibold mb-4">Un sistema que cumple y supera los requisitos legales</h2>
+        <p class="highlight">Con nuestro sistema, las instituciones públicas pueden gestionar inventarios con costos desde S/. 1.25 por ítem, ahorrando hasta un 50%.</p>
+        <button onclick="toggleTheme()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Modo Claro/Oscuro</button>
+    </section>
+
+    <!-- Video and Audio Section -->
+    <section class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 container">
+        <div>
+            <h3 class="text-lg font-semibold">Conozca el sistema en acción</h3>
+            <video controls class="w-full rounded">
+                <source src="demo.mp4" type="video/mp4">
+                Su navegador no soporta video.
+            </video>
+        </div>
+        <div>
+            <h3 class="text-lg font-semibold">Escuche los beneficios</h3>
+            <audio controls class="w-full">
+                <source src="benefits.mp3" type="audio/mp3">
+                Su navegador no soporta audio.
+            </audio>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="p-6 bg-gray-100 container benefits">
+        <h2 class="text-xl font-semibold text-center mb-4">Beneficios Clave</h2>
+        <ul class="space-y-4">
+            <li>
+                <strong>Ahorro Claro:</strong> Desde S/. 1.25 por ítem, ahorrando miles de soles.
+            </li>
+            <li>
+                <strong>Optimización:</strong> Sistema basado en la nube, accesible en cualquier lugar y momento.
+            </li>
+            <li>
+                <strong>Informes:</strong> Apertura y cierre automáticos con gráficos y datos consolidados.
+            </li>
+        </ul>
+    </section>
+
+    <!-- Interactive Iframes -->
+    <section class="p-6 container">
+        <h2 class="text-xl font-semibold text-center mb-4">Pruebe el sistema</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <iframe src="/demo-inventario" class="w-full h-64 border rounded"></iframe>
+            <iframe src="/dashboard/inventariador/bienes-altas-2024" class="w-full h-64 border rounded"></iframe>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="p-6 text-center bg-blue-500 text-white">
+        <h2 class="text-xl font-semibold">¡Comience a ahorrar hoy mismo!</h2>
+        <p class="mb-4">Pruebe nuestro sistema y obtenga una demostración gratuita.</p>
+        <a href="/contacto" class="bg-white text-blue-500 px-4 py-2 rounded">Contáctenos</a>
+    </section>
+
+    <script>
+        // Cambiar tema claro/oscuro
+        function toggleTheme() {
+            const body = document.body;
+            const theme = body.getAttribute('data-theme');
+            body.setAttribute('data-theme', theme === 'light' ? 'dark' : 'light');
+        }
+    </script>
+</body>
+</html>
