@@ -1,5 +1,5 @@
 from sqlalchemy.orm import registry
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Enum, Date, Float, Boolean, DateTime, Text, JSON
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Enum, Date, Float, Boolean, DateTime, Text, JSON, Index
 from sqlalchemy.orm import declarative_base, relationship, registry
 from sqlalchemy.sql import func
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -219,8 +219,13 @@ class Bien(Base):
     acciones=Column(String(50))#Etiq-2023, Etiq-SBN, 
     describe_area=Column(String(100))# Nombre de Área Oficial nueva
     nuevo_usuario= Column(String(50))
+    fecha_hora = Column(DateTime, nullable=False, server_default=func.now())
     #area_actual_id=Column(String(10))#Id de Área Oficial nueva (a la fecha)
 
+    # Definir el índice para fecha_hora
+    __table_args__ = (
+        Index('ix_bienes_fecha_hora', 'fecha_hora'),
+    )
 
     # Relaciones
     institucion = relationship("Institucion", back_populates="bienes")
