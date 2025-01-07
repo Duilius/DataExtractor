@@ -468,6 +468,10 @@ async def servicios(request: Request):
 
 @app.get('/registrar-bienes')
 async def servicios(request: Request):
+
+    # Obtener user de la cookie session_data
+    session_data = request.cookies.get("session_data")
+    user = json.loads(session_data) if session_data else None
     try:
         access_token = request.cookies.get("access_token")
         print(f"Token recibido: {access_token}")
@@ -480,7 +484,7 @@ async def servicios(request: Request):
         try:
             payload = auth_utils.verify_access_token(access_token)
             print(f"Token verificado exitosamente: {payload}")
-            return templates.TemplateResponse("demo/inventario_sis.html", {'request': request})
+            return templates.TemplateResponse("demo/inventario_sis.html", {'request': request, "user":user})
         except Exception as token_error:
             print(f"Error verificando token: {str(token_error)}")
             return RedirectResponse(url="/auth/login", status_code=302)
