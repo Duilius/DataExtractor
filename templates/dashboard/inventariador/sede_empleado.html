@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selección de Sede y Empleado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        .custom-select-container {
+            position: relative;
+        }
+    
+        .custom-select-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #3b82f6; /* Borde azul */
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+    
+        .custom-select-header:hover {
+            border-color: #2563eb; /* Azul más oscuro al hover */
+            background-color: #f8fafc;
+        }
+    
+        .custom-select-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+    
+        .custom-select-options.show {
+            display: block;
+        }
+    
+        .custom-select-option {
+            display: grid;
+            grid-template-columns: minmax(200px, 3fr) minmax(100px, 2fr) minmax(100px, 2fr) minmax(100px, 2fr);
+            gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+    
+        .custom-select-option:last-child {
+            border-bottom: none;
+        }
+    
+        .custom-select-option:hover {
+            background-color: #eef2ff; /* Fondo azul muy suave al hover */
+        }
+    
+        .custom-select-header-text {
+            grid-template-columns: minmax(200px, 3fr) minmax(100px, 2fr) minmax(100px, 2fr) minmax(100px, 2fr);
+            gap: 8px;
+            display: grid;
+            color: #1e40af; /* Texto azul oscuro */
+        }
+    
+        .table-header {
+            font-weight: 600;
+            color: #1e40af; /* Azul oscuro para encabezados */
+            font-size: 0.875rem;
+            background-color: #eff6ff; /* Fondo azul muy suave */
+            cursor: default;
+            border-bottom: 2px solid #bfdbfe; /* Borde azul claro */
+            position: sticky;
+            top: 0;
+        }
+    
+        /* Estilos por columna */
+        .custom-select-option span:nth-child(1) {
+            color: #1e40af; /* Azul oscuro para la sede */
+            font-weight: 500;
+        }
+    
+        .custom-select-option span:nth-child(2) {
+            color: #0369a1; /* Azul medio para la región */
+        }
+    
+        .custom-select-option span:nth-child(3) {
+            color: #0284c7; /* Azul más claro para provincia */
+        }
+    
+        .custom-select-option span:nth-child(4) {
+            color: #0ea5e9; /* Azul aún más claro para distrito */
+        }
+    
+        /* Scrollbar personalizado */
+        .custom-select-options::-webkit-scrollbar {
+            width: 8px;
+        }
+    
+        .custom-select-options::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+    
+        .custom-select-options::-webkit-scrollbar-thumb {
+            background: #93c5fd;
+            border-radius: 4px;
+        }
+    
+        .custom-select-options::-webkit-scrollbar-thumb:hover {
+            background: #60a5fa;
+        }
+    
+        /* Estilos para móvil */
+        @media (max-width: 768px) {
+            .custom-select-option, .custom-select-header-text {
+                grid-template-columns: 1fr;
+            }
+            
+            .custom-select-option span {
+                padding: 4px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .custom-select-option span:last-child {
+                border-bottom: none;
+            }
+            
+            .table-header span:not(:first-child) {
+                display: none;
+            }
+        }
+
+    /* Estilos existentes del select... */
+
+    /* Estilos para el contenedor de empleados */
+    .empleados-container {
+        transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        max-height: 800px; /* o el valor que necesites */
+        opacity: 1;
+        overflow: hidden;
+    }
+
+    .empleados-container.collapsed {
+        max-height: 0;
+        opacity: 0;
+    }
+
+    /* Estilo para el ícono de toggle */
+    .toggle-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .toggle-icon.rotated {
+        transform: rotate(180deg);
+    }
+
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Contenedor principal en grid -->
+    <div class="min-h-screen grid grid-rows-[auto,1fr]">
+        <!-- Sección superior fija -->
+        <div class="bg-white shadow">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                    <div class="flex-grow">
+                        
+                        <!-- Donde antes estaba el select, pon esto -->
+<div class="flex-grow">
+    
+    <div class="custom-select-container">
+        <div class="custom-select-header" onclick="toggleSedeSelect()">
+            <div class="custom-select-header-text" id="selected-sede-text">
+                <span>Seleccione una Sede</span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <i class="ri-arrow-down-s-line"></i>
+        </div>
+        <div class="custom-select-options" id="sede-options">
+            <div class="custom-select-option table-header">
+                <span>Sede</span>
+                <span>Región</span>
+                <span>Provincia</span>
+                <span>Distrito</span>
+            </div>
+            {% for sede in sedes %}
+            <div class="custom-select-option" onclick="selectSede('{{ sede.id }}', this)">
+                <span>{{ sede.nombre }}</span>
+                <span>{{ sede.region }}</span>
+                <span>{{ sede.provincia }}</span>
+                <span>{{ sede.distrito }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+                    </div>
+                    <button onclick="toggleEmpleados()" class="text-gray-600 hover:text-gray-800">
+                        <i id="toggle-icon" class="ri-arrow-up-s-line text-2xl toggle-icon"></i>
+                    </button>
+                </div>
+
+                <!-- Contenedor de empleados colapsable -->
+                <div id="empleados-container" class="empleados-container mt-4">
+                    <!-- Barra de búsqueda -->
+                    <div class="mb-4">
+                        <div class="flex gap-2">
+                            <input type="text" id="search-input" 
+                                   class="flex-grow border rounded px-2 py-1" 
+                                   placeholder="Buscar por nombre...">
+                            <button onclick="buscarEmpleados()" 
+                                    class="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de empleados -->
+                    <div class="bg-white rounded shadow overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="col-dni px-4 py-2 text-left font-medium">DNI</th>
+                                    <th class="col-nombre px-4 py-2 text-left font-medium">Apellidos y Nombres</th>
+                                    <th class="col-puesto px-4 py-2 text-left font-medium">Puesto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="empleados-body">
+                                <!-- Contenido dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div class="flex items-center justify-between mt-4">
+                        <button id="prev-btn" onclick="loadPreviousPage()" 
+                                class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50">
+                            Anterior
+                        </button>
+                        <span id="results-count" class="text-gray-600"></span>
+                        <button id="next-btn" onclick="loadNextPage()" 
+                                class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50">
+                            Siguiente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- iframe que ocupa el espacio restante -->
+        <iframe id="ficha-frame" class="w-full h-full" src="about:blank"></iframe>
+    </div>
+
+    <script src="/static/js/sede_empleado.js"></script>
+</body>
+</html>
