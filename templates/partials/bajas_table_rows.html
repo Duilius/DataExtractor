@@ -1,0 +1,17 @@
+<!-- Div oculto para metadata -->
+<div data-total="{{ total }}" hidden></div>
+
+{% for bien in bienes %}
+<tr onclick="showModal('{{ bien.codigo_cp }}')" 
+    data-codigo="{{ bien.codigo_cp }}"
+    class="cursor-pointer hover:bg-gray-100 border-b">
+    <td class="col-inv px-4 py-2">{{ bien.inv_2023 }}</td>
+    <td class="col-cod-cp px-4 py-2">{{ bien.codigo_cp }}</td>
+    <td class="col-cod-sbn px-4 py-2">{{ bien.codigo_sbn }}</td>
+    <td class="col-denom px-4 py-2">{{ bien.denominacion }}</td>
+    <td class="col-marca px-4 py-2 hidden md:table-cell">{{ bien.marca }}</td>
+    <td class="col-modelo px-4 py-2 hidden md:table-cell">{{ bien.modelo }}</td>
+    <td class="col-serie px-4 py-2">{{ bien.num_serie }}</td>
+    <td class="col-dependencia px-4 py-2 hidden md:table-cell">{{ bien.dependencia }}</td>
+</tr>
+{% endfor %}

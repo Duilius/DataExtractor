@@ -1,0 +1,14 @@
+<!-- Div oculto para metadata -->
+<div data-total="{{ total }}" hidden></div>
+
+{% for empleado in empleados %}
+<tr onclick="showModal('{{ empleado.codigo }}')" 
+    data-codigo="{{ empleado.codigo }}"
+    class="cursor-pointer hover:bg-gray-100 border-b">
+    <td class="col-dni px-4 py-2">{{ empleado.codigo }}</td>
+    <td class="col-nombre px-4 py-2">{{ empleado.nombre }}</td>
+    <td class="col-puesto px-4 py-2 hidden md:table-cell">{{ empleado.puesto }}</td>
+    <td class="col-rol px-4 py-2 hidden md:table-cell">{{ empleado.rol }}</td>
+    <td class="col-sede px-4 py-2">{{ empleado.sede }}</td>
+</tr>
+{% endfor %}
