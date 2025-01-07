@@ -116,14 +116,17 @@
                     <img width="30" height="30" src="{{ url_for('static', path='img/icons8-queen-bee-50.png') }}" alt="Inicio">
                     <span id="logo_txt">Data<span>Extractor</span></span>
                 </a>
+                <p style="font-size: 75%; color:whitesmoke;">{{user.nombres}}</p>
             </div>
             <nav id="main-nav">
                 <!-- Aquí irán los enlaces de navegación -->
             </nav>
             <div id="user-controls">
+            <!--
                 <button id="languageToggle" class="btn icon-btn">
                     <img src="{{ url_for('static', path='img/flag-us.png') }}" alt="English" id="langIcon">
                 </button>
+            -->
                 <button id="loginBtn" class="btn btn_log">Login</button>
                 <button id="logoutBtn" class="btn btn_log" style="display: none;">Logout</button>
                 <button id="darkModeBtn" class="btn icon-btn">🌙</button>
