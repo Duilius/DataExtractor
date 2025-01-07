@@ -163,7 +163,7 @@ class Empleado(Base):
     asignaciones = relationship("AsignacionBien", back_populates="empleado")
     #usuario = relationship("Usuario", back_populates="empleado")  # Añadir esta línea
     sede = relationship("Sede")
-
+    rol = Column(String(50)) #antes celular
     # Relación con altas usando el código/dni
     altas = relationship(
         "AltasSis2024",
