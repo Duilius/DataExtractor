@@ -397,3 +397,245 @@ async def search_bienes_bajas(request: Request, db: Session = Depends(get_db)):
         )
     else:
         return templates.TemplateResponse("partials/no_results.html", {"request": request})
+    
+# ****************** CONSULTAS DE PERSONAL ****************** CONSULTAS DE PERSONAL ***************************
+@router.get("/consulta-personal", response_class=HTMLResponse)
+async def consulta_personal(request: Request, db: Session = Depends(get_db)):
+    """
+    Renderiza la página de consulta de personal con las primeras filas cargadas.
+    """
+    session_data = request.cookies.get("session_data")
+    user = json.loads(session_data) if session_data else None
+
+    # Cargar las primeras filas (página 1, 10 elementos por defecto)
+    limit = 10
+    query = (
+    db.query(
+        Empleado.codigo,
+        Empleado.nombre,
+        Empleado.puesto,
+        Empleado.rol,
+        Sede.nombre.label("sede")
+    )
+        .join(Sede, Empleado.sede_id == Sede.id)
+        .limit(limit)
+        .all()
+    )
+
+
+    # Convertir los resultados a una lista de diccionarios
+    empleados_serialized = [
+    {
+        "codigo": row.codigo,
+        "nombre": row.nombre,
+        "puesto": row.puesto,
+        "rol": row.rol,
+        "sede": row.sede
+    }
+        for row in query
+    ]
+
+    total = db.query(Empleado).count()
+
+    return templates.TemplateResponse(
+        "/dashboard/inventariador/consulta_personal.html",
+        {
+            "request": request,
+            "user": user,
+            "empleados": empleados_serialized,
+            "total": total,
+            "page": 1,
+            "pages": (total // limit) + (1 if total % limit > 0 else 0)
+        }
+    )
+
+
+@router.get("/consulta-personal/data", response_class=HTMLResponse)
+async def consulta_personal_data(request: Request, page: int = 1, limit: int = 10, query: str = None, db: Session = Depends(get_db)):
+    """
+    Devuelve los datos de empleados, con soporte para paginación y búsquedas.
+    """
+    offset = (page - 1) * limit
+
+    base_query = db.query(
+        Empleado.codigo,
+        Empleado.nombre,
+        Empleado.email,
+        Empleado.puesto,
+        Empleado.rol,
+        Sede.nombre.label("sede")
+    ).join(Sede, Empleado.sede_id == Sede.id)
+
+    if query:
+        base_query = base_query.filter(Empleado.nombre.ilike(f"%{query}%"))
+
+    total = base_query.count()
+    result = base_query.offset(offset).limit(limit).all()
+
+    empleados_serialized = [
+        {
+            "codigo": row.codigo,
+            "nombre": row.nombre,
+            "email": row.email,
+            "puesto": row.puesto,
+            "rol": row.rol,
+            "sede": row.sede
+        }
+        for row in result
+    ]
+
+    return templates.TemplateResponse(
+        "partials/consulta_personal_rows.html",
+        {
+            "request": request,
+            "empleados": empleados_serialized,
+            "page": page,
+            "pages": (total // limit) + (1 if total % limit > 0 else 0),
+            "total": total,
+        }
+    )
+
+
+@router.post("/search-personal", response_class=HTMLResponse)
+async def search_personal(request: Request, db: Session = Depends(get_db)):
+    """
+    Busca empleados por criterios específicos.
+    """
+    form = await request.form()
+    filter_by = form.get("filter")
+    query = form.get("query")
+
+    page = int(form.get("page", 1))
+    limit = int(form.get("limit", 10))
+    offset = (page - 1) * limit
+
+    # Filtra los empleados según el criterio seleccionado
+    base_query = db.query(
+        Empleado.codigo,
+        Empleado.nombre,
+        Empleado.email,
+        Empleado.puesto,
+        Empleado.rol,
+        Sede.nombre.label("sede")
+    ).join(Sede, Empleado.sede_id == Sede.id)
+
+    if filter_by == "codigo":
+        base_query = base_query.filter(Empleado.codigo == query)
+    elif filter_by == "nombre":
+        base_query = base_query.filter(Empleado.nombre.ilike(f"%{query}%"))
+    elif filter_by == "email":
+        base_query = base_query.filter(Empleado.email.ilike(f"%{query}%"))
+    elif filter_by == "sede":
+        base_query = base_query.join(Sede).filter(Sede.nombre.ilike(f"%{query}%"))
+
+    result = base_query.offset(offset).limit(limit).all()
+    total = base_query.count()
+
+    empleados_serialized = [
+        {
+            "codigo": row.codigo,
+            "nombre": row.nombre,
+            "email": row.email,
+            "puesto": row.puesto,
+            "rol": row.rol,
+            "sede": row.sede
+        }
+        for row in result
+    ]
+
+    if total >= 1:
+        return templates.TemplateResponse(
+            "partials/consulta_personal_rows.html",
+            {
+                "request": request,
+                "empleados": empleados_serialized,
+                "page": page,
+                "pages": (total // limit) + (1 if total % limit > 0 else 0),
+                "total": total,
+            }
+        )
+    else:
+        return templates.TemplateResponse("partials/no_results.html", {"request": request})
+    
+
+# ********************* SEDE - EMPLEADO ===> FICHA LEVANTAMIENTO INFO **************************
+# Importar OrderBy si no está importado
+from sqlalchemy import func, case, asc
+
+@router.get("/sede-empleado", response_class=HTMLResponse)
+async def sede_empleado(request: Request, db: Session = Depends(get_db)):
+    """
+    Vista para seleccionar sede y empleado
+    """
+    session_data = request.cookies.get("session_data")
+    user = json.loads(session_data) if session_data else None
+
+    # Obtener sedes filtradas y ordenadas
+    sedes = (db.query(
+        Sede.id,
+        Sede.nombre,
+        Sede.region,
+        Sede.provincia,
+        Sede.distrito
+    )
+    .filter(Sede.institucion_id == 17)
+    .order_by(
+        Sede.region,
+        Sede.provincia,
+        Sede.distrito
+    )
+    .all())
+    
+    return templates.TemplateResponse(
+        "/dashboard/inventariador/sede_empleado.html",
+        {
+            "request": request,
+            "user": user,
+            "sedes": sedes
+        }
+    )
+
+@router.get("/sede-empleado/empleados/{sede_id}", response_class=HTMLResponse)
+async def get_empleados_sede(request: Request, sede_id: int, page: int = 1, query: str = None, db: Session = Depends(get_db)):
+    """
+    Obtiene los empleados de una sede específica con paginación
+    """
+    limit = 10
+    offset = (page - 1) * limit
+
+    # Query base
+    base_query = db.query(
+        Empleado.id,
+        Empleado.codigo,
+        Empleado.nombre,
+        Empleado.puesto
+    ).filter(Empleado.sede_id == sede_id)
+
+    # Aplicar búsqueda si existe
+    if query:
+        base_query = base_query.filter(Empleado.nombre.ilike(f"%{query}%"))
+
+    # Obtener total y resultados paginados
+    total = base_query.count()
+    empleados = base_query.offset(offset).limit(limit).all()
+
+    empleados_serialized = [
+        {
+            "id": emp.id,
+            "codigo": emp.codigo,
+            "nombre": emp.nombre,
+            "puesto": emp.puesto
+        }
+        for emp in empleados
+    ]
+
+    return templates.TemplateResponse(
+        "partials/empleados_sede_rows.html",
+        {
+            "request": request,
+            "empleados": empleados_serialized,
+            "total": total,
+            "page": page,
+            "pages": (total // limit) + (1 if total % limit > 0 else 0)
+        }
+    )
