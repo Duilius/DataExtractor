@@ -1,0 +1,130 @@
+.chart-wrapper {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    min-height: 300px;
+}
+
+.metric-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+/* #######################   TABLA-INDICADOR: BIENES POR SEDE  #################################*/
+/* Mobile-first styles */
+/* Card styling */
+.card {
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 80%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+/* Table Styling */
+.responsive-table-container {
+    overflow-y: auto;
+    max-height: 400px; /* Vertical scroll */
+}
+
+.responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.responsive-table th,
+.responsive-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.responsive-table th {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.responsive-table tr:hover {
+    background-color: #f2f2f2;
+}
+
+.responsive-table td {
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .card {
+        max-width: 70%;
+    }
+}
+
+/* ########################   estilos para RANKING DE INVENTARIADORES POR SEDE #########################  */
+.ranking-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.responsive-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.responsive-table th,
+.responsive-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.responsive-table th {
+    background-color: #007bff;
+    color: white;
+}
+
+.responsive-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.inventariador-imagen {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.btn-whatsapp {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #25D366;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    text-align: center;
+}
+
+.btn-whatsapp:hover {
+    background-color: #1EBE56;
+}

@@ -1,0 +1,56 @@
+/* Encabezado del ranking */
+.ranking-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Tabla responsiva */
+.responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    text-align: left;
+    margin-top: 20px;
+}
+
+.responsive-table th, .responsive-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.responsive-table th {
+    background-color: #007bff;
+    color: white;
+}
+
+.responsive-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Imagen del inventariador */
+.inventariador-imagen {
+    width: 50px;
+    height: 50px;
+    border-radius: 2%;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* Botón de WhatsApp */
+.btn-whatsapp {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #25D366;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    text-align: center;
+}
+
+.btn-whatsapp:hover {
+    background-color: #1EBE56;
+}
