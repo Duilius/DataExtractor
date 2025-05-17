@@ -1,0 +1,716 @@
+¡Excelente idea! Preparar un resumen así te ayudará mucho a consolidar lo aprendido.
+
+Aquí te proporciono un borrador de ese documento, agrupando las preguntas que hemos visto (o sus equivalentes conceptuales) por tema. He intentado recordar o inferir las preguntas exactas y las opciones cuando era relevante.
+
+---
+
+## Guía de Repaso: Pruebas Técnicas
+
+### Sección 1: Python
+
+---
+
+**Pregunta 1.1 (Ordenamiento de Strings)**
+
+*   **Pregunta:** Crea una función `sort_code(input_string)` que tome un string y devuelva un nuevo string con los mismos caracteres ordenados alfabéticamente.
+*   **Respuesta (Código):**
+    ```python
+    def sort_code(input_string):
+      sorted_char_list = sorted(input_string)
+      result_string = "".join(sorted_char_list)
+      return result_string
+    ```
+*   **Conceptos Involucrados:**
+    *   `sorted()`: Función incorporada que devuelve una nueva lista ordenada a partir de los ítems de un iterable.
+    *   `"".join(iterable)`: Método de string que concatena los elementos de un iterable (deben ser strings) en un solo string.
+    *   Inmutabilidad de strings (los strings no se modifican directamente, se crean nuevos).
+    *   Listas como estructuras de datos mutables y ordenables.
+
+---
+
+**Pregunta 1.2 (Ranking en un Array)**
+
+*   **Pregunta:** Escribe una función `ranks(arr)` que tome un array (lista) de puntuaciones y devuelva un array de rangos. La puntuación más alta obtiene el rango 1, la segunda más alta el rango 2, etc. En caso de empates, todas las puntuaciones empatadas reciben el mismo rango.
+    *   Ejemplo: `[9, 3, 6, 10]` -> `[2, 4, 3, 1]`
+    *   Ejemplo: `[3, 3, 3, 3, 5, 1]` -> `[2, 2, 2, 2, 1, 3]`
+*   **Respuesta (Código):**
+    ```python
+    def ranks(arr):
+        unique_sorted_scores = sorted(list(set(arr)), reverse=True)
+        
+        score_to_rank_map = {}
+        for i, score in enumerate(unique_sorted_scores):
+            score_to_rank_map[score] = i + 1 # El rango es 1-based
+            
+        result_ranks = []
+        for score in arr:
+            result_ranks.append(score_to_rank_map[score])
+            
+        return result_ranks
+    ```
+*   **Conceptos Involucrados:**
+    *   `set()`: Para obtener puntuaciones únicas.
+    *   `list()`: Para convertir el set de nuevo a lista.
+    *   `sorted()`: Para ordenar las puntuaciones únicas (descendente con `reverse=True`).
+    *   Diccionarios (`{}`): Para mapear puntuaciones a sus rangos.
+    *   `enumerate()`: Para obtener índice y valor al iterar.
+    *   Iteración sobre listas.
+    *   Manejo de empates asignando el mismo rango.
+
+---
+
+**Pregunta 1.3 (Conteo de Direcciones IP)**
+
+*   **Pregunta:** Implementa una función `count_ips(first, last)` que reciba dos direcciones IPv4 (como strings) y devuelva el número de direcciones entre ellas (incluyendo la primera, excluyendo la última).
+*   **Respuesta (Código):**
+    ```python
+    def count_ips(first, last):
+        def ip_to_int(ip_str):
+            parts = ip_str.split('.')
+            val = 0
+            for i in range(4):
+                val = (val << 8) + int(parts[i]) # Multiplica por 256 y suma
+            return val
+
+        first_int = ip_to_int(first)
+        last_int = ip_to_int(last)
+        
+        return last_int - first_int
+    ```
+*   **Conceptos Involucrados:**
+    *   Conversión de direcciones IPv4 a enteros: Entender que una IP es un número de 32 bits.
+    *   Manipulación de strings: `split('.')`.
+    *   Operaciones bitwise (opcional, pero `<< 8` es eficiente) o multiplicación por potencias de 256.
+    *   Funciones anidadas (helper functions).
+    *   Interpretación de rangos inclusivos/exclusivos.
+
+---
+
+**Pregunta 1.4 (Indexación de Listas)**
+
+*   **Pregunta:** ¿Cuál será la salida de la siguiente expresión?
+    ```python
+    a = [1, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+    print(a[-1])
+    ```
+*   **Respuesta:** `0`
+*   **Conceptos Involucrados:**
+    *   Listas en Python.
+    *   Indexación negativa: `a[-1]` accede al último elemento, `a[-2]` al penúltimo, etc.
+
+---
+
+**Pregunta 1.5 (Comparación de Sets)**
+
+*   **Pregunta:** ¿Cuál será el resultado de la siguiente expresión?
+    ```python
+    set([1, 2, 1]) == set([1,2])
+    ```
+*   **Respuesta:** `TRUE`
+*   **Conceptos Involucrados:**
+    *   `set`: Colección desordenada de elementos únicos.
+    *   Creación de sets a partir de listas (los duplicados se eliminan).
+    *   Comparación de sets: Dos sets son iguales si contienen los mismos elementos, independientemente del orden original o duplicados en la fuente.
+
+---
+
+**Pregunta 1.6 (Concatenación y Repetición de Strings)**
+
+*   **Pregunta:** ¿Cuál será la salida de la siguiente sentencia?
+    ```python
+    print("hello" 'world' * 2)
+    ```
+*   **Respuesta:** `helloworldhelloworld`
+*   **Conceptos Involucrados:**
+    *   Concatenación implícita de strings literales adyacentes: `"hello" 'world'` se convierte en `"helloworld"`.
+    *   Repetición de strings con `*`: `'string' * n` repite 'string' n veces.
+    *   Precedencia de operadores: `*` tiene mayor precedencia que la concatenación implícita, pero aquí los literales se unen primero. La multiplicación se aplica a `'world'`. (Error en mi análisis anterior, la concatenación de literales ocurre primero. `"hello" + ("world" * 2)` sería diferente).
+        *   Corrección: Python primero une los literales adyacentes `"hello" 'world'` para formar `"helloworld"`. Luego, `* 2` se aplica a este string resultante. No, eso es incorrecto.
+        *   **Corrección Definitiva:** La multiplicación `*` tiene mayor precedencia. Así que `'world' * 2` se evalúa a `'worldworld'`. Luego, `"hello"` se concatena implícitamente con `'worldworld'` para dar `"helloworldworld"`.
+        *   **Revisión basada en la opción de la prueba que el usuario probablemente seleccionó ("helloworldhelloworld"):** La única forma de obtener esto es si la concatenación implícita ocurre primero: `("hello" + "world") * 2` o `"helloworld" * 2`. Python une literales de string adyacentes en tiempo de compilación. Así, `"hello" 'world'` se convierte en `"helloworld"`. Luego, este string `"helloworld"` se multiplica por 2.
+*   **Conceptos Involucrados (Revisado):**
+    *   **Concatenación de Strings Literales Adyacentes:** Python automáticamente concatena strings literales que están uno al lado del otro. Ejemplo: `'a' 'b'` es igual a `'ab'`.
+    *   **Repetición de Strings:** El operador `*` se usa para repetir un string. Ejemplo: `'ab' * 2` es `'abab'`.
+    *   En la expresión `print("hello" 'world ' * 2)`, primero `"hello" 'world '` se convierte en `"helloworld "`. Luego `"helloworld " * 2` se convierte en `"helloworld helloworld "`. (La opción de la prueba no tenía el espacio extra, así que asumimos que no estaba en el original). Si era `"hello" 'world' * 2`, entonces es `"helloworld" * 2` -> `"helloworldhelloworld"`.
+
+---
+
+**Pregunta 1.7 (Clases, `__init__` y Ámbito de Atributos)**
+
+*   **Pregunta:** ¿Cuál será la salida del siguiente fragmento de código (si hay un `print(t.id)` al final)?
+    ```python
+    class test():
+        id = 0 # Atributo de clase
+        def __init__(self, id):
+            self.id = id # Atributo de instancia
+            id = 2 # Variable local a __init__, no afecta self.id ni test.id
+    
+    t = test(1)
+    # print(t.id) # Asumiendo que esto se pregunta
+    ```
+*   **Respuesta (si se imprime `t.id`):** `1`
+*   **Conceptos Involucrados:**
+    *   Clases y objetos.
+    *   Constructor `__init__`.
+    *   `self`: Referencia a la instancia actual.
+    *   Atributos de instancia (`self.id`): Pertenecen a un objeto específico.
+    *   Atributos de clase (`test.id` o `id` accedido dentro de la clase pero fuera de un método sin `self`): Compartidos por todas las instancias.
+    *   Variables locales a un método: `id = 2` dentro de `__init__` es local y diferente de `self.id`.
+
+---
+
+**Pregunta 1.8 (Tipos de Datos en Python)**
+
+*   **Pregunta:** ¿Cuál de estas opciones no es un tipo válido en Python? (Opciones: float, double, int)
+*   **Respuesta:** `double` (Python usa `float` para números de punto flotante de doble precisión).
+*   **Conceptos Involucrados:**
+    *   Tipos de datos numéricos incorporados en Python: `int`, `float`, `complex`.
+    *   `float` en Python implementa el estándar IEEE 754 de doble precisión.
+
+---
+
+**Pregunta 1.9 (Serialización de Objetos)**
+
+*   **Pregunta:** ¿Cuál de los siguientes módulos proporciona funciones para la serialización de objetos? (Opciones: sqlite3, pickle, zlib)
+*   **Respuesta:** `pickle`
+*   **Conceptos Involucrados:**
+    *   Serialización (pickling): Proceso de convertir un objeto Python en un flujo de bytes.
+    *   Deserialización (unpickling): Proceso inverso.
+    *   Módulo `pickle`: Módulo estándar de Python para la serialización.
+    *   `sqlite3`: Para bases de datos SQLite.
+    *   `zlib`: Para compresión de datos.
+
+---
+
+**Pregunta 1.10 (Definición de Función Vacía)**
+
+*   **Pregunta:** ¿Qué describe mejor la siguiente definición de función?
+    ```python
+    def a(b, c, d): pass
+    ```
+*   **Respuesta:** Define una función que no hace nada.
+*   **Conceptos Involucrados:**
+    *   `def`: Palabra clave para definir funciones.
+    *   `pass`: Declaración nula, actúa como un marcador de posición donde se requiere sintácticamente una declaración pero no se desea ninguna acción.
+
+---
+
+**Pregunta 1.11 (Método `__str__`)**
+
+*   **Pregunta:** ¿Cuál será la salida de la siguiente expresión (asumiendo que se imprime el resultado)?
+    ```python
+    a = 7
+    # print(a.__str__())
+    ```
+*   **Respuesta:** `'7'` (el string "7")
+*   **Conceptos Involucrados:**
+    *   Métodos "dunder" (double underscore) o mágicos.
+    *   `__str__()`: Método que devuelve la representación en string de un objeto, usualmente para ser legible por humanos. Es lo que llama `str()`.
+
+---
+
+**Pregunta 1.12 (Expresiones Regulares - `re.search` y `groups`)**
+
+*   **Pregunta:** ¿Cuál será la salida del siguiente fragmento de código?
+    ```python
+    import re
+    m = re.search(r'(ab[cd]?)', "acdeabdabcde") 
+    # print(m.groups()) # Asumiendo esta impresión
+    ```
+    *   Patrón: `(ab[cd]?)`
+        *   `ab`: Literal "ab".
+        *   `[cd]?`: Un carácter 'c' o 'd', opcional (`?`).
+        *   `(...)`: Grupo capturador.
+    *   String: `"acdeabdabcde"`
+    *   `re.search` encuentra la primera ocurrencia: "abd" (donde `[cd]?` captura 'd').
+*   **Respuesta (si se imprime `m.groups()`):** `('abd',)` (una tupla con el contenido del primer grupo capturador)
+*   **Conceptos Involucrados:**
+    *   Módulo `re` para expresiones regulares.
+    *   `re.search()`: Busca un patrón en un string y devuelve un objeto match si lo encuentra.
+    *   Sintaxis de expresiones regulares: literales, clases de caracteres (`[]`), cuantificadores (`?` para 0 o 1).
+    *   Grupos capturadores `(...)`.
+    *   `match_object.groups()`: Devuelve una tupla con todas las subcadenas capturadas por los grupos.
+
+---
+
+**Pregunta 1.13 (Tipo de Dato `timedelta`)**
+
+*   **Pregunta:** ¿Cuál será el tipo de salida de la siguiente expresión?
+    ```python
+    import datetime
+    # print(type(datetime.date(2012, 1, 1) - datetime.date(2011, 1, 1)))
+    ```
+*   **Respuesta:** `<class 'datetime.timedelta'>`
+*   **Conceptos Involucrados:**
+    *   Módulo `datetime`.
+    *   Objetos `datetime.date`.
+    *   Aritmética de fechas: Restar dos objetos `date` resulta en un objeto `timedelta`, que representa una duración.
+    *   `type()`: Devuelve el tipo de un objeto.
+
+---
+
+**Pregunta 1.14 (`itertools` y `filter`)**
+
+*   **Pregunta:** ¿Cuál es el resultado del siguiente fragmento de código?
+    ```python
+    import itertools
+    # print([i for i in filter(lambda x: x % 5, 
+    #          itertools.islice(itertools.count(5), 10))])
+    ```
+    *   `itertools.count(5)`: 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, ...
+    *   `itertools.islice(..., 10)`: Toma los primeros 10: 5, 6, 7, 8, 9, 10, 11, 12, 13, 14.
+    *   `filter(lambda x: x % 5, ...)`: Mantiene los números donde `x % 5` no es 0 (es decir, no son múltiplos de 5).
+        *   5%5=0 (elimina), 6%5=1 (mantiene), 7%5=2 (mantiene), 8%5=3 (mantiene), 9%5=4 (mantiene), 10%5=0 (elimina), 11%5=1 (mantiene), 12%5=2 (mantiene), 13%5=3 (mantiene), 14%5=4 (mantiene).
+    *   Filtrados: 6, 7, 8, 9, 11, 12, 13, 14.
+*   **Respuesta:** `[6, 7, 8, 9, 11, 12, 13, 14]`
+*   **Conceptos Involucrados:**
+    *   Módulo `itertools`: Herramientas para construir iteradores eficientes.
+    *   `itertools.count()`: Generador infinito de números.
+    *   `itertools.islice()`: Obtiene una "rebanada" de un iterador.
+    *   `filter()`: Construye un iterador a partir de elementos de un iterable para los cuales una función devuelve verdadero.
+    *   Funciones `lambda`: Funciones anónimas pequeñas.
+    *   Operador módulo `%`.
+    *   Comprensiones de listas.
+
+---
+
+**Pregunta 1.15 (Decoradores para Lógica Condicional)**
+
+*   **Pregunta:** Estás desarrollando una clase Python con varios métodos. Necesitas asegurar que métodos específicos solo sean llamables si se cumplen ciertas condiciones en tiempo de ejecución. ¿Qué opción sería la más adecuada?
+*   **Respuesta (basada en opciones típicas):** Aplicar un decorador que reemplace/envuelva el método con lógica que verifique las condiciones.
+*   **Conceptos Involucrados:**
+    *   Decoradores: Una forma de modificar o mejorar funciones o métodos de manera concisa.
+    *   Programación Orientada a Aspectos (AOP) de forma ligera.
+    *   Funciones de orden superior (funciones que operan sobre otras funciones).
+    *   Clausuras (closures).
+
+---
+
+**Pregunta 1.16 (Expresiones Regulares - `re.findall` y grupos no capturadores)**
+
+*   **Pregunta:** ¿Cuál será la salida del siguiente fragmento de Python?
+    ```python
+    import re
+    text = "abc123def456ghi"
+    pattern = r"(?:abc)\d+" 
+    matches = re.findall(pattern, text)
+    # print(matches)
+    ```
+    *   Patrón `(?:abc)\d+`: `(?:abc)` es un grupo no capturador que casa "abc". `\d+` casa uno o más dígitos.
+    *   `re.findall()` con un patrón sin grupos capturadores devuelve una lista de todas las coincidencias completas.
+    *   Coincidencia completa: "abc123".
+*   **Respuesta (si se imprime `matches`):** `['abc123']`
+*   **Conceptos Involucrados:**
+    *   `re.findall()`: Encuentra todas las subcadenas no superpuestas donde el patrón coincide y las devuelve como una lista.
+    *   Grupos no capturadores `(?:...)`: Agrupan parte de un patrón pero no "capturan" el texto coincidente para ser devuelto por separado.
+    *   Comportamiento de `findall` cuando no hay grupos capturadores.
+
+---
+
+**Pregunta 1.17 (`map` y `lambda` para Sumar Sublistas)**
+
+*   **Pregunta:** Usando una función lambda, calcula la suma de cada lista interna en la lista anidada dada y devuelve una nueva lista con estas sumas.
+    `nested_list = [[1, 2, 3], [4, 5], [6, 7, 8, 9]]`
+*   **Respuesta (expresión):** `list(map(lambda x: sum(x), nested_list))`
+    *   Resultado esperado: `[6, 9, 30]`
+*   **Conceptos Involucrados:**
+    *   `map(function, iterable)`: Aplica `function` a cada ítem de `iterable`.
+    *   Funciones `lambda`.
+    *   `sum()`: Suma los ítems de un iterable.
+    *   Listas anidadas.
+
+---
+
+**Pregunta 1.18 (Módulo `logging`)**
+
+*   **Pregunta:** Dado el siguiente fragmento de código, ¿qué se registrará si se llama a `divide(10, 0)` y luego a `divide(10, 2)`?
+    ```python
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+
+    def divide(a, b):
+        logging.debug(f"Dividing {a} by {b}")
+        try:
+            result = a / b
+        except ZeroDivisionError:
+            logging.error("Attempted to divide by zero.")
+            return None
+        logging.info(f"Division successful: {result}")
+        return result
+    
+    # divide(10, 0)
+    # divide(10, 2)
+    ```
+*   **Respuesta (Salida esperada en consola/log):**
+    ```
+    DEBUG:root:Dividing 10 by 0
+    ERROR:root:Attempted to divide by zero.
+    DEBUG:root:Dividing 10 by 2
+    INFO:root:Division successful: 5.0 
+    ```
+    Por lo tanto, la opción "The debug, error, and info messages will be logged in the console" sería la correcta.
+*   **Conceptos Involucrados:**
+    *   Módulo `logging`.
+    *   `logging.basicConfig(level=...)`: Configuración básica del logger, incluyendo el nivel mínimo de mensajes a registrar.
+    *   Niveles de logging: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
+    *   Funciones de logging: `logging.debug()`, `logging.info()`, `logging.error()`.
+    *   Manejo de excepciones (`try-except`).
+
+---
+
+**Pregunta 1.19 (Procesamiento Eficiente de Archivos Grandes)**
+
+*   **Pregunta:** En un script de Python diseñado para procesar archivos de registro grandes (más de 10GB), necesitas manejar los archivos eficientemente sin agotar la memoria del sistema. ¿Qué enfoque sería el más apropiado, considerando la gestión de memoria y el rendimiento?
+*   **Respuesta (basada en opciones típicas):** Implementar una función generadora que produzca líneas usando `file.readline()` (o iterando directamente sobre el objeto archivo) para procesar el archivo línea por línea.
+*   **Conceptos Involucrados:**
+    *   Manejo de archivos (`open()`).
+    *   Iteración sobre objetos archivo (los archivos son iterables línea por línea).
+    *   Generadores: Funciones que producen una secuencia de valores de forma perezosa (uno a la vez), muy eficientes en memoria.
+    *   `file.readline()`: Lee una sola línea del archivo.
+    *   Evitar cargar todo el archivo en memoria (`file.read()` o `file.readlines()` en archivos grandes).
+
+---
+
+**Pregunta 1.20 (Principios SOLID - LSP)**
+
+*   **Pregunta:** En el siguiente sistema, analiza el diseño de clases e identifica qué principio SOLID se viola. Explica cómo refactorizarías el código.
+    ```python
+    class User:
+        def access_page(self, page_type):
+            if page_type == 'admin':
+                raise Exception("Admins only")
+            return "Page accessed"
+
+    class Admin(User):
+        def access_page(self, page_type): # No usa page_type
+            return "Admin page accessed"
+    ```
+*   **Respuesta:** Se viola el Principio de Sustitución de Liskov (LSP). Un `Admin` no puede sustituir a un `User` sin alterar el comportamiento esperado (p.ej., `User().access_page('admin')` lanza excepción, `Admin().access_page('admin')` no).
+*   **Conceptos Involucrados:**
+    *   Principios SOLID.
+    *   Principio de Sustitución de Liskov (LSP): Los objetos de una superclase deben poder ser reemplazados por objetos de una subclase sin afectar la corrección del programa.
+    *   Herencia.
+    *   Polimorfismo.
+    *   Contratos de métodos (precondiciones, postcondiciones, invariantes).
+
+---
+
+### Sección 2: MySQL
+
+---
+
+**Pregunta 2.1 (Conexión Anónima)**
+
+*   **Pregunta:** ¿Cuál de los siguientes comandos se utiliza para conectarse como usuario anónimo a un servidor MySQL corriendo en localhost?
+*   **Respuesta:** `mysql` (Si el servidor MySQL permite conexiones anónimas desde localhost y el usuario actual del sistema operativo tiene permisos implícitos o existe un usuario anónimo `''@'localhost'`).
+*   **Conceptos Involucrados:**
+    *   Cliente de línea de comandos `mysql`.
+    *   Autenticación en MySQL.
+    *   Usuarios anónimos (generalmente desaconsejados por seguridad).
+    *   Valores por defecto de conexión (`-h localhost`, `-u <usuario_actual_SO>`).
+
+---
+
+**Pregunta 2.2 (Crear Base de Datos)**
+
+*   **Pregunta:** ¿Cuál de los siguientes comandos se utiliza para crear una base de datos llamada "abc"?
+*   **Respuesta:** `CREATE DATABASE abc;` (o `CREATE SCHEMA abc;`)
+*   **Conceptos Involucrados:**
+    *   SQL Data Definition Language (DDL).
+    *   Comando `CREATE DATABASE`.
+    *   Comando `CREATE SCHEMA` (sinónimo de `CREATE DATABASE` en MySQL).
+
+---
+
+**Pregunta 2.3 (Funciones Agregadas Inválidas)**
+
+*   **Pregunta:** ¿Cuál de las siguientes no es una función "aggregate" válida? (Opciones: COUNT, SUM, MIN, COMPUTE)
+*   **Respuesta:** `COMPUTE`
+*   **Conceptos Involucrados:**
+    *   Funciones agregadas SQL: Operan sobre un conjunto de valores y devuelven un único valor resumido.
+    *   Funciones comunes: `COUNT()`, `SUM()`, `AVG()`, `MIN()`, `MAX()`.
+
+---
+
+**Pregunta 2.4 (String de Conexión Válido)**
+
+*   **Pregunta:** ¿Cuál de las siguientes es una conexión MySQL válida (desde la línea de comandos)?
+*   **Respuesta (basada en la opción que parecía más completa):** `mysql -h server -u usuario -p --defaults-file=C:\my-options`
+    *   Nota: `mysql>` al inicio de las opciones suele indicar el prompt, no parte del comando.
+*   **Conceptos Involucrados:**
+    *   Parámetros del cliente `mysql`:
+        *   `-h <host>`: Especifica el host.
+        *   `-u <usuario>`: Especifica el nombre de usuario.
+        *   `-p`: Solicita la contraseña de forma interactiva (más seguro que ponerla en la línea).
+        *   `--defaults-file=<ruta>`: Lee opciones de configuración de un archivo.
+
+---
+
+**Pregunta 2.5 (Cláusula `TRUNCATE TABLE`)**
+
+*   **Pregunta:** La cláusula `TRUNCATE TABLE` sirve para:
+*   **Respuesta:** Eliminar todas las filas de una tabla. (Es más rápido que `DELETE` sin `WHERE` y usualmente resetea contadores `AUTO_INCREMENT`).
+*   **Conceptos Involucrados:**
+    *   `TRUNCATE TABLE`: Comando DDL.
+    *   Diferencias con `DELETE`: `TRUNCATE` es generalmente más rápido, no dispara triggers `ON DELETE`, y en muchos SGBD resetea `AUTO_INCREMENT`. Es una operación de log mínimo.
+    *   No elimina la tabla (eso es `DROP TABLE`).
+
+---
+
+**Pregunta 2.6 (`UPDATE` y `SELECT` en una Sentencia)**
+
+*   **Pregunta:** ¿Pueden las cláusulas `UPDATE` y `SELECT` estar en una misma sentencia SQL?
+*   **Respuesta:** Se puede si utilizas una consulta anidada (subconsulta). (Ej: `UPDATE tabla SET columna = (SELECT valor FROM otra_tabla WHERE ...) WHERE ...`)
+*   **Conceptos Involucrados:**
+    *   Comando `UPDATE`.
+    *   Subconsultas (consultas anidadas): Una consulta `SELECT` dentro de otra sentencia SQL (como `UPDATE`, `INSERT`, `DELETE` o_ `SELECT`).
+
+---
+
+**Pregunta 2.7 (Ámbito de un Trigger)**
+
+*   **Pregunta:** Un trigger puede pertenecer a:
+*   **Respuesta:** Una sola tabla en la base de datos.
+*   **Conceptos Involucrados:**
+    *   Triggers (disparadores): Bloques de código SQL que se ejecutan automáticamente en respuesta a ciertos eventos (INSERT, UPDATE, DELETE) en una tabla específica.
+
+---
+
+**Pregunta 2.8 (Filtrar por Inicio de String con `LIKE`)**
+
+*   **Pregunta:** Con SQL, ¿cómo se pueden obtener todos los registros de una tabla "Personas" donde el valor de la columna "Nombre" empieza con "a"?
+*   **Respuesta:** `SELECT * FROM Personas WHERE Nombre LIKE 'a%';`
+*   **Conceptos Involucrados:**
+    *   Cláusula `WHERE` para filtrar.
+    *   Operador `LIKE` para comparación de patrones.
+    *   Comodín `%`: Representa cero, uno o múltiples caracteres.
+    *   `'a%'`: Patrón que coincide con cualquier string que comience con "a".
+
+---
+
+**Pregunta 2.9 (Filtrar Rango Alfabético con `BETWEEN` o `>=`/`<=`)**
+
+*   **Pregunta:** ¿Cómo selecciono todos los registros de una tabla llamada Personas donde el "apellido" está alfabéticamente entre (incluyendo extremos) "Martínez" y "Pérez"?
+*   **Respuesta (considerando las opciones):** "B y C son correctas", donde B era `SELECT * FROM Personas WHERE apellido BETWEEN 'Martínez' AND 'Pérez'` y C era `SELECT * FROM Personas WHERE apellido >= 'Martínez' AND apellido <= 'Pérez'`.
+*   **Conceptos Involucrados:**
+    *   Operador `BETWEEN ... AND ...`: Inclusivo para ambos extremos. Funciona con números, fechas y strings (comparación alfabética).
+    *   Operadores de comparación `>=` y `<=`: También se pueden usar para rangos alfabéticos.
+    *   Comparación de strings: Se basa en el orden de los caracteres según la colación de la base de datos.
+
+---
+
+**Pregunta 2.10 (Características de Motores de Almacenamiento MyISAM)**
+
+*   **Pregunta:** ¿Cuál de las siguientes afirmaciones es falsa? (Referente a MyISAM e InnoDB)
+*   **Respuesta (basada en la opción más probable de ser falsa):** "Las tablas MyISAM soportan foreign keys y constraints relacionales." (Esto es falso; MyISAM no soporta claves foráneas ni transacciones, InnoDB sí).
+*   **Conceptos Involucrados:**
+    *   Motores de almacenamiento en MySQL: MyISAM, InnoDB, etc.
+    *   MyISAM: No soporta transacciones, claves foráneas, ni integridad referencial. Bloqueo a nivel de tabla. Bueno para lecturas intensivas.
+    *   InnoDB: Soporta transacciones (ACID), claves foráneas, integridad referencial. Bloqueo a nivel de fila. Es el motor por defecto.
+    *   Claves compuestas (compound keys): Soportadas por ambos.
+    *   Transacciones: MyISAM no las soporta, InnoDB sí.
+
+---
+
+### Sección 3: ETL y Data Engineering
+
+---
+
+**Pregunta 3.1 (Desafíos de Ingenieros de Datos ETL)**
+
+*   **Pregunta:** ¿Cuál es uno de los desafíos o dificultades que enfrentan los ingenieros de datos ETL?
+*   **Respuesta:** Manejar grandes volúmenes y variedades de datos de diversas fuentes.
+*   **Conceptos Involucrados:**
+    *   Los "3 Vs" (o más) de Big Data: Volumen, Variedad, Velocidad (y Veracidad, Valor).
+    *   Integración de datos de múltiples sistemas (heterogeneidad).
+    *   Escalabilidad y rendimiento de los procesos ETL.
+
+---
+
+**Pregunta 3.2 (Propósitos Principales del Testing ETL)**
+
+*   **Pregunta:** ¿Cuáles son los propósitos principales del testing ETL?
+*   **Respuesta (si es una opción):** "All of the above", incluyendo:
+    *   Verificar la exactitud y completitud de los datos en el sistema destino.
+    *   Validar la funcionalidad y rendimiento de las herramientas y tecnologías ETL.
+    *   Comprobar la calidad y consistencia de los datos a lo largo del proceso ETL.
+*   **Conceptos Involucrados:**
+    *   Calidad de datos.
+    *   Validación de transformaciones.
+    *   Conciliación de datos (fuente vs. destino).
+    *   Pruebas de rendimiento y escalabilidad del pipeline.
+    *   Verificación de la lógica de negocio implementada en el ETL.
+
+---
+
+**Pregunta 3.3 (Fuentes de Datos No Comunes para ETL)**
+
+*   **Pregunta:** ¿Cuál no es una fuente de datos común para alimentar un ETL? (Opciones: Flat files, Relational databases, Web pages, Data warehouses)
+*   **Respuesta:** Data warehouses. (Los Data Warehouses son típicamente el *destino* de los procesos ETL, aunque técnicamente pueden ser fuente para otros procesos analíticos o ETLs secundarios).
+*   **Conceptos Involucrados:**
+    *   Flujo de datos en ETL: Fuente -> Transformación -> Destino (Carga).
+    *   Fuentes comunes: Bases de datos operacionales (OLTP), archivos planos (CSV, JSON, XML), APIs, servicios web, logs.
+    *   Data Warehouse (DW) como sistema de destino para análisis y reporting.
+
+---
+
+**Pregunta 3.4 (Ejemplo de Operación de Transformación en ETL)**
+
+*   **Pregunta:** ¿Cuál de los siguientes es un ejemplo de una operación de transformación en ETL? (Opciones: Joining data, Filtering data, Aggregating data)
+*   **Respuesta (si es una opción):** "All of the above" (o cualquiera de las individuales si se debe elegir una).
+    *   Unión (Joining): Combinar datos de múltiples fuentes/tablas.
+    *   Filtrado (Filtering): Seleccionar solo los datos relevantes.
+    *   Agregación (Aggregating): Calcular estadísticas resumidas (sumas, promedios).
+*   **Conceptos Involucrados:**
+    *   Fase de Transformación en ETL: Limpieza, estandarización, conversión de tipos, derivación de nuevas columnas, uniones, agregaciones, filtrado.
+
+---
+
+**Pregunta 3.5 (Beneficios de Herramientas ETL sobre Scripts Personalizados)**
+
+*   **Pregunta:** ¿Cuáles son los beneficios de usar herramientas ETL sobre scripts o código personalizado?
+*   **Respuesta (si es una opción):** "All of the above", incluyendo:
+    *   Interfaces gráficas y componentes preconstruidos.
+    *   Soporte para diversos formatos y fuentes, y características de calidad de datos/manejo de errores.
+    *   Desarrollo y mantenimiento más rápido y fácil de pipelines.
+*   **Conceptos Involucrados:**
+    *   Productividad del desarrollador.
+    *   Mantenibilidad y reusabilidad.
+    *   Conectividad incorporada.
+    *   Gestión de metadatos.
+    *   Capacidades de monitoreo y logging.
+    *   Escalabilidad y rendimiento (a menudo optimizados en herramientas).
+
+---
+
+**Pregunta 3.6 (Herramientas ETL Comunes en el Mercado)**
+
+*   **Pregunta:** ¿Cuáles son algunas de las herramientas ETL comunes en el mercado?
+*   **Respuesta (basada en las opciones y el enfoque en "herramientas"):** Talend, Informatica, and MuleSoft. (Otras opciones incluían lenguajes o frameworks que se *usan para* ETL pero no son "herramientas" en el mismo sentido).
+*   **Conceptos Involucrados:**
+    *   Herramientas ETL dedicadas: Informatica PowerCenter, Talend, AWS Glue, Azure Data Factory, Google Cloud Data Fusion, Apache NiFi.
+    *   Frameworks/Lenguajes usados para ETL: Apache Spark, Python (con Pandas, Dask), Scala, Java.
+    *   Orquestadores de Flujos de Trabajo: Apache Airflow.
+
+---
+
+**Pregunta 3.7 (Desafíos Adicionales de Ingenieros de Datos ETL)**
+
+*   **Pregunta:** ¿Cuáles de los siguientes son desafíos o dificultades que enfrentan los ingenieros de datos ETL? (Opciones múltiples combinadas)
+*   **Respuesta:** "1, 2, 3" (asumiendo que 1, 2 y 3 eran opciones válidas como "Manejar grandes volúmenes", "Asegurar calidad de datos", "Optimizar rendimiento").
+*   **Conceptos Involucrados:**
+    *   Manejo de Volumen, Variedad, Velocidad.
+    *   Garantizar Calidad de Datos (precisión, consistencia, completitud, puntualidad).
+    *   Optimización de Rendimiento y Escalabilidad de los pipelines.
+    *   Monitoreo y manejo de errores.
+    *   Seguridad de datos.
+    *   Evolución de esquemas y requisitos.
+
+---
+
+**Pregunta 3.8 (Métodos/Técnicas para Manejar Problemas de Calidad de Datos en ETL)**
+
+*   **Pregunta:** ¿Cuáles son algunos de los métodos o técnicas para manejar problemas de calidad de datos o errores en ETL?
+*   **Respuesta (si es una opción):** "All of the above", incluyendo:
+    *   Perfilado de datos (Data profiling), Limpieza de datos (Data cleansing), Validación de datos (Data validation).
+    *   Auditoría de datos (Data auditing), Reconciliación de datos (Data reconciliation), Monitoreo de datos (Data monitoring).
+    *   Transformación de datos (Data transformation), Enriquecimiento de datos (Data enrichment), Estandarización de datos (Data standardization).
+*   **Conceptos Involucrados:**
+    *   Ciclo de vida de la calidad de datos.
+    *   Identificación y corrección de errores.
+    *   Establecimiento de reglas de validación.
+    *   Manejo de valores nulos o faltantes.
+    *   Deduplicación.
+
+---
+
+**Pregunta 3.9 (Diferencias entre Carga Completa e Incremental en ETL)**
+
+*   **Pregunta:** ¿Cuáles son las diferencias entre carga completa (full load) y carga incremental (incremental load) en ETL?
+*   **Respuesta (basada en opciones combinadas):** "1, 3" o "1, 2, 3" si todas las afirmaciones son consideradas correctas. Las afirmaciones clave son:
+    1.  Carga completa carga todos los datos; incremental solo los nuevos/cambiados. (Correcto)
+    2.  Carga completa es más rápida/simple; incremental es más lenta/compleja. (Generalmente, la carga completa inicial es simple, las incrementales posteriores son más rápidas para el delta, pero la lógica incremental es más compleja).
+    3.  Carga completa para datos pequeños/estáticos; incremental para grandes/dinámicos. (Correcto)
+*   **Conceptos Involucrados:**
+    *   **Full Load:** Se carga todo el conjunto de datos de la fuente al destino. Simple, pero puede ser lento y costoso para grandes volúmenes.
+    *   **Incremental Load:** Solo se cargan los datos que han cambiado o son nuevos desde la última carga. Más eficiente para grandes volúmenes y actualizaciones frecuentes. Requiere una forma de identificar cambios (timestamps, flags, CDC).
+
+---
+
+**Pregunta 3.10 (Diferencia entre Data Warehouse y Data Lake)**
+
+*   **Pregunta:** ¿Cuál es la diferencia entre un Data Warehouse y un Data Lake?
+*   **Respuesta (si es una opción):** "1, 2, 3" (asumiendo que las 3 afirmaciones eran correctas diferencias), incluyendo:
+    1.  DW: repositorio estructurado y curado; DL: colección no estructurada y cruda. (Correcto)
+    2.  DW: optimizado para consultas analíticas; DL: optimizado para consultas exploratorias. (Correcto)
+    3.  DW: schema-on-write; DL: schema-on-read. (Correcto)
+*   **Conceptos Involucrados:**
+    *   **Data Warehouse:** Almacena datos procesados, estructurados y modelados (usualmente schema-on-write) para BI y reporting. Optimizado para consultas analíticas.
+    *   **Data Lake:** Almacena grandes volúmenes de datos crudos en su formato nativo (schema-on-read). Flexible, para exploración, data science, y como staging para DW.
+
+---
+
+**Pregunta 3.11 (Mejores Prácticas/Consejos para Ingenieros de Datos ETL)**
+
+*   **Pregunta:** ¿Cuáles son algunas de las mejores prácticas o consejos para los ingenieros de datos ETL?
+*   **Respuesta (si es una opción):** "1, 2, 3" (asumiendo que las 3 eran buenas prácticas), incluyendo:
+    1.  Entender los requisitos del negocio y las fuentes de datos.
+    2.  Diseñar y documentar el proceso ETL y el modelo de datos.
+    3.  Seguir estándares de codificación y convenciones de nomenclatura.
+*   **Conceptos Involucrados:**
+    *   Planificación y diseño.
+    *   Documentación.
+    *   Pruebas exhaustivas.
+    *   Monitoreo y alertas.
+    *   Optimización del rendimiento.
+    *   Manejo de errores robusto.
+    *   Seguridad.
+    *   Control de versiones.
+    *   Modularidad y reusabilidad.
+
+---
+
+**Pregunta 3.12 (Diferencia entre Procesamiento por Lotes y en Stream)**
+
+*   **Pregunta:** ¿Cuál es la diferencia entre procesamiento por lotes (batch processing) y procesamiento en stream (stream processing) en ingeniería de datos?
+*   **Respuesta (basada en opciones):** "1, 2, 3" o "1, 3" si algunas afirmaciones eran más precisas que otras. Las afirmaciones clave son:
+    1.  (Asumida) Batch procesa datos en bloques grandes a intervalos; Stream procesa datos continuamente a medida que llegan. (Correcto)
+    2.  Batch para análisis histórico y reporting; Stream para aplicaciones en tiempo real y alertas. (Correcto)
+    3.  (Cuestionable) Batch requiere más almacenamiento y menos cómputo; Stream menos almacenamiento y más cómputo. (Demasiado simplista).
+*   **Conceptos Involucrados:**
+    *   **Batch Processing:** Procesa grandes volúmenes de datos acumulados durante un período. Alta latencia, alto rendimiento (throughput).
+    *   **Stream Processing:** Procesa datos en tiempo real o casi real a medida que se generan. Baja latencia, para análisis inmediato y acciones.
+
+---
+
+**Pregunta 3.13 (Diferencia entre Funciones Map y Reduce en MapReduce)**
+
+*   **Pregunta:** ¿Cuál es la diferencia entre las funciones map y reduce en el framework MapReduce?
+*   **Respuesta (basada en opciones):** "1, 2, 3" si todas las afirmaciones son consideradas correctas (con lenidad en la #2).
+    1.  Map: (clave, valor) de entrada -> lista de (clave_intermedia, valor_intermedio). Reduce: (clave_intermedia, lista de valores_intermedios) -> lista de (clave_final, valor_final). (Correcto)
+    2.  Map se ejecuta en paralelo; Reduce se ejecuta secuencialmente en un solo nodo. (Incorrecto sobre Reduce, los reducers también son paralelos por clave).
+    3.  Map para transformación/filtrado; Reduce para agregación/resumen. (Correcto)
+    *   La mejor combinación sería "1, 3" si estuviera disponible.
+*   **Conceptos Involucrados:**
+    *   **MapReduce:** Modelo de programación para procesar grandes conjuntos de datos en paralelo.
+    *   **Map Function:** Aplica una operación a cada elemento de entrada, produciendo pares clave-valor intermedios.
+    *   **Reduce Function:** Agrupa los valores por clave intermedia y aplica una operación de resumen o agregación.
+    *   Shuffle and Sort: Fase intermedia que agrupa los datos por clave.
+
+---
+
+**Pregunta 3.14 (Diferencia entre Esquema Estrella y Copo de Nieve)**
+
+*   **Pregunta:** ¿Cuál es la diferencia entre el esquema Estrella (Star schema) y el esquema Copo de Nieve (Snowflake schema) en el diseño de data warehouses?
+*   **Respuesta:** Un esquema estrella tiene una tabla de hechos única y múltiples tablas de dimensión que están desnormalizadas, mientras que un esquema copo de nieve tiene una tabla de hechos única y múltiples tablas de dimensión que están normalizadas.
+*   **Conceptos Involucrados:**
+    *   Modelado Dimensional.
+    *   **Star Schema:** Tabla de hechos central conectada a dimensiones. Dimensiones desnormalizadas para simplicidad y rendimiento de consulta.
+    *   **Snowflake Schema:** Similar al estrella, pero las dimensiones están normalizadas en múltiples tablas relacionadas. Reduce redundancia pero puede aumentar la complejidad de las consultas (más JOINS).
+    *   Tablas de Hechos (Fact tables): Contienen métricas cuantitativas.
+    *   Tablas de Dimensión (Dimension tables): Contienen atributos descriptivos contextuales.
+    *   Normalización vs. Desnormalización.
+
+---
+
+Espero que este formato te sea útil. Puedes expandir la sección "Conceptos Involucrados" con más detalles según lo necesites para tu estudio. ¡Mucho éxito!
